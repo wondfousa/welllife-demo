@@ -196,8 +196,8 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .ss2.sel{border-color:var(--g3);color:var(--i2)}
 .nin{width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:10px;padding:10px 12px;font-size:13px;font-family:var(--font-b);color:var(--ink);outline:none;resize:none;line-height:1.5}
 .savebtn{margin:12px 24px 0;width:calc(100% - 48px);background:var(--teal);color:#fff;border:none;border-radius:24px;padding:13px;font-size:14px;font-weight:500;cursor:pointer;font-family:var(--font-b)}
-.phdr{background:linear-gradient(160deg,#1c1c1a,#2a2a27);padding:28px 24px;color:#fff}
-.pav{width:64px;height:64px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;font-family:var(--font-s);font-size:24px;margin-bottom:14px}
+.phdr{background:linear-gradient(150deg,#0a7a5e 0%,#0d9e7a 60%,#1ab589 100%);padding:28px 24px 24px;color:#fff}
+.pav{width:64px;height:64px;border-radius:50%;background:rgba(255,255,255,.25);border:2px solid rgba(255,255,255,.4);display:flex;align-items:center;justify-content:center;font-family:var(--font-s);font-size:24px;flex-shrink:0}
 .sgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;padding:20px 24px}
 .sbox{background:var(--gray);border-radius:12px;padding:12px;text-align:center}
 .snum{font-family:var(--font-s);font-size:22px;color:var(--ink);display:block;margin-bottom:2px}
@@ -810,9 +810,23 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
   <!-- PROFILE -->
   <div class="screen" id="s-profile">
     <div class="phdr">
-      <div class="pav">S</div>
-      <div style="font-family:var(--font-s);font-size:22px;margin-bottom:4px">Sarah Chen</div>
-      <div style="font-size:12px;opacity:.6;margin-bottom:8px">Member since Jan 2024</div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div class="pav">S</div>
+        <div style="flex:1">
+          <div style="font-family:var(--font-s);font-size:22px;margin-bottom:4px">Sarah Chen</div>
+          <div style="font-size:12px;opacity:.75;margin-bottom:10px">Member since Jan 2024</div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <div style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.18);border-radius:20px;padding:5px 10px">
+              <span style="font-size:14px">🔥</span>
+              <span style="font-size:12px;font-weight:600">12 day streak</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.18);border-radius:20px;padding:5px 10px">
+              <span style="width:7px;height:7px;border-radius:50%;background:#fbbf24;display:inline-block"></span>
+              <span style="font-size:12px;font-weight:600">In recovery</span>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
     <div class="sgrid">
       <div class="sbox"><span class="snum">7</span><span class="slbl">Health Cards</span></div>
