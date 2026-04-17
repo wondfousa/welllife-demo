@@ -627,7 +627,6 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
         <div class="dchdr"><span class="dcday" id="dc-dl"></span><span class="dcdate" id="dc-dd"></span></div>
         <div class="log-tabs">
           <div class="log-tab on" onclick="switchLogTab('symptoms',this)">Symptoms</div>
-          <div class="log-tab" onclick="switchLogTab('temperature',this)">Temperature</div>
           <div class="log-tab" onclick="switchLogTab('vitals',this)">Vitals</div>
           <div class="log-tab" onclick="switchLogTab('notes',this)">Notes</div>
         </div>
@@ -659,7 +658,22 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
               </button>
             </div>
           </div>
-          <div class="drow" style="margin-bottom:10px"><div class="drlbl">Symptoms</div><div class="drchips" id="dc-syms"><span class="dc" onclick="tog(this,'on')">🤒 Fever</span><span class="dc" onclick="tog(this,'on')">💢 Headache</span><span class="dc" onclick="tog(this,'on')">😮‍💨 Cough</span><span class="dc" onclick="tog(this,'on')">😩 Fatigue</span><span class="dc" onclick="tog(this,'on')">🤧 Runny nose</span><span class="dc" onclick="tog(this,'on')">🦴 Body aches</span><span class="dc" onclick="tog(this,'on')">🍽️ No taste/smell</span></div></div>
+          <!-- Symptoms with custom add -->
+          <div class="drow" style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <div class="drlbl" style="margin-bottom:0">Symptoms</div>
+              <button onclick="addCustomChip('dc-syms','on','🤕 ')" style="background:none;border:.5px solid var(--teal);border-radius:12px;padding:2px 8px;font-size:11px;color:var(--teal);cursor:pointer;font-family:var(--font-b)">+ Add</button>
+            </div>
+            <div class="drchips" id="dc-syms">
+              <span class="dc" onclick="tog(this,'on')">🤒 Fever</span>
+              <span class="dc" onclick="tog(this,'on')">💢 Headache</span>
+              <span class="dc" onclick="tog(this,'on')">😮‍💨 Cough</span>
+              <span class="dc" onclick="tog(this,'on')">😩 Fatigue</span>
+              <span class="dc" onclick="tog(this,'on')">🤧 Runny nose</span>
+              <span class="dc" onclick="tog(this,'on')">🦴 Body aches</span>
+              <span class="dc" onclick="tog(this,'on')">🍽️ No taste/smell</span>
+            </div>
+          </div>
           <div class="drow" style="margin-bottom:10px">
             <div class="drlbl">Strip test today?</div>
             <div class="srow">
@@ -707,28 +721,28 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
               </div>
             </div>
           </div>
-          <div class="drow"><div class="drlbl">Medications</div><div class="drchips" id="dc-meds"><span class="dc on-b" onclick="tog(this,'on-b')">💊 Ibuprofen</span><span class="dc" onclick="tog(this,'on-b')">💊 Paracetamol</span><span class="dc" onclick="tog(this,'on-b')">💊 Tamiflu</span><span class="dc" onclick="tog(this,'on-b')">💊 Antihistamine</span></div></div>
+          <!-- Medications with custom add -->
+          <div class="drow">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <div class="drlbl" style="margin-bottom:0">Medications</div>
+              <button onclick="addCustomChip('dc-meds','on-b','💊 ')" style="background:none;border:.5px solid var(--teal);border-radius:12px;padding:2px 8px;font-size:11px;color:var(--teal);cursor:pointer;font-family:var(--font-b)">+ Add</button>
+            </div>
+            <div class="drchips" id="dc-meds">
+              <span class="dc on-b" onclick="tog(this,'on-b')">💊 Ibuprofen</span>
+              <span class="dc" onclick="tog(this,'on-b')">💊 Paracetamol</span>
+              <span class="dc" onclick="tog(this,'on-b')">💊 Tamiflu</span>
+              <span class="dc" onclick="tog(this,'on-b')">💊 Antihistamine</span>
+            </div>
+          </div>
         </div>
-        <!-- Temperature panel -->
-        <div class="log-panel" id="lp-temperature">
+        <!-- Vitals panel (merged Temperature + Vitals, no energy) -->
+        <div class="log-panel" id="lp-vitals">
+          <!-- Temperature -->
           <div class="drow" style="margin-bottom:16px">
             <div class="drlbl">Body temperature</div>
             <div class="trow"><input class="tin" id="tin" type="number" step="0.1" min="35" max="42" value="38.8" oninput="updT()"><span style="font-size:13px;color:var(--g3)">°C</span><div class="tbar"><div class="tbf" id="tbf"></div></div><span id="ttag" style="font-size:11px;font-weight:500"></span></div>
           </div>
-          <div class="drow">
-            <div class="drlbl">Energy &amp; feeling</div>
-            <div class="drchips" id="dc-energy"><span class="dc on-r" onclick="setE(this)">😞 Terrible</span><span class="dc" onclick="setE(this)">😟 Poor</span><span class="dc" onclick="setE(this)">😐 OK</span><span class="dc" onclick="setE(this)">🙂 Better</span><span class="dc" onclick="setE(this)">😊 Good</span></div>
-          </div>
-        </div>
-        <!-- Notes panel -->
-        <div class="log-panel" id="lp-notes">
-          <div class="drow">
-            <div class="drlbl">Your notes for today</div>
-            <textarea class="nin" id="dc-note" rows="5" placeholder="How are you feeling? Anything unusual? What helped today?"></textarea>
-          </div>
-        </div>
-        <!-- Vitals panel -->
-        <div class="log-panel" id="lp-vitals">
+          <!-- Blood pressure -->
           <div class="drow" style="margin-bottom:14px">
             <div class="drlbl">Blood pressure</div>
             <div style="display:flex;align-items:center;gap:8px">
@@ -771,6 +785,13 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
               <input type="number" min="2" max="30" step="0.1" placeholder="5.4" style="flex:1;background:transparent;border:none;outline:none;font-size:18px;font-weight:600;font-family:var(--font-b);color:var(--ink);width:0" id="v-glucose">
               <span style="font-size:11px;color:var(--g3)">mmol/L</span>
             </div>
+          </div>
+        </div>
+        <!-- Notes panel -->
+        <div class="log-panel" id="lp-notes">
+          <div class="drow">
+            <div class="drlbl">Your notes for today</div>
+            <textarea class="nin" id="dc-note" rows="5" placeholder="How are you feeling? Anything unusual? What helped today?"></textarea>
           </div>
         </div>
       </div>
@@ -1693,7 +1714,17 @@ function clearStripPhoto(){
   if(HOME_REC.entries[AD])delete HOME_REC.entries[AD].stripPhoto;
 }
 function tog(el,cls){el.classList.toggle(cls);}
-function setE(el){document.querySelectorAll('#dc-energy .dc').forEach(e=>e.classList.remove('on-r'));el.classList.add('on-r');}
+function addCustomChip(containerId, cls, prefix){
+  const name = prompt('Add custom item:');
+  if(!name||!name.trim()) return;
+  const el = document.getElementById(containerId);
+  if(!el) return;
+  const chip = document.createElement('span');
+  chip.className = 'dc ' + cls;
+  chip.textContent = prefix + name.trim();
+  chip.onclick = function(){ tog(this, cls); };
+  el.appendChild(chip);
+}
 function setLevel(tone){
   document.querySelectorAll('#dc-level .level-btn').forEach(b=>{
     const active=b.dataset.tone===tone;
