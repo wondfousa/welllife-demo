@@ -1721,7 +1721,9 @@ function addCustomChip(containerId, cls, prefix){
   if(!el) return;
   const chip = document.createElement('span');
   chip.className = 'dc ' + cls;
-  chip.textContent = prefix + name.trim();
+  chip.style.cssText = 'display:inline-flex;align-items:center;gap:4px;padding-right:4px';
+  chip.innerHTML = prefix + name.trim()
+    + '<span onclick="event.stopPropagation();this.parentElement.remove()" style="margin-left:2px;width:14px;height:14px;border-radius:50%;background:rgba(0,0,0,.15);display:inline-flex;align-items:center;justify-content:center;font-size:9px;cursor:pointer;flex-shrink:0">×</span>';
   chip.onclick = function(){ tog(this, cls); };
   el.appendChild(chip);
 }
