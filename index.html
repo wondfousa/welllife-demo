@@ -13,7 +13,7 @@
   --red:#e24b4a;--rl:#fcebeb;
   --blue:#2d7dd2;--bl:#e6f1fb;
   --pur:#7c3aed;--pl:#f3e8ff;
-  --gray:#f7f6f2;--g2:#eeece6;--g3:#6b6a64;
+  --gray:#f7f6f2;--g2:#eeece6;--g3:#9a9890;
   --ink:#1c1c1a;--i2:#4a4a47;
   --rec-idle:#e4e7eb;--rec-fill:#d7dce3;
   --rec-severe:#ef4d4c;--rec-mild:#e09517;--rec-improving:#f1c40f;--rec-recovered:#2ecc71;
@@ -29,9 +29,9 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .tab.on{color:var(--teal)}
 .ti{width:22px;height:22px}
 .tag{font-size:11px;padding:3px 9px;border-radius:10px;font-weight:500}
-.t-covid{background:var(--rl);color:#a9302f}
-.t-flu{background:#fff3e0;color:#8a4a00}
-.t-ok{background:var(--tl);color:#0e6f52}
+.t-covid{background:var(--rl);color:var(--red)}
+.t-flu{background:#fff3e0;color:#b36000}
+.t-ok{background:var(--tl);color:var(--tm)}
 .t-strip{background:var(--bl);color:var(--blue)}
 .sec-lbl{font-size:13px;font-weight:500;color:var(--g3);letter-spacing:.06em;text-transform:uppercase;margin-bottom:14px}
 .sp{padding:20px 24px}
@@ -58,7 +58,7 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .recovery-wrap{background:#fff;border-radius:var(--r);padding:18px 16px 16px;border:.5px solid rgba(0,0,0,.08);box-shadow:0 10px 24px rgba(12,57,40,.08)}
 .recovery-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:6px}
 .recovery-title{font-family:var(--font-s);font-size:24px;line-height:1;color:var(--ink)}
-.recovery-date{font-size:12px;font-weight:500;color:#5c6572;padding-top:5px}
+.recovery-date{font-size:12px;font-weight:500;color:#98a1ad;padding-top:5px}
 .recovery-meta{font-size:12px;color:var(--g3);margin-bottom:18px}
 .recovery-track{position:relative;height:92px;touch-action:none;user-select:none;cursor:grab}
 .recovery-track.dragging{cursor:grabbing}
@@ -258,6 +258,10 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .mf-btn.mf-covid.on{background:#e24b4a}
 .mf-btn.mf-flu.on{background:#e09517}
 .mf-btn.mf-rsv.on{background:#2d7dd2}
+.mcolor{width:30px;height:30px;border-radius:50%;cursor:pointer;border:3px solid transparent;transition:.15s;flex-shrink:0}
+.mcolor.selected{border-color:#fff;box-shadow:0 0 0 2px currentColor, 0 0 0 4px #fff}
+.rp-btn{padding:7px 12px;border-radius:20px;border:1.5px solid #ddd;background:#fff;font-size:12px;font-weight:500;cursor:pointer;color:var(--i2);transition:.15s}
+.rp-btn.rp-active{border-color:var(--teal);background:var(--tl);color:var(--teal);font-weight:700}
 @keyframes typing{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
 .vc{width:44px;height:52px;border-radius:12px;border:1.5px solid rgba(0,0,0,.12);background:var(--gray);text-align:center;font-size:22px;font-weight:700;font-family:var(--font-b);color:var(--ink);outline:none;-moz-appearance:textfield}
 .vc:focus{border-color:var(--teal);background:#fff}
@@ -276,8 +280,16 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
   <!-- HOME -->
   <div class="screen active" id="s-home">
     <div class="hdr">
-      <div style="font-size:12px;opacity:.7;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px">Good morning</div>
-      <div style="font-family:var(--font-s);font-size:26px;margin-bottom:18px">Hi, Sarah 👋</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px">
+        <div>
+          <div style="font-size:11px;opacity:.65;letter-spacing:.07em;text-transform:uppercase;margin-bottom:3px">Good morning</div>
+          <div style="font-family:var(--font-s);font-size:26px;line-height:1" id="home-greeting">Hi, Sarah 👋</div>
+        </div>
+      </div>
+      <!-- Member switcher strip (shown only when members exist) -->
+      <div id="member-bar" style="display:none;margin-bottom:14px;margin-top:-4px">
+        <div id="member-chips" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"></div>
+      </div>
       <div class="risk-card">
         <div class="risk-hdr">
           <span class="risk-ttl">Respiratory Risk · United States</span>
@@ -289,7 +301,7 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
           <button class="mf-btn mf-rsv"   onclick="switchMapDisease('rsv')">RSV</button>
         </div>
         <div class="mwrap">
-          <svg id="us-map" role="img" aria-label="United States respiratory risk heat map" width="100%" viewBox="0 0 960 560" style="display:block"></svg>
+          <svg id="us-map" width="100%" viewBox="0 0 960 560" style="display:block"></svg>
           <div class="mttip" id="mttip"></div>
         </div>
         <div class="risk-ft">
@@ -325,9 +337,9 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
           <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:#f1c40f;flex-shrink:0;display:inline-block"></span>Recovering</div>
           <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:#2ecc71;flex-shrink:0;display:inline-block"></span>Recovered</div>
           <div style="display:flex;align-items:center;gap:5px;margin-left:auto;flex-shrink:0">
-            <button aria-label="Show fewer days" onclick="adjustHomeDays(-1)" style="min-width:44px;min-height:44px;width:44px;height:44px;border-radius:10px;border:1px solid #ccc;background:#f0eeea;cursor:pointer;font-size:20px;color:#333;line-height:1;text-align:center;padding:0;box-sizing:border-box">-</button>
-            <span id="home-days-count" style="font-size:13px;font-weight:700;color:var(--ink);min-width:20px;text-align:center">7</span>
-            <button aria-label="Show more days" onclick="adjustHomeDays(1)"  style="min-width:44px;min-height:44px;width:44px;height:44px;border-radius:10px;border:1px solid #ccc;background:#f0eeea;cursor:pointer;font-size:20px;color:#333;line-height:1;text-align:center;padding:0;box-sizing:border-box">+</button>
+            <button onclick="adjustHomeDays(-1)" style="width:26px;height:26px;border-radius:7px;border:1px solid #ccc;background:#f0eeea;cursor:pointer;font-size:17px;color:#333;line-height:26px;text-align:center;padding:0;box-sizing:border-box">-</button>
+            <span id="home-days-count" style="font-size:12px;font-weight:700;color:var(--ink);min-width:18px;text-align:center">7</span>
+            <button onclick="adjustHomeDays(1)"  style="width:26px;height:26px;border-radius:7px;border:1px solid #ccc;background:#f0eeea;cursor:pointer;font-size:17px;color:#333;line-height:26px;text-align:center;padding:0;box-sizing:border-box">+</button>
           </div>
         </div>
         <input type="hidden" id="recovery-color-severe" value="#ef4d4c">
@@ -363,7 +375,7 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
   <div class="screen" id="s-assistant">
 
     <!-- ── Floating AI Chat Button ─────────────────────────── -->
-    <div id="ai-fab" role="button" tabindex="0" aria-label="Open AI chat assistant" onclick="openAIChat()" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openAIChat();}"
+    <div id="ai-fab" onclick="openAIChat()"
       style="position:absolute;bottom:80px;right:16px;width:52px;height:52px;border-radius:50%;background:var(--teal);box-shadow:0 4px 16px rgba(13,158,122,.4);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:50">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
         <path d="M12 3C7 3 3 6.5 3 11c0 2 .8 3.8 2.1 5.1L4 21l5.2-1.6C10.4 19.8 11.2 20 12 20c5 0 9-3.5 9-9s-4-8-9-8z" fill="white"/>
@@ -386,8 +398,8 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
             <div style="font-size:14px;font-weight:600;color:var(--ink)">WELLlife AI</div>
             <div style="font-size:11px;color:var(--g3)">Powered by AI · not a medical diagnosis</div>
           </div>
-          <button aria-label="Close chat" onclick="closeAIChat()" style="width:44px;height:44px;border-radius:50%;border:none;background:var(--gray);cursor:pointer;display:flex;align-items:center;justify-content:center">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="var(--i2)" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <button onclick="closeAIChat()" style="width:32px;height:32px;border-radius:50%;border:none;background:var(--gray);cursor:pointer;display:flex;align-items:center;justify-content:center">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="var(--i2)" stroke-width="1.8" stroke-linecap="round"/></svg>
           </button>
         </div>
         <div id="ai-messages" style="flex:1;overflow-y:auto;padding:14px 14px 8px;display:flex;flex-direction:column;gap:10px">
@@ -407,12 +419,12 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
           <button onclick="sendAIPrompt(this)" style="flex-shrink:0;background:var(--tl);border:none;border-radius:20px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--teal);cursor:pointer;font-family:var(--font-b);white-space:nowrap">What do my symptoms mean?</button>
         </div>
         <div style="padding:8px 14px 24px;display:flex;gap:8px;align-items:center;border-top:.5px solid rgba(0,0,0,.06);flex-shrink:0;background:#fff">
-          <input id="ai-input" type="text" aria-label="Ask the AI assistant a health question" placeholder="Ask anything about your health…"
+          <input id="ai-input" type="text" placeholder="Ask anything about your health…"
             style="flex:1;background:var(--gray);border:none;border-radius:24px;padding:10px 16px;font-size:13px;font-family:var(--font-b);color:var(--ink);outline:none"
             onkeydown="if(event.key==='Enter')sendAIMessage()">
-          <button aria-label="Send message" onclick="sendAIMessage()" id="ai-send-btn"
-            style="width:44px;height:44px;border-radius:50%;background:var(--teal);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M2 8L14 2L8 14L7 9L2 8Z" fill="white"/></svg>
+          <button onclick="sendAIMessage()" id="ai-send-btn"
+            style="width:38px;height:38px;border-radius:50%;background:var(--teal);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8L14 2L8 14L7 9L2 8Z" fill="white"/></svg>
           </button>
         </div>
       </div>
@@ -605,14 +617,14 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
     </div>
     <div class="dv" id="dv">
       <div class="dhdr">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
-          <div class="back" onclick="closeCard()" style="margin-bottom:0"><svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Back to cards</div>
-          <button aria-label="Generate shareable health report" onclick="openReportModal()" style="background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.28);color:#fff;border-radius:18px;padding:7px 12px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-b);display:flex;align-items:center;gap:5px">
-            <svg width="13" height="13" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2v8m0 0l-3-3m3 3l3-3M3 12v2h10v-2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Report
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div class="back" onclick="closeCard()"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Back to cards</div>
+          <button onclick="generateReport(AC)" style="display:flex;align-items:center;gap:5px;background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.35);color:#fff;border-radius:18px;padding:7px 14px;font-size:12px;font-weight:600;cursor:pointer">
+            <svg width="13" height="13" viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 10l4 5 4-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 17h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            Generate Report
           </button>
         </div>
-        <div style="font-family:var(--font-s);font-size:24px;margin-bottom:4px" id="d-name"></div>
+        <div style="font-family:var(--font-s);font-size:24px;margin-bottom:4px;margin-top:12px" id="d-name"></div>
         <div style="font-size:12px;opacity:.7;margin-bottom:16px" id="d-dates"></div>
         <div class="dstats"><div class="dst"><span class="dsn" id="d-dur"></span><span class="dsl">Total days</span></div><div class="dst"><span class="dsn" id="d-logged"></span><span class="dsl">Days logged</span></div><div class="dst"><span class="dsn" id="d-strips"></span><span class="dsl">Strip tests</span></div></div>
         <div class="dtags" id="d-tags"></div>
@@ -748,7 +760,7 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
           <!-- Temperature -->
           <div class="drow" style="margin-bottom:16px">
             <div class="drlbl">Body temperature</div>
-            <div class="trow"><input class="tin" id="tin" aria-label="Body temperature in degrees Celsius" type="number" step="0.1" min="35" max="42" value="38.8" oninput="updT()"><span style="font-size:13px;color:var(--g3)">°C</span><div class="tbar"><div class="tbf" id="tbf"></div></div><span id="ttag" style="font-size:11px;font-weight:500"></span></div>
+            <div class="trow"><input class="tin" id="tin" type="number" step="0.1" min="35" max="42" value="38.8" oninput="updT()"><span style="font-size:13px;color:var(--g3)">°C</span><div class="tbar"><div class="tbf" id="tbf"></div></div><span id="ttag" style="font-size:11px;font-weight:500"></span></div>
           </div>
           <!-- Blood pressure -->
           <div class="drow" style="margin-bottom:14px">
@@ -756,12 +768,12 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
             <div style="display:flex;align-items:center;gap:8px">
               <div style="flex:1">
                 <div style="font-size:10px;color:var(--g3);margin-bottom:4px;font-weight:500">SYSTOLIC (mmHg)</div>
-                <input type="number" aria-label="Systolic blood pressure in mmHg" min="60" max="220" placeholder="120" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.12);border-radius:10px;padding:10px 12px;font-size:18px;font-weight:600;font-family:var(--font-b);color:var(--ink);outline:none;text-align:center" id="v-sys" oninput="updBP()">
+                <input type="number" min="60" max="220" placeholder="120" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.12);border-radius:10px;padding:10px 12px;font-size:18px;font-weight:600;font-family:var(--font-b);color:var(--ink);outline:none;text-align:center" id="v-sys" oninput="updBP()">
               </div>
               <div style="font-size:20px;color:var(--g3);font-weight:300;padding-top:16px">/</div>
               <div style="flex:1">
                 <div style="font-size:10px;color:var(--g3);margin-bottom:4px;font-weight:500">DIASTOLIC (mmHg)</div>
-                <input type="number" aria-label="Diastolic blood pressure in mmHg" min="40" max="140" placeholder="80" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.12);border-radius:10px;padding:10px 12px;font-size:18px;font-weight:600;font-family:var(--font-b);color:var(--ink);outline:none;text-align:center" id="v-dia" oninput="updBP()">
+                <input type="number" min="40" max="140" placeholder="80" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.12);border-radius:10px;padding:10px 12px;font-size:18px;font-weight:600;font-family:var(--font-b);color:var(--ink);outline:none;text-align:center" id="v-dia" oninput="updBP()">
               </div>
               <div style="flex:0 0 auto;padding-top:16px">
                 <div id="bp-tag" style="font-size:10px;font-weight:700;padding:4px 8px;border-radius:8px;background:var(--tl);color:var(--tm)">—</div>
@@ -773,7 +785,7 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
               <div class="drlbl">Heart rate</div>
               <div style="display:flex;align-items:center;gap:6px;background:var(--gray);border-radius:10px;padding:10px 12px;border:.5px solid rgba(0,0,0,.08)">
                 <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M10 17S2 11.5 2 6.5A4.5 4.5 0 0110 4a4.5 4.5 0 018 2.5C18 11.5 10 17 10 17z" fill="#e24b4a" opacity=".8"/></svg>
-                <input type="number" aria-label="Heart rate in beats per minute" min="30" max="220" placeholder="72" style="flex:1;background:transparent;border:none;outline:none;font-size:18px;font-weight:600;font-family:var(--font-b);color:var(--ink);width:0" id="v-hr">
+                <input type="number" min="30" max="220" placeholder="72" style="flex:1;background:transparent;border:none;outline:none;font-size:18px;font-weight:600;font-family:var(--font-b);color:var(--ink);width:0" id="v-hr">
                 <span style="font-size:11px;color:var(--g3)">bpm</span>
               </div>
             </div>
@@ -781,7 +793,7 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
               <div class="drlbl">SpO₂</div>
               <div style="display:flex;align-items:center;gap:6px;background:var(--gray);border-radius:10px;padding:10px 12px;border:.5px solid rgba(0,0,0,.08)">
                 <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#2d7dd2" stroke-width="2"/><path d="M7 10l2 2 4-4" stroke="#2d7dd2" stroke-width="1.5" stroke-linecap="round"/></svg>
-                <input type="number" aria-label="Blood oxygen saturation percentage" min="80" max="100" placeholder="98" style="flex:1;background:transparent;border:none;outline:none;font-size:18px;font-weight:600;font-family:var(--font-b);color:var(--ink);width:0" id="v-spo2" oninput="updSpo2(this)">
+                <input type="number" min="80" max="100" placeholder="98" style="flex:1;background:transparent;border:none;outline:none;font-size:18px;font-weight:600;font-family:var(--font-b);color:var(--ink);width:0" id="v-spo2" oninput="updSpo2(this)">
                 <span style="font-size:11px;color:var(--g3)">%</span>
               </div>
             </div>
@@ -790,7 +802,7 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
             <div class="drlbl">Blood glucose <span style="font-weight:400;text-transform:none;letter-spacing:0;font-size:10px">(optional)</span></div>
             <div style="display:flex;align-items:center;gap:6px;background:var(--gray);border-radius:10px;padding:10px 12px;border:.5px solid rgba(0,0,0,.08)">
               <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="10" r="8" stroke="#e09517" stroke-width="2"/><path d="M10 6v4l3 2" stroke="#e09517" stroke-width="1.5" stroke-linecap="round"/></svg>
-              <input type="number" aria-label="Blood glucose level" min="2" max="30" step="0.1" placeholder="5.4" style="flex:1;background:transparent;border:none;outline:none;font-size:18px;font-weight:600;font-family:var(--font-b);color:var(--ink);width:0" id="v-glucose">
+              <input type="number" min="2" max="30" step="0.1" placeholder="5.4" style="flex:1;background:transparent;border:none;outline:none;font-size:18px;font-weight:600;font-family:var(--font-b);color:var(--ink);width:0" id="v-glucose">
               <span style="font-size:11px;color:var(--g3)">mmol/L</span>
             </div>
           </div>
@@ -813,7 +825,7 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
         <div style="font-size:12px;color:var(--g3);margin-bottom:20px">Name this illness and choose the type — you'll log Day 1 details next</div>
 
         <div style="margin-bottom:18px">
-          <label for="nc-name" style="font-size:12px;font-weight:500;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:block">Card name</label>
+          <label style="font-size:12px;font-weight:500;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px;display:block">Card name</label>
           <input id="nc-name" type="text" placeholder="e.g. COVID Jan 2025, Winter flu…" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:10px;padding:11px 14px;font-size:14px;font-family:var(--font-b);color:var(--ink);outline:none">
         </div>
 
@@ -839,6 +851,9 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
   <!-- PROFILE -->
   <div class="screen" id="s-profile">
     <div class="phdr">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px">
+        <div style="font-size:11px;opacity:.6;font-weight:600;letter-spacing:.08em;text-transform:uppercase">My Profile</div>
+      </div>
       <div style="display:flex;align-items:center;gap:16px">
         <div class="pav">S</div>
         <div style="flex:1">
@@ -861,6 +876,15 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
       <div class="sbox"><span class="snum">7</span><span class="slbl">Health Cards</span></div>
       <div class="sbox"><span class="snum">12</span><span class="slbl">Strip Tests</span></div>
       <div class="sbox"><span class="snum">34</span><span class="slbl">Days Logged</span></div>
+    </div>
+
+    <!-- Members section (hidden when no members) -->
+    <div id="members-section" style="display:none;padding:12px 16px 0">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <span style="font-size:12px;font-weight:700;color:var(--g3);text-transform:uppercase;letter-spacing:.06em">Members</span>
+        <button onclick="openAddMember()" style="font-size:12px;color:var(--teal);font-weight:600;background:none;border:none;cursor:pointer">+ Add</button>
+      </div>
+      <div id="members-list" style="background:#fff;border-radius:16px;border:.5px solid rgba(0,0,0,.08);overflow:hidden"></div>
     </div>
 
     <!-- Settings menu -->
@@ -960,11 +984,11 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
         <div style="font-family:var(--font-s);font-size:22px;color:var(--ink);margin-bottom:6px">Welcome back</div>
         <div style="font-size:13px;color:var(--g3);margin-bottom:28px">Sign in to your WELLlife account</div>
         <div style="margin-bottom:14px">
-          <label for="login-email" style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Email</label>
+          <label style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Email</label>
           <input id="login-email" type="email" placeholder="you@example.com" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:14px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box">
         </div>
         <div style="margin-bottom:8px">
-          <label for="login-pw" style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Password</label>
+          <label style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Password</label>
           <input id="login-pw" type="password" placeholder="••••••••" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:14px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box" onkeydown="if(event.key==='Enter')doLogin()">
         </div>
         <div style="text-align:right;margin-bottom:24px">
@@ -994,8 +1018,8 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
     <!-- Register screen -->
     <div id="auth-register" style="flex:1;display:none;flex-direction:column;padding:16px 28px 28px;overflow-y:auto">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
-        <button aria-label="Back to login" onclick="showAuth('login')" style="width:44px;height:44px;border-radius:50%;border:none;background:var(--gray);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3L5 8l5 5" stroke="var(--i2)" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <button onclick="showAuth('login')" style="width:32px;height:32px;border-radius:50%;border:none;background:var(--gray);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="var(--i2)" stroke-width="1.5" stroke-linecap="round"/></svg>
         </button>
         <div style="display:flex;align-items:center;gap:8px">
           <img src="data:image/png;base64,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" style="width:52px;height:52px;object-fit:contain">
@@ -1006,16 +1030,16 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
         </div>
       </div>
       <div style="margin-bottom:12px">
-        <label for="reg-name" style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Full name</label>
+        <label style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Full name</label>
         <input id="reg-name" type="text" placeholder="Sarah Chen" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:14px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box">
       </div>
       <div style="margin-bottom:12px">
-        <label for="reg-email" style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Email</label>
+        <label style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Email</label>
         <input id="reg-email" type="email" placeholder="you@example.com" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:14px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box">
       </div>
       <div style="margin-bottom:12px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-          <label for="reg-pw" style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em">Password</label>
+          <label style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em">Password</label>
           <span style="font-size:11px;color:var(--g3)">Min. 8 characters</span>
         </div>
         <input id="reg-pw" type="password" placeholder="••••••••" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:14px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box" oninput="checkPwStrength(this.value)">
@@ -1029,7 +1053,7 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
         <div id="ps-label" style="font-size:10px;color:var(--g3);margin-top:3px"></div>
       </div>
       <div style="margin-bottom:20px">
-        <label for="reg-pw2" style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Confirm password</label>
+        <label style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Confirm password</label>
         <input id="reg-pw2" type="password" placeholder="Repeat password" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:14px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box" onkeydown="if(event.key==='Enter')doRegister()">
       </div>
       <div id="reg-err" style="display:none;background:#fff0f0;border-radius:10px;padding:10px 12px;font-size:12px;color:#e24b4a;margin-bottom:14px"></div>
@@ -1056,13 +1080,13 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
       </div>
       <!-- 6 digit input boxes -->
       <div style="display:flex;align-items:center;justify-content:center;gap:6px;margin:24px 0">
-        <input class="vc" id="vc1" aria-label="Verification code digit 1 of 6" maxlength="1" type="text" inputmode="numeric" oninput="vcNext(this,'vc2')" onkeydown="vcBack(event,this,null)">
-        <input class="vc" id="vc2" aria-label="Verification code digit 2 of 6" maxlength="1" type="text" inputmode="numeric" oninput="vcNext(this,'vc3')" onkeydown="vcBack(event,this,'vc1')">
-        <input class="vc" id="vc3" aria-label="Verification code digit 3 of 6" maxlength="1" type="text" inputmode="numeric" oninput="vcNext(this,null)" onkeydown="vcBack(event,this,'vc2')">
+        <input class="vc" id="vc1" maxlength="1" type="text" inputmode="numeric" oninput="vcNext(this,'vc2')" onkeydown="vcBack(event,this,null)">
+        <input class="vc" id="vc2" maxlength="1" type="text" inputmode="numeric" oninput="vcNext(this,'vc3')" onkeydown="vcBack(event,this,'vc1')">
+        <input class="vc" id="vc3" maxlength="1" type="text" inputmode="numeric" oninput="vcNext(this,null)" onkeydown="vcBack(event,this,'vc2')">
         <div style="font-size:20px;color:var(--g3);font-weight:300">−</div>
-        <input class="vc" id="vc4" aria-label="Verification code digit 4 of 6" maxlength="1" type="text" inputmode="numeric" oninput="vcNext(this,'vc5')" onkeydown="vcBack(event,this,'vc3')">
-        <input class="vc" id="vc5" aria-label="Verification code digit 5 of 6" maxlength="1" type="text" inputmode="numeric" oninput="vcNext(this,'vc6')" onkeydown="vcBack(event,this,'vc4')">
-        <input class="vc" id="vc6" aria-label="Verification code digit 6 of 6" maxlength="1" type="text" inputmode="numeric" oninput="vcNext(this,null)" onkeydown="vcBack(event,this,'vc5')">
+        <input class="vc" id="vc4" maxlength="1" type="text" inputmode="numeric" oninput="vcNext(this,'vc5')" onkeydown="vcBack(event,this,'vc3')">
+        <input class="vc" id="vc5" maxlength="1" type="text" inputmode="numeric" oninput="vcNext(this,'vc6')" onkeydown="vcBack(event,this,'vc4')">
+        <input class="vc" id="vc6" maxlength="1" type="text" inputmode="numeric" oninput="vcNext(this,null)" onkeydown="vcBack(event,this,'vc5')">
       </div>
       <div id="verify-err" style="display:none;background:#fff0f0;border-radius:10px;padding:10px 12px;font-size:12px;color:#e24b4a;margin-bottom:14px;text-align:center"></div>
       <button onclick="doVerify()" style="width:100%;background:var(--teal);color:#fff;border:none;border-radius:24px;padding:15px;font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font-b);margin-bottom:16px">Confirm</button>
@@ -1074,8 +1098,8 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
     <!-- Forgot Password screen -->
     <div id="auth-forgot" style="flex:1;display:none;flex-direction:column;padding:40px 28px 28px">
       <div style="display:flex;align-items:center;gap:12px;margin-bottom:32px">
-        <button aria-label="Back to login" onclick="showAuth('login')" style="width:44px;height:44px;border-radius:50%;border:none;background:var(--gray);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M10 3L5 8l5 5" stroke="var(--i2)" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <button onclick="showAuth('login')" style="width:32px;height:32px;border-radius:50%;border:none;background:var(--gray);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="var(--i2)" stroke-width="1.5" stroke-linecap="round"/></svg>
         </button>
         <span style="font-size:16px;font-weight:600;color:var(--ink)">Reset password</span>
       </div>
@@ -1087,76 +1111,13 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
         <div style="font-size:13px;color:var(--g3);line-height:1.6">Enter the email address associated with your account. We'll send a reset link.</div>
       </div>
       <div style="margin-bottom:24px">
-        <label for="forgot-email" style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Email</label>
+        <label style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Email</label>
         <input id="forgot-email" type="email" placeholder="you@example.com" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:14px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box" onkeydown="if(event.key==='Enter')doForgot()">
       </div>
       <div id="forgot-msg" style="display:none;border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:14px;text-align:center"></div>
       <button onclick="doForgot()" style="width:100%;background:var(--teal);color:#fff;border:none;border-radius:24px;padding:15px;font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font-b)">Send reset link</button>
     </div>
 
-  </div>
-
-  <!-- ── Report Download Modal (fullscreen with preview) ──────────────── -->
-  <div id="report-modal" role="dialog" aria-modal="true" aria-labelledby="report-modal-title" style="position:absolute;inset:0;background:#fff;z-index:200;display:none;flex-direction:column;overflow:hidden">
-    <div style="padding:14px 18px 10px;border-bottom:.5px solid rgba(0,0,0,.08);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:#fff">
-      <div>
-        <div id="report-modal-title" style="font-family:var(--font-s);font-size:18px;color:var(--ink);line-height:1">Generate report</div>
-        <div style="font-size:11px;color:var(--g3);margin-top:2px">Choose audience · preview · download</div>
-      </div>
-      <button aria-label="Close report" onclick="closeReportModal()" style="width:44px;height:44px;border-radius:50%;border:none;background:var(--gray);cursor:pointer;display:flex;align-items:center;justify-content:center">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true"><path d="M2 2l10 10M12 2L2 12" stroke="var(--i2)" stroke-width="1.8" stroke-linecap="round"/></svg>
-      </button>
-    </div>
-    <div style="flex:1;overflow-y:auto;padding:14px 18px 16px">
-      <div style="font-size:11px;font-weight:700;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Share with</div>
-      <div role="radiogroup" aria-label="Report audience" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px">
-        <label class="aud-opt" data-val="employer" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border:1.5px solid var(--teal);border-radius:10px;cursor:pointer;background:var(--tl);text-align:center">
-          <input type="radio" name="report-audience" value="employer" checked style="position:absolute;opacity:0;pointer-events:none">
-          <span style="font-size:20px" aria-hidden="true">🏢</span>
-          <span style="font-size:11px;font-weight:600;color:var(--teal)">Employer</span>
-          <span style="font-size:9px;color:var(--i2);opacity:.7">Sick leave</span>
-        </label>
-        <label class="aud-opt" data-val="insurance" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border:1px solid rgba(0,0,0,.12);border-radius:10px;cursor:pointer;background:#fff;text-align:center">
-          <input type="radio" name="report-audience" value="insurance" style="position:absolute;opacity:0;pointer-events:none">
-          <span style="font-size:20px" aria-hidden="true">🛡️</span>
-          <span style="font-size:11px;font-weight:600;color:var(--i2)">Insurance</span>
-          <span style="font-size:9px;color:var(--i2);opacity:.7">Claim evidence</span>
-        </label>
-        <label class="aud-opt" data-val="friends" style="display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border:1px solid rgba(0,0,0,.12);border-radius:10px;cursor:pointer;background:#fff;text-align:center">
-          <input type="radio" name="report-audience" value="friends" style="position:absolute;opacity:0;pointer-events:none">
-          <span style="font-size:20px" aria-hidden="true">💬</span>
-          <span style="font-size:11px;font-weight:600;color:var(--i2)">Friends</span>
-          <span style="font-size:9px;color:var(--i2);opacity:.7">Casual update</span>
-        </label>
-      </div>
-      <label for="report-name" style="font-size:11px;font-weight:700;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Name on report</label>
-      <input id="report-name" type="text" placeholder="e.g. Sarah Chen" oninput="renderPreview()" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:10px;padding:10px 12px;font-size:13px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box;margin-bottom:14px">
-      <div style="font-size:11px;font-weight:700;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Format</div>
-      <div role="radiogroup" aria-label="Report format" style="display:flex;gap:6px;margin-bottom:14px">
-        <label class="fmt-opt" data-val="pdf" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;border:1.5px solid var(--teal);border-radius:10px;cursor:pointer;background:var(--tl);font-size:12px;font-weight:600;color:var(--teal)">
-          <input type="radio" name="report-format" value="pdf" checked style="position:absolute;opacity:0;pointer-events:none">PDF
-        </label>
-        <label class="fmt-opt" data-val="jpg" style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;padding:9px;border:1px solid rgba(0,0,0,.12);border-radius:10px;cursor:pointer;background:#fff;font-size:12px;font-weight:500;color:var(--i2)">
-          <input type="radio" name="report-format" value="jpg" style="position:absolute;opacity:0;pointer-events:none">JPG
-        </label>
-      </div>
-      <div style="font-size:11px;font-weight:700;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
-        <span>Preview</span>
-        <span style="font-size:10px;font-weight:500;color:var(--g3);text-transform:none;letter-spacing:0" id="report-preview-note">Live preview · actual file will be higher-res</span>
-      </div>
-      <div style="background:#f0eeea;border-radius:12px;padding:10px;border:.5px solid rgba(0,0,0,.08);max-height:380px;overflow:hidden;position:relative">
-        <div id="report-preview-scroll" style="overflow-y:auto;max-height:360px;border-radius:6px;background:#fff">
-          <div id="report-preview-scale" style="transform:scale(0.46);transform-origin:top left;width:720px"></div>
-        </div>
-      </div>
-    </div>
-    <div style="padding:10px 18px calc(10px + env(safe-area-inset-bottom,0px));border-top:.5px solid rgba(0,0,0,.08);background:#fff;flex-shrink:0">
-      <div id="report-status" style="font-size:12px;color:var(--g3);margin-bottom:8px;min-height:16px"></div>
-      <div style="display:flex;gap:8px">
-        <button onclick="closeReportModal()" style="flex:1;background:var(--gray);color:var(--i2);border:none;border-radius:12px;padding:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-b)">Cancel</button>
-        <button id="report-download-btn" onclick="downloadReport()" style="flex:1.6;background:var(--teal);color:#fff;border:none;border-radius:12px;padding:12px;font-size:13px;font-weight:600;cursor:pointer;font-family:var(--font-b)">Download</button>
-      </div>
-    </div>
   </div>
 
   <div class="tabs">
@@ -1167,10 +1128,69 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
   </div>
 </div>
 
+<!-- ── ADD MEMBER MODAL ── -->
+<div id="add-member-modal" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.6);align-items:flex-end;justify-content:center">
+  <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:430px;padding:0 0 32px;box-shadow:0 -12px 40px rgba(0,0,0,.2)">
+    <div style="width:36px;height:4px;background:#e0ddd8;border-radius:2px;margin:12px auto 20px"></div>
+    <div style="padding:0 24px">
+      <div style="font-size:18px;font-weight:700;color:var(--ink);margin-bottom:6px">Add a Member</div>
+      <div style="font-size:13px;color:var(--g3);margin-bottom:24px">Track health records for a child, student, or family member</div>
+      <label style="font-size:11px;font-weight:700;color:var(--i2);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Member Name</label>
+      <input id="new-member-name" type="text" placeholder="e.g. Emma, Tommy, Student A…" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:15px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box;margin-bottom:12px" onkeydown="if(event.key==='Enter')confirmAddMember()">
+      <label style="font-size:11px;font-weight:700;color:var(--i2);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:8px">Avatar Color</label>
+      <div style="display:flex;gap:8px;margin-bottom:24px" id="member-color-picker">
+        <div class="mcolor" data-c="#0d9e7a" style="background:#0d9e7a;border:3px solid #0d9e7a" onclick="pickMemberColor(this)"></div>
+        <div class="mcolor" data-c="#e53935" style="background:#e53935" onclick="pickMemberColor(this)"></div>
+        <div class="mcolor" data-c="#f57c00" style="background:#f57c00" onclick="pickMemberColor(this)"></div>
+        <div class="mcolor" data-c="#7b1fa2" style="background:#7b1fa2" onclick="pickMemberColor(this)"></div>
+        <div class="mcolor" data-c="#1565c0" style="background:#1565c0" onclick="pickMemberColor(this)"></div>
+        <div class="mcolor" data-c="#00838f" style="background:#00838f" onclick="pickMemberColor(this)"></div>
+      </div>
+      <div id="add-member-err" style="display:none;color:var(--red);font-size:12px;margin-bottom:10px"></div>
+      <button onclick="confirmAddMember()" style="width:100%;background:var(--teal);color:#fff;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:10px">Add Member</button>
+      <button onclick="closeAddMember()" style="width:100%;background:var(--gray);color:var(--i2);border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:500;cursor:pointer">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+<!-- ── REPORT MODAL (outside phone, full viewport) ── -->
+<div id="report-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:16px;overflow-y:auto">
+  <div style="background:#fff;border-radius:20px;width:100%;max-width:380px;margin:auto;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.4)">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#0a3d2e,#1d9e75);padding:16px 20px;color:#fff;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+      <div>
+        <div style="font-size:15px;font-weight:700">Health Report</div>
+        <div style="font-size:11px;opacity:.7;margin-top:2px">Preview before sharing</div>
+      </div>
+      <button onclick="closeReport()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0">×</button>
+    </div>
+    <!-- Canvas preview area -->
+    <div style="padding:14px;background:#f0eeea;display:flex;justify-content:center">
+      <canvas id="report-canvas" style="border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.18);display:block;max-width:100%;height:auto"></canvas>
+    </div>
+    <!-- Purpose selector -->
+    <div style="padding:14px 16px 10px">
+      <div style="font-size:10px;font-weight:700;color:var(--g3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Select report purpose</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="setReportPurpose('sick_leave')" id="rp-sick_leave" class="rp-btn rp-active">🏢 Sick Leave</button>
+        <button onclick="setReportPurpose('family')" id="rp-family" class="rp-btn">❤️ Family</button>
+        <button onclick="setReportPurpose('insurance')" id="rp-insurance" class="rp-btn">📋 Insurance</button>
+      </div>
+    </div>
+    <!-- Download -->
+    <div style="padding:0 16px 20px">
+      <button onclick="downloadReport()" style="width:100%;background:var(--teal);color:#fff;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.02em">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 10l4 5 4-5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 17h14" stroke="white" stroke-width="2.2" stroke-linecap="round"/></svg>
+        Download Image
+      </button>
+      <div style="text-align:center;font-size:11px;color:var(--g3);margin-top:8px">Image saves to your device · share anytime</div>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script>
 // ── AUTH ─────────────────────────────────────────────────────────────────────
 let _resendInterval = null;
@@ -1299,6 +1319,8 @@ function enterApp(name){
   const pav=document.querySelector('.pav');if(pav)pav.textContent=initial;
   const nameEls=document.querySelectorAll('.phdr [style*="font-s"]');
   if(nameEls[0])nameEls[0].textContent=name;
+  // Init member system after login
+  setTimeout(()=>initMemberSystem(), 50);
 }
 
 function doLogout(){
@@ -1315,12 +1337,586 @@ function doLogout(){
 })();
 // ─────────────────────────────────────────────────────────────────────────────
 
+// ── REPORT GENERATOR ─────────────────────────────────────────────────────────
+let _reportCardId = null;
+let _reportPurpose = 'sick_leave';
+
+const REPORT_PURPOSES = {
+  sick_leave: { label: 'Sick Leave Request',    note: 'For official sick leave & HR records' },
+  family:     { label: 'Health Update',          note: 'For family & friends' },
+  insurance:  { label: 'Insurance Claim Record', note: 'For insurance & reimbursement' }
+};
+
+function setReportPurpose(p){
+  _reportPurpose = p;
+  document.querySelectorAll('.rp-btn').forEach(b=>b.classList.remove('rp-active'));
+  document.getElementById('rp-'+p).classList.add('rp-active');
+  drawReportCanvas(_reportCardId);
+}
+
+function generateReport(cardId){
+  _reportCardId = cardId;
+  _reportPurpose = 'sick_leave';
+  document.querySelectorAll('.rp-btn').forEach(b=>b.classList.remove('rp-active'));
+  document.getElementById('rp-sick_leave').classList.add('rp-active');
+  const modal = document.getElementById('report-modal');
+  modal.style.display = 'flex';
+  // Wait 2 frames so modal is fully painted before canvas draws
+  requestAnimationFrame(() => requestAnimationFrame(() => drawReportCanvas(cardId)));
+}
+
+function closeReport(){
+  document.getElementById('report-modal').style.display = 'none';
+}
+
+function _roundRect(ctx, x, y, w, h, r){
+  if(typeof r === 'number') r = [r,r,r,r];
+  ctx.beginPath();
+  ctx.moveTo(x+r[0], y);
+  ctx.lineTo(x+w-r[1], y);
+  ctx.arcTo(x+w, y, x+w, y+r[1], r[1]);
+  ctx.lineTo(x+w, y+h-r[2]);
+  ctx.arcTo(x+w, y+h, x+w-r[2], y+h, r[2]);
+  ctx.lineTo(x+r[3], y+h);
+  ctx.arcTo(x, y+h, x, y+h-r[3], r[3]);
+  ctx.lineTo(x, y+r[0]);
+  ctx.arcTo(x, y, x+r[0], y, r[0]);
+  ctx.closePath();
+  ctx.fill();
+}
+
+function drawReportCanvas(cardId){
+  const c = CARDS[cardId]; if(!c) return;
+  const canvas = document.getElementById('report-canvas');
+  const DPR = window.devicePixelRatio||2, W = 350, H = 560;
+  canvas.width = W*DPR; canvas.height = H*DPR;
+  canvas.style.width = W+'px'; canvas.style.height = H+'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(DPR, DPR);
+  const purpose = REPORT_PURPOSES[_reportPurpose];
+
+  // BG
+  const bg = ctx.createLinearGradient(0,0,0,H);
+  bg.addColorStop(0,'#f8f7f4'); bg.addColorStop(1,'#ece8df');
+  ctx.fillStyle = bg; _roundRect(ctx,0,0,W,H,16);
+
+  // Header
+  const hdr = ctx.createLinearGradient(0,0,W,88);
+  hdr.addColorStop(0,'#0a3d2e'); hdr.addColorStop(1,'#1d9e75');
+  ctx.fillStyle = hdr; _roundRect(ctx,0,0,W,88,[16,16,0,0]);
+
+  // Decorative circles
+  ctx.beginPath(); ctx.arc(W-20,0,70,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,.05)'; ctx.fill();
+  ctx.beginPath(); ctx.arc(W+10,60,50,0,Math.PI*2);
+  ctx.fillStyle='rgba(255,255,255,.04)'; ctx.fill();
+
+  // Brand
+  ctx.fillStyle='rgba(255,255,255,.55)';
+  ctx.font='600 9px -apple-system,sans-serif';
+  ctx.fillText('WELLlife', 18, 20);
+
+  // Purpose badge
+  ctx.fillStyle='rgba(255,255,255,.18)';
+  const badgeTxt = purpose.label;
+  const btw = ctx.measureText(badgeTxt).width+16;
+  _roundRect(ctx, W-btw-14, 9, btw, 18, 9);
+  ctx.fillStyle='#fff'; ctx.font='600 8px -apple-system,sans-serif';
+  ctx.textAlign='right'; ctx.fillText(badgeTxt, W-22, 22); ctx.textAlign='left';
+
+  // Card name
+  ctx.fillStyle='#fff'; ctx.font='700 20px -apple-system,sans-serif';
+  ctx.fillText(c.name.length>22?c.name.slice(0,22)+'…':c.name, 18, 55);
+
+  // Dates
+  ctx.fillStyle='rgba(255,255,255,.7)';
+  ctx.font='400 10px -apple-system,sans-serif';
+  ctx.fillText(c.dates||'', 18, 72);
+
+  // Patient row
+  const session = JSON.parse(localStorage.getItem('wl_session')||sessionStorage.getItem('wl_session')||'{}');
+  const patient = session.name||'Patient';
+  ctx.fillStyle='#888'; ctx.font='500 9px -apple-system,sans-serif';
+  ctx.fillText('PATIENT', 18, 108);
+  ctx.fillStyle='#1a1a1a'; ctx.font='600 13px -apple-system,sans-serif';
+  ctx.fillText(patient, 18, 122);
+
+  const today = new Date();
+  const todayStr = (today.getMonth()+1)+'/'+today.getDate()+'/'+today.getFullYear();
+  ctx.fillStyle='#888'; ctx.font='500 9px -apple-system,sans-serif';
+  ctx.fillText('REPORT DATE', 190, 108);
+  ctx.fillStyle='#1a1a1a'; ctx.font='600 13px -apple-system,sans-serif';
+  ctx.fillText(todayStr, 190, 122);
+
+  // Divider
+  ctx.strokeStyle='#ddd'; ctx.lineWidth=1;
+  ctx.beginPath(); ctx.moveTo(18,134); ctx.lineTo(W-18,134); ctx.stroke();
+
+  // Stats
+  const stats=[{n:c.dur,l:'Total Days'},{n:c.logged,l:'Days Logged'},{n:c.strips,l:'Strip Tests'}];
+  stats.forEach((s,i)=>{
+    const x=18+i*102;
+    ctx.fillStyle='#0d5c3e'; ctx.font='700 20px -apple-system,sans-serif';
+    ctx.fillText(s.n, x, 162);
+    ctx.fillStyle='#999'; ctx.font='400 9px -apple-system,sans-serif';
+    ctx.fillText(s.l, x, 175);
+  });
+
+  // Disease tags
+  const diseases = Array.isArray(c.diseases)?c.diseases:(c.tags||[]);
+  const TAG_COL={'COVID+':'#e53935','Flu A+':'#f57c00','Flu B+':'#7b1fa2','RSV+':'#1565c0','Not sure yet':'#555'};
+  let tagX=18;
+  diseases.forEach(d=>{
+    const col=TAG_COL[d]||'#0d5c3e';
+    ctx.font='600 9px -apple-system,sans-serif';
+    const tw=ctx.measureText(d).width+16;
+    ctx.fillStyle=col+'22'; _roundRect(ctx,tagX,185,tw,18,9);
+    ctx.fillStyle=col; ctx.fillText(d,tagX+8,197);
+    tagX+=tw+6;
+  });
+
+  // Severity bar label
+  ctx.fillStyle='#444'; ctx.font='700 11px -apple-system,sans-serif';
+  ctx.fillText('Symptom Severity Timeline', 18, 222);
+
+  // Timeline bar — get entries for this card
+  const _rawEntries = HOME_REC.cardId===cardId ? HOME_REC.entries : {};
+  const allEntries = Object.keys(_rawEntries).length > 0 ? _rawEntries :
+    (c.days ? c.days.reduce((acc,d,i)=>{ if(d&&typeof d==='object') acc[i]=d; return acc; },{}) : {});
+  const SEV_COL={severe:'#e53935',mild:'#f57c00',improving:'#f9a825',recovered:'#43a047'};
+  const SEV_LBL={severe:'Severe',mild:'Mild',improving:'Improving',recovered:'Recovered'};
+  const bY=230, bH=24, bW=W-36, tot=c.dur;
+  ctx.fillStyle='#ddd'; _roundRect(ctx,18,bY,bW,bH,6);
+  for(let i=0;i<tot;i++){
+    const e=allEntries[i]||{}, tone=e.tone||null;
+    if(!tone) continue;
+    const segW=bW/tot, x=18+i*segW;
+    ctx.fillStyle=SEV_COL[tone]||'#ccc';
+    if(i===0) _roundRect(ctx,x,bY,segW,bH,[6,0,0,6]);
+    else if(i===tot-1) _roundRect(ctx,x,bY,segW,bH,[0,6,6,0]);
+    else { ctx.fillRect(x,bY,segW,bH); }
+  }
+  // Day labels
+  ctx.fillStyle='#aaa'; ctx.font='400 8px -apple-system,sans-serif'; ctx.textAlign='center';
+  const step=Math.max(1,Math.ceil(tot/7));
+  for(let i=0;i<tot;i+=step){
+    const xm=18+(i+0.5)*(bW/tot);
+    ctx.fillText('D'+(i+1),xm,bY+bH+10);
+  }
+  ctx.textAlign='left';
+
+  // Legend
+  const usedTones=[...new Set(Object.values(allEntries).map(e=>e.tone).filter(Boolean))];
+  let legX=18;
+  usedTones.forEach(t=>{
+    ctx.fillStyle=SEV_COL[t];
+    ctx.beginPath(); ctx.arc(legX+4,268,4,0,Math.PI*2); ctx.fill();
+    ctx.fillStyle='#666'; ctx.font='400 9px -apple-system,sans-serif';
+    ctx.fillText(SEV_LBL[t], legX+12, 271);
+    legX+=ctx.measureText(SEV_LBL[t]).width+24;
+  });
+
+  // Symptoms & Meds
+  let rowY = 290;
+  const allSymptoms=[...new Set(Object.values(allEntries).flatMap(e=>e.symptoms||[]))];
+  const allMeds=[...new Set(Object.values(allEntries).flatMap(e=>e.meds||[]))];
+
+  if(allSymptoms.length>0){
+    ctx.fillStyle='#888'; ctx.font='500 9px -apple-system,sans-serif';
+    ctx.fillText('SYMPTOMS REPORTED', 18, rowY);
+    rowY+=13;
+    ctx.fillStyle='#333'; ctx.font='400 11px -apple-system,sans-serif';
+    const sym=allSymptoms.slice(0,5).join(' · ');
+    ctx.fillText(sym.length>46?sym.slice(0,46)+'…':sym, 18, rowY);
+    rowY+=18;
+  }
+
+  if(allMeds.length>0){
+    ctx.fillStyle='#888'; ctx.font='500 9px -apple-system,sans-serif';
+    ctx.fillText('MEDICATIONS', 18, rowY);
+    rowY+=13;
+    ctx.fillStyle='#333'; ctx.font='400 11px -apple-system,sans-serif';
+    const med=allMeds.slice(0,4).join(' · ');
+    ctx.fillText(med.length>46?med.slice(0,46)+'…':med, 18, rowY);
+    rowY+=18;
+  }
+
+  // Strip result
+  const sVals=Object.values(allEntries);
+  const hasPos=sVals.some(e=>e.strip==='positive');
+  const hasNeg=sVals.some(e=>e.strip==='negative');
+  if(hasPos||hasNeg){
+    ctx.fillStyle='#888'; ctx.font='500 9px -apple-system,sans-serif';
+    ctx.fillText('TEST RESULT', 18, rowY);
+    rowY+=13;
+    const resultStr=hasPos?'Positive result confirmed on strip test':'Negative result on file';
+    ctx.fillStyle=hasPos?'#e53935':'#43a047';
+    ctx.font='600 11px -apple-system,sans-serif';
+    ctx.fillText(resultStr, 18, rowY);
+    rowY+=18;
+  }
+
+  // Recovery status note
+  const recoveryLine = (() => {
+    const last = sVals[sVals.length-1]||{};
+    if(last.tone==='recovered') return 'Status: Recovered ✓';
+    if(last.tone==='improving') return 'Status: Improving — monitoring continues';
+    if(last.tone==='mild'||last.tone==='severe') return 'Status: Active illness — in recovery';
+    return null;
+  })();
+  if(recoveryLine){
+    ctx.fillStyle='#0d5c3e'; ctx.font='600 11px -apple-system,sans-serif';
+    ctx.fillText(recoveryLine, 18, rowY+4);
+  }
+
+  // Footer
+  const footY=H-44;
+  ctx.fillStyle='#e0dbd0'; ctx.fillRect(0,footY,W,1);
+  ctx.fillStyle='#bbb'; ctx.font='400 8px -apple-system,sans-serif';
+  ctx.fillText('Generated by WELLlife · '+purpose.note, 18, footY+14);
+  ctx.fillText('For reference only · Not a medical diagnosis', 18, footY+26);
+  ctx.fillStyle='#0d5c3e'; ctx.font='700 10px -apple-system,sans-serif';
+  ctx.textAlign='right'; ctx.fillText('WELLlife', W-18, footY+20); ctx.textAlign='left';
+}
+
+function downloadReport(){
+  const canvas=document.getElementById('report-canvas');
+  const c=CARDS[_reportCardId];
+  const name=(c?c.name:'health').replace(/\s+/g,'_');
+  try{
+    // Try standard download
+    const a=document.createElement('a');
+    a.download='welllife-report-'+name+'-'+new Date().toISOString().slice(0,10)+'.png';
+    a.href=canvas.toDataURL('image/png');
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  } catch(e){
+    // Fallback: open in new tab
+    window.open(canvas.toDataURL('image/png'),'_blank');
+  }
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+
+// ── MULTI-MEMBER SYSTEM ───────────────────────────────────────────────────────
+// Members stored per account. Owner = logged-in user (id='owner').
+// Each extra member has own CARDS + HOME_REC snapshot in localStorage.
+
+let _activeMemberId = 'owner';
+let _memberColor = '#0d9e7a';
+
+function getMemberStorageKey(memberId, key) {
+  const session = JSON.parse(localStorage.getItem('wl_session')||sessionStorage.getItem('wl_session')||'{}');
+  return 'wl_m_' + (session.email||'demo') + '_' + memberId + '_' + key;
+}
+
+function getAccountKey(key) {
+  const session = JSON.parse(localStorage.getItem('wl_session')||sessionStorage.getItem('wl_session')||'{}');
+  return 'wl_acc_' + (session.email||'demo') + '_' + key;
+}
+
+function getMembers() {
+  return JSON.parse(localStorage.getItem(getAccountKey('members')) || '[]');
+}
+
+function saveMembers(members) {
+  localStorage.setItem(getAccountKey('members'), JSON.stringify(members));
+}
+
+function getActiveMemberId() {
+  return localStorage.getItem(getAccountKey('active_member')) || 'owner';
+}
+
+function setActiveMemberId(id) {
+  localStorage.setItem(getAccountKey('active_member'), id);
+  _activeMemberId = id;
+}
+
+// Save current CARDS + HOME_REC to storage for a member
+function saveMemberData(memberId) {
+  try {
+    localStorage.setItem(getMemberStorageKey(memberId, 'cards'), JSON.stringify(CARDS));
+    localStorage.setItem(getMemberStorageKey(memberId, 'home_rec'), JSON.stringify(HOME_REC));
+  } catch(e) {}
+}
+
+// Load CARDS + HOME_REC from storage for a member, or reset to defaults
+function loadMemberData(memberId) {
+  try {
+    const cardsRaw = localStorage.getItem(getMemberStorageKey(memberId, 'cards'));
+    const homeRaw  = localStorage.getItem(getMemberStorageKey(memberId, 'home_rec'));
+    if (cardsRaw) {
+      const savedCards = JSON.parse(cardsRaw);
+      Object.keys(CARDS).forEach(k => delete CARDS[k]);
+      Object.assign(CARDS, savedCards);
+    } else {
+      // Reset to default empty state for new member
+      Object.keys(CARDS).forEach(k => delete CARDS[k]);
+    }
+    if (homeRaw) {
+      const savedHome = JSON.parse(homeRaw);
+      Object.keys(HOME_REC).forEach(k => delete HOME_REC[k]);
+      Object.assign(HOME_REC, savedHome);
+    } else {
+      // Reset home rec
+      Object.keys(HOME_REC).forEach(k => delete HOME_REC[k]);
+      HOME_REC.cardId = null; HOME_REC.total = 0; HOME_REC.currentDay = 1;
+      HOME_REC.dragging = false; HOME_REC.startX = 0; HOME_REC.moved = false;
+      HOME_REC.suppressTapUntil = 0; HOME_REC.pendingDay = null; HOME_REC.entries = [];
+    }
+  } catch(e) {}
+}
+
+// Switch to a different member
+function switchMember(memberId) {
+  if (memberId === _activeMemberId) return;
+  // Save current member's data
+  saveMemberData(_activeMemberId);
+  // Switch
+  setActiveMemberId(memberId);
+  loadMemberData(memberId);
+  // Update UI
+  updateMemberUI();
+  // Refresh current view
+  try { renderCardList(); } catch(e){}
+  try { renderHome(); }     catch(e){}
+  go(document.querySelector('.tab.on')?.id?.replace('t-','') || 'home');
+}
+
+// Get display info for the active member
+function getActiveMemberInfo() {
+  const id = _activeMemberId;
+  if (id === 'owner') {
+    const session = JSON.parse(localStorage.getItem('wl_session')||sessionStorage.getItem('wl_session')||'{}');
+    const name = session.name || 'Me';
+    return { id:'owner', name, initial: name[0]?.toUpperCase()||'M', color:'#0d9e7a' };
+  }
+  const members = getMembers();
+  const m = members.find(m=>m.id===id);
+  return m || { id, name:'Unknown', initial:'?', color:'#888' };
+}
+
+// Render member switcher bar at top
+function updateMemberBar() {
+  const members = getMembers();
+  const bar  = document.getElementById('member-bar');
+  const chips = document.getElementById('member-chips');
+  if (!bar || !chips) return;
+
+  if (members.length === 0) { bar.style.display = 'none'; return; }
+  bar.style.display = 'block';
+  const session = JSON.parse(localStorage.getItem('wl_session')||sessionStorage.getItem('wl_session')||'{}');
+  const ownerName = session.name || 'Me';
+  const allMembers = [
+    { id:'owner', name: ownerName, initial: ownerName[0]?.toUpperCase()||'M', color:'#0d9e7a' },
+    ...members
+  ];
+
+  chips.innerHTML = allMembers.map(m => {
+    const isActive = m.id === _activeMemberId;
+    // Selected: member color solid. Unselected: same shape but grey
+    const bg     = isActive ? m.color : '#dddbd6';
+    const txtCol = isActive ? '#fff' : '#888';
+    const avBg   = isActive ? 'rgba(255,255,255,.28)' : 'rgba(0,0,0,.12)';
+    const avCol  = isActive ? '#fff' : '#999';
+    return `<button onclick="switchMember('${m.id}')" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px 5px 5px;border-radius:20px;border:none;background:${bg};cursor:pointer;flex-shrink:0;transition:.15s">
+      <div style="width:22px;height:22px;border-radius:50%;background:${avBg};color:${avCol};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;font-family:var(--font-s);flex-shrink:0">${m.initial}</div>
+      <span style="font-size:12px;font-weight:${isActive?'700':'400'};color:${txtCol}">${m.name.split(' ')[0]}</span>
+    </button>`;
+  }).join('');
+}
+
+// Render members list in profile — includes owner + all members
+function updateMembersSection() {
+  const section = document.getElementById('members-section');
+  const list    = document.getElementById('members-list');
+  if (!section || !list) return;
+
+  const members = getMembers();
+  section.style.display = 'block';
+
+  const session = JSON.parse(localStorage.getItem('wl_session')||sessionStorage.getItem('wl_session')||'{}');
+  const ownerName = session.name || 'Me';
+  const owner = { id:'owner', name: ownerName, initial: ownerName[0]?.toUpperCase()||'M', color:'#0d9e7a', isOwner:true };
+  const allMembers = [owner, ...members];
+
+  // Build rows imperatively to avoid HTML attribute bugs
+  list.innerHTML = '';
+  allMembers.forEach((m, i) => {
+    const row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:12px;padding:12px 14px;'
+      + (i < allMembers.length-1 ? 'border-bottom:.5px solid rgba(0,0,0,.06);' : '');
+    if (!m.isOwner) {
+      row.style.cursor = 'pointer';
+      row.onclick = () => switchMember(m.id);
+    }
+
+    const isActive = m.id === _activeMemberId;
+
+    // Avatar
+    const av = document.createElement('div');
+    av.style.cssText = `width:40px;height:40px;border-radius:50%;background:${m.color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:700;font-family:var(--font-s);flex-shrink:0`;
+    av.textContent = m.initial;
+    row.appendChild(av);
+
+    // Info
+    const info = document.createElement('div');
+    info.style.cssText = 'flex:1;min-width:0';
+    const nameLine = document.createElement('div');
+    nameLine.style.cssText = 'font-size:14px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:6px';
+    nameLine.textContent = m.name;
+    if (m.isOwner) {
+      const badge = document.createElement('span');
+      badge.style.cssText = 'font-size:10px;background:var(--tl);color:var(--teal);font-weight:600;padding:2px 7px;border-radius:8px';
+      badge.textContent = 'You';
+      nameLine.appendChild(badge);
+    }
+    const sub = document.createElement('div');
+    sub.style.cssText = 'font-size:11px;color:var(--g3);margin-top:2px';
+    sub.textContent = isActive ? '● Currently viewing' : (m.isOwner ? 'Account owner' : 'Tap to switch');
+    info.appendChild(nameLine);
+    info.appendChild(sub);
+    row.appendChild(info);
+
+    // Delete button (non-owner only)
+    if (!m.isOwner) {
+      const del = document.createElement('button');
+      del.style.cssText = 'width:30px;height:30px;border-radius:50%;background:var(--rl);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0';
+      del.innerHTML = `<svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M3 3l10 10M13 3L3 13" stroke="var(--red)" stroke-width="1.8" stroke-linecap="round"/></svg>`;
+      del.onclick = (e) => { e.stopPropagation(); removeMember(m.id); };
+      row.appendChild(del);
+    }
+
+    list.appendChild(row);
+  });
+}
+
+// Update greeting name + avatar everywhere
+function updateMemberUI() {
+  const info = getActiveMemberInfo();
+  // Top greeting line
+  const greeting = document.getElementById('home-greeting');
+  if (greeting) greeting.textContent = 'Hi, ' + info.name.split(' ')[0] + ' 👋';
+  // Profile avatar + name
+  const pav = document.querySelector('.pav');
+  if (pav) { pav.textContent = info.initial; pav.style.background = info.color + '50'; pav.style.borderColor = info.color + '80'; }
+  const pname = document.querySelector('.phdr [style*="font-s"]');
+  if (pname) pname.textContent = info.name;
+  // Update bar + list
+  updateMemberBar();
+  updateMembersSection();
+}
+
+// Add member modal
+function openAddMember() {
+  _memberColor = '#0d9e7a';
+  document.getElementById('new-member-name').value = '';
+  document.getElementById('add-member-err').style.display = 'none';
+  // Reset color selection
+  document.querySelectorAll('.mcolor').forEach(el => {
+    el.style.border = '3px solid transparent';
+    el.classList.remove('selected');
+  });
+  const first = document.querySelector('.mcolor');
+  if (first) { first.style.border = '3px solid white'; first.style.boxShadow = '0 0 0 2px #0d9e7a'; first.classList.add('selected'); }
+  document.getElementById('add-member-modal').style.display = 'flex';
+  setTimeout(() => document.getElementById('new-member-name').focus(), 100);
+}
+
+function closeAddMember() {
+  document.getElementById('add-member-modal').style.display = 'none';
+}
+
+function pickMemberColor(el) {
+  _memberColor = el.dataset.c;
+  document.querySelectorAll('.mcolor').forEach(e => {
+    e.style.border = '3px solid transparent';
+    e.style.boxShadow = '';
+    e.classList.remove('selected');
+  });
+  el.style.border = '3px solid white';
+  el.style.boxShadow = '0 0 0 2px ' + _memberColor;
+  el.classList.add('selected');
+}
+
+function confirmAddMember() {
+  const nameEl = document.getElementById('new-member-name');
+  const errEl  = document.getElementById('add-member-err');
+  const name = nameEl.value.trim();
+  if (!name) { errEl.textContent = 'Please enter a name.'; errEl.style.display='block'; return; }
+  const members = getMembers();
+  if (members.some(m => m.name.toLowerCase() === name.toLowerCase())) {
+    errEl.textContent = 'A member with this name already exists.'; errEl.style.display='block'; return;
+  }
+  const id = 'member_' + Date.now();
+  const initial = name[0].toUpperCase();
+  members.push({ id, name, initial, color: _memberColor });
+  saveMembers(members);
+  closeAddMember();
+  // Initialize empty data for new member
+  localStorage.setItem(getMemberStorageKey(id, 'cards'), JSON.stringify({}));
+  // Switch to the new member
+  switchMember(id);
+}
+
+function removeMember(id) {
+  const members = getMembers();
+  const m = members.find(x=>x.id===id);
+  const name = m ? m.name : 'Member';
+  // Use in-app confirm (browser confirm() is blocked in iframes)
+  showMemberConfirm(name, () => {
+    saveMembers(getMembers().filter(x=>x.id!==id));
+    try { localStorage.removeItem(getMemberStorageKey(id,'cards')); } catch(e){}
+    try { localStorage.removeItem(getMemberStorageKey(id,'home_rec')); } catch(e){}
+    if (_activeMemberId === id) switchMember('owner');
+    else { updateMemberBar(); updateMembersSection(); }
+  });
+}
+
+function showMemberConfirm(name, onConfirm) {
+  // Remove any existing
+  const old = document.getElementById('member-confirm');
+  if (old) old.remove();
+
+  const overlay = document.createElement('div');
+  overlay.id = 'member-confirm';
+  overlay.style.cssText = 'position:fixed;inset:0;z-index:10000;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;padding:24px';
+  overlay.innerHTML = `
+    <div style="background:#fff;border-radius:20px;padding:24px;width:100%;max-width:320px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.3)">
+      <div style="width:48px;height:48px;border-radius:50%;background:var(--rl);display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6" stroke="var(--red)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <div style="font-size:16px;font-weight:700;color:var(--ink);margin-bottom:8px">Remove ${name}?</div>
+      <div style="font-size:13px;color:var(--g3);margin-bottom:22px;line-height:1.5">All health records for ${name} will be permanently deleted.</div>
+      <div style="display:flex;gap:10px">
+        <button id="mc-cancel" style="flex:1;padding:12px;border-radius:12px;border:none;background:var(--gray);color:var(--i2);font-size:14px;font-weight:500;cursor:pointer">Cancel</button>
+        <button id="mc-confirm" style="flex:1;padding:12px;border-radius:12px;border:none;background:var(--red);color:#fff;font-size:14px;font-weight:600;cursor:pointer">Remove</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.getElementById('mc-cancel').onclick  = () => overlay.remove();
+  document.getElementById('mc-confirm').onclick = () => { overlay.remove(); onConfirm(); };
+}
+
+// Initialise on app start (called from enterApp)
+function initMemberSystem() {
+  _activeMemberId = getActiveMemberId();
+  if (_activeMemberId !== 'owner') {
+    loadMemberData(_activeMemberId);
+  }
+  updateMemberUI();
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
+
 function go(name){
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.getElementById('s-'+name).classList.add('active');
   document.getElementById('t-'+name).classList.add('on');
   if(name==='cards'){closeCard();closeNew();}
+  if(name==='profile'){updateMembersSection();}
   document.getElementById('s-'+name).scrollTop=0;
 }
 // ── STATIC FALLBACK DATA (used if CDC fetch fails) ──────────────────────────
@@ -2138,6 +2734,8 @@ function saveDay(){
   toast.style.opacity='1';
   clearTimeout(toast._t);
   toast._t=setTimeout(()=>{toast.style.opacity='0';},1800);
+  // Auto-save member snapshot
+  try { saveMemberData(_activeMemberId||'owner'); } catch(e){}
 }
 let NC_DISEASES = [];
 function setNcDisease(btn){
@@ -2176,6 +2774,7 @@ function startNewCard(){
     days: [null, null, null, null, null, null, null]
   };
   buildDots(id, CARDS[id]);
+  try { saveMemberData(_activeMemberId||'owner'); } catch(e){}
   closeNew();
   openCard(id);
 }
@@ -2402,326 +3001,6 @@ async function sendAIMessage(){
   // Re-focus input
   if(input) input.focus();
 }
-
-// ── Health Report (PDF / JPG · 3 audiences · live preview) ─────────────────
-function openReportModal(){
-  const modal=document.getElementById('report-modal');
-  if(!modal)return;
-  const nameField=document.getElementById('report-name');
-  const stored=(function(){try{return localStorage.getItem('welllife-name')||'';}catch(e){return '';}})()||
-               (document.getElementById('reg-name')&&document.getElementById('reg-name').value)||'';
-  nameField.value=stored;
-  document.getElementById('report-status').textContent='';
-  modal.style.display='flex';
-  renderPreview();
-  setTimeout(()=>nameField.focus(),50);
-}
-function closeReportModal(){
-  const m=document.getElementById('report-modal');
-  if(m)m.style.display='none';
-}
-function _energyToTone(e){
-  if(!e)return{label:'—',color:'#9a9890'};
-  if(/Terrible/.test(e))return{label:'Severe',color:'#ef4d4c'};
-  if(/Poor/.test(e))return{label:'Mild',color:'#e09517'};
-  if(/OK|Better/.test(e))return{label:'Improving',color:'#f1c40f'};
-  if(/Good/.test(e))return{label:'Recovered',color:'#2ecc71'};
-  return{label:e,color:'#9a9890'};
-}
-function _stripLabel(s){
-  if(s==='pos')return{text:'Positive',color:'#a9302f',bg:'#fcebeb'};
-  if(s==='neg')return{text:'Negative',color:'#0e6f52',bg:'#e0f5ee'};
-  return{text:'—',color:'#6b6a64',bg:'#f7f6f2'};
-}
-function _reportShell(inner,accent){
-  return `<div style="width:720px;padding:40px;background:#fff;font-family:'DM Sans',system-ui,sans-serif;color:#1c1c1a;box-sizing:border-box">${inner}</div>`;
-}
-function _wellliHeader(title,subtitle,dateStr,accent){
-  return `<div style="display:flex;justify-content:space-between;align-items:flex-start;padding-bottom:16px;border-bottom:2px solid ${accent};margin-bottom:22px">
-    <div>
-      <div style="font-family:'DM Serif Display',serif;font-size:26px;color:${accent};line-height:1">WELLlife</div>
-      <div style="font-size:12px;color:#6b6a64;margin-top:2px">${subtitle}</div>
-    </div>
-    <div style="text-align:right;font-size:11px;color:#6b6a64">
-      <div>Issued</div>
-      <div style="color:#1c1c1a;font-weight:600;margin-top:2px">${dateStr}</div>
-    </div>
-  </div>`;
-}
-function _disclaimer(){
-  return `<div style="margin-top:26px;padding-top:14px;border-top:1px solid #eee;font-size:10px;color:#6b6a64;line-height:1.5"><strong>Disclaimer:</strong> Generated from patient-entered data in the WELLlife app. This is not a medical diagnosis and does not replace professional medical advice.</div>`;
-}
-
-// ── AUDIENCE 1: EMPLOYER (leave notice — brief, formal) ─────────────────────
-function _buildEmployerReport(card, patientName, dateStr){
-  const loggedDays=card.days.filter(d=>d);
-  const firstDate=loggedDays.length?loggedDays[0].date:card.dates;
-  const lastLogged=loggedDays.length?loggedDays[loggedDays.length-1]:null;
-  const isRecovered=(card.tags||[]).some(t=>/Recovered/i.test(t));
-  const strips=loggedDays.filter(d=>d.strip&&d.strip!=='skip');
-  const stripSummary=strips.length
-    ? strips.map(d=>`${d.date}: ${_stripLabel(d.strip).text}`).join(' · ')
-    : 'Not provided';
-  const status=isRecovered?'Recovered — fit to return':'Still recovering — return date pending';
-  const inner=`
-    ${_wellliHeader('Medical Leave Notice','Medical Leave Notice',dateStr,'#0d9e7a')}
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px">
-      <div><div style="font-size:10px;font-weight:700;color:#6b6a64;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Employee</div><div style="font-size:15px;font-weight:600">${patientName||'—'}</div></div>
-      <div><div style="font-size:10px;font-weight:700;color:#6b6a64;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Leave period</div><div style="font-size:15px;font-weight:600">${card.dates}</div></div>
-    </div>
-    <div style="background:#f7f6f2;border-radius:10px;padding:18px;margin-bottom:20px">
-      <div style="font-size:10px;font-weight:700;color:#6b6a64;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Reason for absence</div>
-      <div style="font-family:'DM Serif Display',serif;font-size:22px;color:#1c1c1a;line-height:1.1;margin-bottom:10px">${card.name}</div>
-      <div style="font-size:13px;color:#4a4a47;line-height:1.5">Total days of absence: <strong>${card.dur}</strong> &nbsp;·&nbsp; Status: <strong>${status}</strong></div>
-    </div>
-    <div style="margin-bottom:18px">
-      <div style="font-size:10px;font-weight:700;color:#6b6a64;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Diagnostic confirmation</div>
-      <div style="font-size:13px;color:#4a4a47;line-height:1.6">Rapid antigen strip test(s): ${stripSummary}</div>
-    </div>
-    <div style="margin-top:28px;display:grid;grid-template-columns:1fr 1fr;gap:40px;padding-top:10px">
-      <div>
-        <div style="border-top:1px solid #4a4a47;padding-top:6px;font-size:10px;color:#6b6a64;text-transform:uppercase;letter-spacing:.06em">Employee signature</div>
-      </div>
-      <div>
-        <div style="border-top:1px solid #4a4a47;padding-top:6px;font-size:10px;color:#6b6a64;text-transform:uppercase;letter-spacing:.06em">Date</div>
-      </div>
-    </div>
-    ${_disclaimer()}
-    <div style="margin-top:10px;font-size:10px;color:#9a9890;text-align:center">Generated by WELLlife · ${dateStr}</div>`;
-  return _reportShell(inner,'#0d9e7a');
-}
-
-// ── AUDIENCE 2: INSURANCE (full clinical detail + policy fields) ────────────
-function _buildInsuranceReport(card, patientName, dateStr){
-  const loggedDays=card.days.filter(d=>d);
-  const stripRows=loggedDays.filter(d=>d.strip&&d.strip!=='skip').map(d=>{
-    const s=_stripLabel(d.strip);
-    return `<tr><td style="padding:6px 10px;border-bottom:1px solid #eee;font-size:12px">${d.date}</td><td style="padding:6px 10px;border-bottom:1px solid #eee"><span style="display:inline-block;background:${s.bg};color:${s.color};padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600">${s.text}</span></td></tr>`;
-  }).join('');
-  const dayRows=loggedDays.map((d,i)=>{
-    const tone=_energyToTone(d.energy);
-    const syms=(d.syms||[]).join(', ')||'<span style="color:#9a9890">none</span>';
-    const meds=(d.meds||[]).join(', ')||'<span style="color:#9a9890">none</span>';
-    return `<tr style="page-break-inside:avoid"><td style="padding:10px;vertical-align:top;border-bottom:1px solid #eee;font-size:12px;font-weight:600;color:#1c1c1a;width:70px">Day ${i+1}<div style="font-weight:400;color:#6b6a64;font-size:11px;margin-top:2px">${d.date}</div></td><td style="padding:10px;vertical-align:top;border-bottom:1px solid #eee"><div style="display:inline-block;background:${tone.color};color:#fff;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:600;margin-bottom:6px">${tone.label}</div><div style="font-size:11px;color:#4a4a47;margin-bottom:4px"><strong>Symptoms:</strong> ${syms}</div><div style="font-size:11px;color:#4a4a47;margin-bottom:4px"><strong>Temp:</strong> ${d.temp?d.temp+' \u00b0C':'—'} · <strong>Strip:</strong> ${_stripLabel(d.strip).text}</div><div style="font-size:11px;color:#4a4a47;margin-bottom:4px"><strong>Medications:</strong> ${meds}</div>${d.note?`<div style="font-size:11px;color:#4a4a47;margin-top:6px;padding:6px 8px;background:#f7f6f2;border-radius:6px;border-left:3px solid #2d7dd2"><em>Note:</em> ${d.note}</div>`:''}</td></tr>`;
-  }).join('');
-  const inner=`
-    ${_wellliHeader('Medical Condition Report','Medical Condition Report · Insurance Claim',dateStr,'#2d7dd2')}
-    <div style="background:#e6f1fb;border:1px solid rgba(45,125,210,.25);border-radius:10px;padding:14px;margin-bottom:20px">
-      <div style="font-size:10px;font-weight:700;color:#2d7dd2;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">Claim information · to be completed by claimant</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-        <div><div style="font-size:10px;color:#6b6a64;margin-bottom:4px">Policy number</div><div style="border-bottom:1px solid #4a4a47;height:20px"></div></div>
-        <div><div style="font-size:10px;color:#6b6a64;margin-bottom:4px">Claim reference</div><div style="border-bottom:1px solid #4a4a47;height:20px"></div></div>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px">
-      <div><div style="font-size:10px;font-weight:700;color:#6b6a64;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Patient</div><div style="font-size:15px;font-weight:600">${patientName||'—'}</div></div>
-      <div><div style="font-size:10px;font-weight:700;color:#6b6a64;letter-spacing:.08em;text-transform:uppercase;margin-bottom:4px">Reporting period</div><div style="font-size:15px;font-weight:600">${card.dates}</div></div>
-    </div>
-    <div style="background:#f7f6f2;border-radius:10px;padding:16px;margin-bottom:22px">
-      <div style="font-size:10px;font-weight:700;color:#6b6a64;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">Diagnosis</div>
-      <div style="font-family:'DM Serif Display',serif;font-size:20px;color:#1c1c1a;line-height:1.1;margin-bottom:10px">${card.name}</div>
-      <div style="display:flex;gap:24px">
-        <div><div style="font-size:20px;font-weight:700;color:#2d7dd2">${card.dur}</div><div style="font-size:11px;color:#6b6a64">Total days</div></div>
-        <div><div style="font-size:20px;font-weight:700;color:#2d7dd2">${card.logged}</div><div style="font-size:11px;color:#6b6a64">Days logged</div></div>
-        <div><div style="font-size:20px;font-weight:700;color:#2d7dd2">${card.strips}</div><div style="font-size:11px;color:#6b6a64">Strip tests</div></div>
-      </div>
-    </div>
-    ${stripRows?`<div style="margin-bottom:20px"><div style="font-size:13px;font-weight:600;margin-bottom:8px">Strip test results</div><table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #eee;border-radius:8px;overflow:hidden"><thead><tr style="background:#f7f6f2"><th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:600;color:#6b6a64;text-transform:uppercase;letter-spacing:.06em">Date</th><th style="text-align:left;padding:8px 10px;font-size:11px;font-weight:600;color:#6b6a64;text-transform:uppercase;letter-spacing:.06em">Result</th></tr></thead><tbody>${stripRows}</tbody></table></div>`:''}
-    <div style="font-size:13px;font-weight:600;margin-bottom:8px">Daily clinical log</div>
-    <table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #eee;border-radius:8px;overflow:hidden">${dayRows}</table>
-    <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:40px">
-      <div><div style="border-top:1px solid #4a4a47;padding-top:6px;font-size:10px;color:#6b6a64;text-transform:uppercase;letter-spacing:.06em">Claimant signature</div></div>
-      <div><div style="border-top:1px solid #4a4a47;padding-top:6px;font-size:10px;color:#6b6a64;text-transform:uppercase;letter-spacing:.06em">Date</div></div>
-    </div>
-    ${_disclaimer()}
-    <div style="margin-top:10px;font-size:10px;color:#9a9890;text-align:center">Generated by WELLlife · ${dateStr}</div>`;
-  return _reportShell(inner,'#2d7dd2');
-}
-
-// ── AUDIENCE 3: FRIENDS (warm, casual, visual) ──────────────────────────────
-function _buildFriendsReport(card, patientName, dateStr){
-  const loggedDays=card.days.filter(d=>d);
-  const isRecovered=(card.tags||[]).some(t=>/Recovered/i.test(t));
-  const lastTone=loggedDays.length?_energyToTone(loggedDays[loggedDays.length-1].energy):null;
-  const feelingNow=isRecovered?'Back on my feet 🎉':(lastTone?`Feeling ${lastTone.label.toLowerCase()} today`:'Still taking it easy');
-  // Day strip — one colored pill per logged day
-  const dayStrip=loggedDays.map((d,i)=>{
-    const tone=_energyToTone(d.energy);
-    return `<div style="flex:1;min-width:40px;background:${tone.color};border-radius:8px;padding:10px 4px;text-align:center;color:#fff"><div style="font-size:10px;font-weight:700;opacity:.85">Day ${i+1}</div><div style="font-size:11px;font-weight:600;margin-top:2px">${d.date}</div></div>`;
-  }).join('');
-  // Friendly symptom list
-  const allSyms=Array.from(new Set(loggedDays.flatMap(d=>d.syms||[]))).slice(0,8);
-  const symPills=allSyms.map(s=>`<span style="display:inline-block;background:#f7f6f2;color:#4a4a47;padding:6px 12px;border-radius:14px;font-size:12px;margin-right:6px;margin-bottom:6px">${s}</span>`).join('');
-  const inner=`
-    <div style="background:linear-gradient(160deg,#0a7a5e 0%,#0d9e7a 60%,#1ab589 100%);border-radius:20px;padding:28px 30px;color:#fff;margin-bottom:22px">
-      <div style="font-size:12px;opacity:.8;letter-spacing:.06em;text-transform:uppercase;margin-bottom:6px">Hey friends 👋</div>
-      <div style="font-family:'DM Serif Display',serif;font-size:32px;line-height:1.1;margin-bottom:6px">A quick health update</div>
-      <div style="font-size:14px;opacity:.9">${patientName?patientName+' · ':''}${card.dates}</div>
-    </div>
-    <div style="background:#f7f6f2;border-radius:16px;padding:22px;margin-bottom:20px">
-      <div style="font-size:11px;font-weight:700;color:#6b6a64;letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px">What happened</div>
-      <div style="font-family:'DM Serif Display',serif;font-size:24px;color:#1c1c1a;line-height:1.2;margin-bottom:10px">${card.name}</div>
-      <div style="font-size:14px;color:#4a4a47;line-height:1.6">I was out for <strong>${card.dur} days</strong>. ${feelingNow}.</div>
-    </div>
-    ${loggedDays.length?`<div style="margin-bottom:20px">
-      <div style="font-size:11px;font-weight:700;color:#6b6a64;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px">How it went, day by day</div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">${dayStrip}</div>
-      <div style="display:flex;gap:14px;margin-top:12px;font-size:11px;color:#6b6a64;flex-wrap:wrap">
-        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#ef4d4c"></span>Severe</span>
-        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#e09517"></span>Mild</span>
-        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#f1c40f"></span>Improving</span>
-        <span style="display:flex;align-items:center;gap:5px"><span style="width:10px;height:10px;border-radius:50%;background:#2ecc71"></span>Recovered</span>
-      </div>
-    </div>`:''}
-    ${allSyms.length?`<div style="margin-bottom:20px">
-      <div style="font-size:11px;font-weight:700;color:#6b6a64;letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px">What I dealt with</div>
-      <div>${symPills}</div>
-    </div>`:''}
-    <div style="background:#e0f5ee;border-radius:14px;padding:18px;text-align:center;margin-bottom:10px">
-      <div style="font-size:14px;color:#0e6f52;font-weight:600">${isRecovered?'Thanks for the messages — I appreciate you all! 💚':'Appreciate the well-wishes — resting up! 💚'}</div>
-    </div>
-    <div style="margin-top:16px;font-size:10px;color:#9a9890;text-align:center">Shared via WELLlife · ${dateStr}</div>`;
-  return _reportShell(inner,'#0d9e7a');
-}
-
-function buildReportHTML(card, patientName, audience){
-  const now=new Date();
-  const dateStr=now.toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'});
-  if(audience==='insurance')return _buildInsuranceReport(card,patientName,dateStr);
-  if(audience==='friends')return _buildFriendsReport(card,patientName,dateStr);
-  return _buildEmployerReport(card,patientName,dateStr);
-}
-
-function _currentAudience(){
-  const r=document.querySelector('input[name="report-audience"]:checked');
-  return r?r.value:'employer';
-}
-function _currentFormat(){
-  const r=document.querySelector('input[name="report-format"]:checked');
-  return r?r.value:'pdf';
-}
-function renderPreview(){
-  const card=CARDS[AC];
-  if(!card)return;
-  const name=(document.getElementById('report-name').value||'').trim();
-  const audience=_currentAudience();
-  const host=document.getElementById('report-preview-scale');
-  if(!host)return;
-  host.innerHTML=buildReportHTML(card,name,audience);
-  // Resize the scale host so scaled content takes its full visual height (otherwise the parent renders empty below)
-  const inner=host.firstElementChild;
-  if(inner){
-    // offsetHeight = layout height before parent transform; multiply by our scale factor
-    const h=inner.offsetHeight*0.46;
-    host.style.height=h+'px';
-  }
-}
-async function downloadReport(){
-  const card=CARDS[AC];
-  if(!card){alert('No card is open.');return;}
-  const patientName=(document.getElementById('report-name').value||'').trim();
-  const format=_currentFormat();
-  const audience=_currentAudience();
-  const status=document.getElementById('report-status');
-  const btn=document.getElementById('report-download-btn');
-  btn.disabled=true;status.textContent='Generating report…';status.style.color='#6b6a64';
-  // Remember name for next time
-  try{localStorage.setItem('welllife-name',patientName);}catch(e){}
-  // Mount offscreen template
-  const host=document.createElement('div');
-  host.style.cssText='position:fixed;left:-10000px;top:0;z-index:-1';
-  host.innerHTML=buildReportHTML(card,patientName,audience);
-  document.body.appendChild(host);
-  try{
-    const target=host.firstElementChild;
-    const canvas=await html2canvas(target,{scale:2,backgroundColor:'#ffffff',useCORS:true,logging:false});
-    const safeName=(card.name||'report').replace(/[^a-z0-9]+/gi,'_').replace(/^_|_$/g,'').toLowerCase();
-    const datePart=new Date().toISOString().slice(0,10);
-    const filename='welllife_'+audience+'_'+safeName+'_'+datePart;
-    if(format==='jpg'){
-      const dataUrl=canvas.toDataURL('image/jpeg',0.92);
-      const a=document.createElement('a');a.href=dataUrl;a.download=filename+'.jpg';
-      document.body.appendChild(a);a.click();a.remove();
-    } else {
-      const {jsPDF}=window.jspdf;
-      const pdf=new jsPDF({orientation:'portrait',unit:'pt',format:'a4'});
-      const pageW=pdf.internal.pageSize.getWidth();
-      const pageH=pdf.internal.pageSize.getHeight();
-      const imgW=pageW-40;
-      const imgH=canvas.height*(imgW/canvas.width);
-      const imgData=canvas.toDataURL('image/jpeg',0.95);
-      if(imgH<=pageH-40){
-        pdf.addImage(imgData,'JPEG',20,20,imgW,imgH);
-      } else {
-        // Paginate: slice the canvas into page-height chunks
-        const chunkHpx=Math.floor(canvas.width*((pageH-40)/imgW));
-        let y=0;let page=0;
-        while(y<canvas.height){
-          const h=Math.min(chunkHpx,canvas.height-y);
-          const c=document.createElement('canvas');
-          c.width=canvas.width;c.height=h;
-          c.getContext('2d').drawImage(canvas,0,y,canvas.width,h,0,0,canvas.width,h);
-          if(page>0)pdf.addPage();
-          pdf.addImage(c.toDataURL('image/jpeg',0.95),'JPEG',20,20,imgW,h*(imgW/canvas.width));
-          y+=h;page++;
-        }
-      }
-      pdf.save(filename+'.pdf');
-    }
-    status.textContent='Done \u2713  Report downloaded.';status.style.color='#0e6f52';
-    setTimeout(closeReportModal,800);
-  } catch(err){
-    console.error('[Report]',err);
-    status.textContent='Could not generate report. Please try again.';status.style.color='#a9302f';
-  } finally {
-    host.remove();
-    btn.disabled=false;
-  }
-}
-// Dismiss modal on backdrop click / Escape
-document.addEventListener('click',function(e){
-  const m=document.getElementById('report-modal');
-  if(m&&m.style.display==='flex'&&e.target===m)closeReportModal();
-});
-document.addEventListener('keydown',function(e){
-  const m=document.getElementById('report-modal');
-  if(m&&m.style.display==='flex'&&e.key==='Escape')closeReportModal();
-});
-// Keep audience + format radio visual state in sync, and re-render preview
-function _syncRadioPills(groupName){
-  document.querySelectorAll('input[name="'+groupName+'"]').forEach(r=>{
-    const wrap=r.closest('label');if(!wrap)return;
-    if(r.checked){
-      wrap.style.border='1.5px solid var(--teal)';
-      wrap.style.background='var(--tl)';
-      wrap.style.color='var(--teal)';
-      wrap.style.fontWeight='600';
-      wrap.querySelectorAll('span').forEach(s=>{
-        if(s.getAttribute('aria-hidden')!=='true')s.style.color='var(--teal)';
-      });
-    } else {
-      wrap.style.border='1px solid rgba(0,0,0,.12)';
-      wrap.style.background='#fff';
-      wrap.style.color='var(--i2)';
-      wrap.style.fontWeight='500';
-      wrap.querySelectorAll('span').forEach(s=>{
-        if(s.getAttribute('aria-hidden')!=='true')s.style.color='var(--i2)';
-      });
-    }
-  });
-}
-document.addEventListener('change',function(e){
-  if(!e.target)return;
-  if(e.target.name==='report-format'){_syncRadioPills('report-format');renderPreview();}
-  if(e.target.name==='report-audience'){_syncRadioPills('report-audience');renderPreview();}
-});
-// Some browsers don't fire 'change' on label-wrapped radios reliably; add click fallback
-document.addEventListener('click',function(e){
-  const lbl=e.target.closest&&e.target.closest('.aud-opt, .fmt-opt');
-  if(!lbl)return;
-  const radio=lbl.querySelector('input[type="radio"]');
-  if(radio&&!radio.checked){radio.checked=true;radio.dispatchEvent(new Event('change',{bubbles:true}));}
-});
 </script>
 </body>
 </html>
