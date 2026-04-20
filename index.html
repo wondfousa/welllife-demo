@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>WELLlife Companion — Demo v2</title>
+<title>WELLlife Care</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -80,8 +80,13 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .recovery-track.dragging .whale-icon{transition:none;transform:translateX(-50%) translateY(-2px) scale(1.04)}
 .recovery-controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:14px}
 .recovery-controls-label{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--g3);margin-right:2px}
-.recovery-stop.predicted .day-dot{background:transparent!important;border-style:dashed!important;border-color:var(--stop-color)!important;color:var(--stop-color)!important;opacity:.7}
-.recovery-stop.predicted .day-label{opacity:.55}
+/* source=strip: solid + white inner ring */
+/* strip: outer halo ring via box-shadow, number still visible */
+.recovery-stop.saved.src-strip .day-dot{background:var(--stop-color);border-color:transparent;box-shadow:0 0 0 2.5px #fff,0 0 0 4.5px var(--stop-color)}
+.recovery-stop.saved.src-symptoms .day-dot{background:var(--stop-color);border-color:transparent}
+.recovery-stop.saved .day-dot{background:var(--stop-color);border-color:transparent}
+.recovery-stop.predicted .day-dot{background:transparent!important;border-style:dashed!important;border-color:var(--stop-color)!important;color:var(--stop-color)!important;border-width:2px!important}
+.recovery-stop.predicted .day-label{opacity:.75}
 .dp.dppred{background:transparent!important;border-style:dashed!important;border-width:1.5px!important;border-color:currentColor;opacity:.65}
 
 .recovery-color input{width:20px;height:20px;border:none;padding:0;background:transparent;cursor:pointer}
@@ -262,6 +267,7 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .mcolor.selected{border-color:#fff;box-shadow:0 0 0 2px currentColor, 0 0 0 4px #fff}
 .rp-btn{padding:7px 12px;border-radius:20px;border:1.5px solid #ddd;background:#fff;font-size:12px;font-weight:500;cursor:pointer;color:var(--i2);transition:.15s}
 .rp-btn.rp-active{border-color:var(--teal);background:var(--tl);color:var(--teal);font-weight:700}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
 @keyframes typing{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
 .vc{width:44px;height:52px;border-radius:12px;border:1.5px solid rgba(0,0,0,.12);background:var(--gray);text-align:center;font-size:22px;font-weight:700;font-family:var(--font-b);color:var(--ink);outline:none;-moz-appearance:textfield}
 .vc:focus{border-color:var(--teal);background:#fff}
@@ -280,14 +286,14 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
   <!-- HOME -->
   <div class="screen active" id="s-home">
     <div class="hdr">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;gap:12px">
-        <div style="flex-shrink:0">
+      <div style="margin-bottom:18px">
+        <div style="margin-bottom:10px">
           <div style="font-size:11px;opacity:.65;letter-spacing:.07em;text-transform:uppercase;margin-bottom:3px">Good morning</div>
           <div style="font-family:var(--font-s);font-size:26px;line-height:1" id="home-greeting">Hi, Sarah 👋</div>
         </div>
-        <!-- Member chips right side -->
-        <div id="member-bar" style="display:none;overflow-x:auto;flex-shrink:1;-webkit-overflow-scrolling:touch;scrollbar-width:none">
-          <div id="member-chips" style="display:flex;gap:6px;align-items:center;white-space:nowrap"></div>
+        <!-- Member chips (shown when members exist) -->
+        <div id="member-bar" style="display:none">
+          <div id="member-chips" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"></div>
         </div>
       </div>
       <div class="risk-card">
@@ -332,14 +338,26 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
           <img class="whale-icon" id="recovery-whale" src="data:image/png;base64,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" alt="Recovery whale guide">
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:#ef4d4c;flex-shrink:0;display:inline-block"></span>Severe</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:#e09517;flex-shrink:0;display:inline-block"></span>Mild</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:#f1c40f;flex-shrink:0;display:inline-block"></span>Recovering</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:#D66DAB;flex-shrink:0;display:inline-block"></span>Severe</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:#E3ABCE;flex-shrink:0;display:inline-block"></span>Mild</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:#F0DFED;flex-shrink:0;display:inline-block"></span>Recovering</div>
           <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:#2ecc71;flex-shrink:0;display:inline-block"></span>Recovered</div>
           <div style="display:flex;align-items:center;gap:5px;margin-left:auto;flex-shrink:0">
             <button onclick="adjustHomeDays(-1)" style="width:26px;height:26px;border-radius:7px;border:1px solid #ccc;background:#f0eeea;cursor:pointer;font-size:17px;color:#333;line-height:26px;text-align:center;padding:0;box-sizing:border-box">-</button>
             <span id="home-days-count" style="font-size:12px;font-weight:700;color:var(--ink);min-width:18px;text-align:center">7</span>
             <button onclick="adjustHomeDays(1)"  style="width:26px;height:26px;border-radius:7px;border:1px solid #ccc;background:#f0eeea;cursor:pointer;font-size:17px;color:#333;line-height:26px;text-align:center;padding:0;box-sizing:border-box">+</button>
+          </div>
+        </div>
+        <!-- Data source legend -->
+        <div style="display:flex;gap:12px;margin-top:7px;padding-top:7px;border-top:.5px solid rgba(0,0,0,.07)">
+          <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--g3)">
+            <span style="width:13px;height:13px;border-radius:50%;background:#D66DAB;box-shadow:0 0 0 2px #fff,0 0 0 3.5px #D66DAB;flex-shrink:0;display:inline-block"></span>Strip test
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--g3)">
+            <span style="width:13px;height:13px;border-radius:50%;background:#D66DAB;flex-shrink:0;display:inline-block"></span>Symptoms
+          </div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--g3)">
+            <span style="width:13px;height:13px;border-radius:50%;border:1.5px dashed #D66DAB;flex-shrink:0;display:inline-block;opacity:.7"></span>Predicted
           </div>
         </div>
         <input type="hidden" id="recovery-color-severe" value="#ef4d4c">
@@ -408,7 +426,7 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3C7 3 3 6.5 3 11c0 2 .8 3.8 2.1 5.1L4 21l5.2-1.6C10.4 19.8 11.2 20 12 20c5 0 9-3.5 9-9s-4-8-9-8z" fill="white"/></svg>
             </div>
             <div style="background:var(--gray);border-radius:18px 18px 18px 4px;padding:10px 14px;max-width:78%;font-size:13px;line-height:1.6;color:var(--ink)">
-              Hi! I'm your WELLlife AI assistant. Ask me anything about your symptoms, recovery, or how to use the app. 👋
+              Hi! I'm your WELLlife Care AI assistant. Ask me anything about your symptoms, recovery, or how to use the app. 👋
             </div>
           </div>
         </div>
@@ -434,9 +452,9 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 
     <!-- YouTube video -->
     <div style="background:#0a2820;padding:16px">
-      <div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:10px">How to use WELLlife</div>
+      <div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:10px">How to use WELLlife Care</div>
       <div style="border-radius:12px;overflow:hidden;aspect-ratio:16/9">
-        <iframe width="100%" height="100%" src="https://www.youtube.com/embed/AjLwNfod2iI" title="WELLlife Getting Started" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display:block"></iframe>
+        <iframe width="100%" height="100%" src="https://www.youtube.com/embed/AjLwNfod2iI" title="WELLlife Care — Getting Started" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display:block"></iframe>
       </div>
     </div>
 
@@ -554,6 +572,27 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
         </div>
     </div>
 
+    <!-- Buy Strip Tests -->
+    <div style="padding:12px 16px">
+      <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:10px">Buy Strip Tests</div>
+      <div style="background:linear-gradient(135deg,#fdf0f7,#f8e8f4);border-radius:14px;padding:14px;border:.5px solid rgba(214,109,171,.2);margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:10px">
+          <div style="width:40px;height:40px;border-radius:10px;background:#D66DAB;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><rect x="9" y="2" width="6" height="14" rx="2" stroke="#fff" stroke-width="1.6"/><path d="M12 16v6M8 22h8" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/><path d="M9 8h6" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>
+          </div>
+          <div>
+            <div style="font-size:13px;font-weight:700;color:var(--ink)">Wondfo Rapid Test Strips</div>
+            <div style="font-size:11px;color:var(--g3)">COVID-19 · Flu A&B · Combo</div>
+          </div>
+        </div>
+        <div style="display:flex;gap:8px">
+          <a href="https://www.amazon.com/s?k=wondfo+covid+flu+rapid+test" target="_blank" style="flex:1;text-decoration:none;background:#FF9900;color:#fff;border-radius:10px;padding:9px 0;text-align:center;font-size:12px;font-weight:700;font-family:var(--font-b);display:block">🛒 Amazon</a>
+          <a href="https://www.walmart.com/search?q=wondfo+rapid+test" target="_blank" style="flex:1;text-decoration:none;background:#0071CE;color:#fff;border-radius:10px;padding:9px 0;text-align:center;font-size:12px;font-weight:700;font-family:var(--font-b);display:block">🛒 Walmart</a>
+          <a href="https://wondfo.com.cn/en/" target="_blank" style="flex:1;text-decoration:none;background:var(--teal);color:#fff;border-radius:10px;padding:9px 0;text-align:center;font-size:12px;font-weight:700;font-family:var(--font-b);display:block">🌐 Official</a>
+        </div>
+      </div>
+    </div>
+
     <!-- Contact -->
     <div style="padding:0 16px 16px">
       <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:10px">Contact us</div>
@@ -652,30 +691,14 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
         </div>
         <!-- Symptoms panel -->
         <div class="log-panel on" id="lp-symptoms">
-          <!-- Illness level — drives prediction -->
-          <div class="drow" style="margin-bottom:12px">
-            <div class="drlbl">How bad is it today?</div>
-            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:2px" id="dc-level">
-              <button type="button" class="level-btn" data-tone="severe" onclick="setLevel('severe')"
-                style="border:1.5px solid #ef4d4c;border-radius:10px;padding:8px 4px;background:#fff;cursor:pointer;font-family:var(--font-b);display:flex;flex-direction:column;align-items:center;gap:3px">
-                <span style="width:12px;height:12px;border-radius:50%;background:#ef4d4c;display:block"></span>
-                <span style="font-size:10px;font-weight:600;color:#ef4d4c">Severe</span>
-              </button>
-              <button type="button" class="level-btn" data-tone="mild" onclick="setLevel('mild')"
-                style="border:1.5px solid #e09517;border-radius:10px;padding:8px 4px;background:#fff;cursor:pointer;font-family:var(--font-b);display:flex;flex-direction:column;align-items:center;gap:3px">
-                <span style="width:12px;height:12px;border-radius:50%;background:#e09517;display:block"></span>
-                <span style="font-size:10px;font-weight:600;color:#e09517">Mild</span>
-              </button>
-              <button type="button" class="level-btn" data-tone="improving" onclick="setLevel('improving')"
-                style="border:1.5px solid #f1c40f;border-radius:10px;padding:8px 4px;background:#fff;cursor:pointer;font-family:var(--font-b);display:flex;flex-direction:column;align-items:center;gap:3px">
-                <span style="width:12px;height:12px;border-radius:50%;background:#f1c40f;display:block"></span>
-                <span style="font-size:10px;font-weight:600;color:#b8960a">Recovering</span>
-              </button>
-              <button type="button" class="level-btn" data-tone="recovered" onclick="setLevel('recovered')"
-                style="border:1.5px solid #2ecc71;border-radius:10px;padding:8px 4px;background:#fff;cursor:pointer;font-family:var(--font-b);display:flex;flex-direction:column;align-items:center;gap:3px">
-                <span style="width:12px;height:12px;border-radius:50%;background:#2ecc71;display:block"></span>
-                <span style="font-size:10px;font-weight:600;color:#27ae60">Recovered</span>
-              </button>
+          <!-- Severity — text only, required -->
+          <div class="drow" style="margin-bottom:14px">
+            <div class="drlbl">How are you feeling today? <span style="color:var(--red);font-weight:700">*</span></div>
+            <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px" id="dc-level">
+              <button type="button" class="level-btn" data-tone="severe"    onclick="setLevel('severe')"    style="width:100%;padding:8px 4px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:var(--i2);font-family:var(--font-b)">Severe</button>
+              <button type="button" class="level-btn" data-tone="mild"      onclick="setLevel('mild')"      style="width:100%;padding:8px 4px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:var(--i2);font-family:var(--font-b)">Mild</button>
+              <button type="button" class="level-btn" data-tone="improving" onclick="setLevel('improving')" style="width:100%;padding:8px 4px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:var(--i2);font-family:var(--font-b)">Recovering</button>
+              <button type="button" class="level-btn" data-tone="recovered" onclick="setLevel('recovered')" style="width:100%;padding:8px 4px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:var(--i2);font-family:var(--font-b)">Recovered</button>
             </div>
           </div>
           <!-- Symptoms with custom add -->
@@ -880,8 +903,8 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
       <div class="sbox"><span class="snum">34</span><span class="slbl">Days Logged</span></div>
     </div>
 
-    <!-- Members section (hidden when no members added) -->
-    <div id="members-section" style="display:none;padding:12px 16px 0">
+    <!-- Members section -->
+    <div id="members-section" style="padding:12px 16px 0">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
         <span style="font-size:12px;font-weight:700;color:var(--g3);text-transform:uppercase;letter-spacing:.06em">Members</span>
         <button onclick="openAddMember()" style="font-size:12px;color:var(--teal);font-weight:600;background:none;border:none;cursor:pointer">+ Add</button>
@@ -893,14 +916,6 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
     <div style="padding:0 16px 8px">
       <div style="background:#fff;border-radius:16px;border:.5px solid rgba(0,0,0,.08);overflow:hidden">
 
-        <!-- Add Member -->
-        <div onclick="openAddMember()" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:.5px solid rgba(0,0,0,.06);cursor:pointer">
-          <div style="width:34px;height:34px;border-radius:10px;background:#e8f8f2;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="8" cy="7" r="3.5" stroke="#0d9e7a" stroke-width="1.5"/><path d="M2 17c0-3.314 2.686-6 6-6" stroke="#0d9e7a" stroke-width="1.5" stroke-linecap="round"/><path d="M15 12v6M12 15h6" stroke="#0d9e7a" stroke-width="1.8" stroke-linecap="round"/></svg>
-          </div>
-          <span style="flex:1;font-size:14px;font-weight:500;color:var(--ink)">Add Member</span>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="var(--g3)" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </div>
         <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:.5px solid rgba(0,0,0,.06);cursor:pointer">
           <div style="width:34px;height:34px;border-radius:10px;background:#f0f0f8;display:flex;align-items:center;justify-content:center;flex-shrink:0">
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M14.5 2.5l3 3L6 17H3v-3L14.5 2.5z" stroke="#6c5ce7" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -1182,9 +1197,18 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
     <div style="padding:14px 16px 10px">
       <div style="font-size:10px;font-weight:700;color:var(--g3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Select report purpose</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button onclick="setReportPurpose('sick_leave')" id="rp-sick_leave" class="rp-btn rp-active">🏢 Sick Leave</button>
-        <button onclick="setReportPurpose('family')" id="rp-family" class="rp-btn">❤️ Family</button>
+        <button onclick="setReportPurpose('family')" id="rp-family" class="rp-btn">👥 Friends</button>
+        <button onclick="setReportPurpose('sick_leave')" id="rp-sick_leave" class="rp-btn">🏢 Sick Leave</button>
+        <button onclick="setReportPurpose('doctor')" id="rp-doctor" class="rp-btn">🩺 Doctor</button>
         <button onclick="setReportPurpose('insurance')" id="rp-insurance" class="rp-btn">📋 Insurance</button>
+      </div>
+    </div>
+    <!-- Format toggle -->
+    <div style="padding:0 16px 12px;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:11px;font-weight:600;color:var(--g3);text-transform:uppercase;letter-spacing:.06em">Format</span>
+      <div style="display:flex;background:var(--gray);border-radius:12px;padding:3px;gap:2px">
+        <button onclick="setReportFormat('jpg')" id="fmt-jpg" style="padding:5px 14px;border-radius:9px;border:none;background:var(--teal);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-b)">JPG</button>
+        <button onclick="setReportFormat('pdf')" id="fmt-pdf" style="padding:5px 14px;border-radius:9px;border:none;background:transparent;color:var(--g3);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-b)">PDF</button>
       </div>
     </div>
     <!-- Download -->
@@ -1348,12 +1372,13 @@ function doLogout(){
 
 // ── REPORT GENERATOR ─────────────────────────────────────────────────────────
 let _reportCardId = null;
-let _reportPurpose = 'sick_leave';
+let _reportPurpose = 'family';
 
 const REPORT_PURPOSES = {
   sick_leave: { label: 'Sick Leave Request',    note: 'For official sick leave & HR records' },
-  family:     { label: 'Health Update',          note: 'For family & friends' },
-  insurance:  { label: 'Insurance Claim Record', note: 'For insurance & reimbursement' }
+  family:     { label: 'Health Update',          note: 'For friends & family' },
+  insurance:  { label: 'Insurance Claim Record', note: 'For insurance & reimbursement' },
+  doctor:     { label: 'Clinical Summary',       note: 'For physician consultation' }
 };
 
 function setReportPurpose(p){
@@ -1365,11 +1390,12 @@ function setReportPurpose(p){
 
 function generateReport(cardId){
   _reportCardId = cardId;
-  _reportPurpose = 'sick_leave';
+  _reportPurpose = 'family';
   document.querySelectorAll('.rp-btn').forEach(b=>b.classList.remove('rp-active'));
-  document.getElementById('rp-sick_leave').classList.add('rp-active');
+  document.getElementById('rp-family').classList.add('rp-active');
   const modal = document.getElementById('report-modal');
   modal.style.display = 'flex';
+  _reportFormat = 'jpg'; setReportFormat('jpg');
   // Wait 2 frames so modal is fully painted before canvas draws
   requestAnimationFrame(() => requestAnimationFrame(() => drawReportCanvas(cardId)));
 }
@@ -1423,7 +1449,7 @@ function drawReportCanvas(cardId){
   // Brand
   ctx.fillStyle='rgba(255,255,255,.55)';
   ctx.font='600 9px -apple-system,sans-serif';
-  ctx.fillText('WELLlife', 18, 20);
+  ctx.fillText('WELLlife Care', 18, 20);
 
   // Purpose badge
   ctx.fillStyle='rgba(255,255,255,.18)';
@@ -1530,6 +1556,51 @@ function drawReportCanvas(cardId){
   const allSymptoms=[...new Set(Object.values(allEntries).flatMap(e=>e.symptoms||[]))];
   const allMeds=[...new Set(Object.values(allEntries).flatMap(e=>e.meds||[]))];
 
+  if(_reportPurpose === 'doctor'){
+    // Doctor mode: day-by-day severity trend + all symptoms + meds
+    ctx.fillStyle='#888'; ctx.font='500 9px -apple-system,sans-serif';
+    ctx.fillText('DAILY SEVERITY TREND', 18, rowY); rowY+=13;
+    const SEV_ABBR={severe:'Severe',mild:'Mild',improving:'Improving',recovered:'Recovered'};
+    const trendParts=[];
+    for(let i=0;i<Math.min(tot,10);i++){
+      const e=allEntries[i];
+      if(e&&e.tone) trendParts.push('D'+(i+1)+': '+SEV_ABBR[e.tone]);
+    }
+    ctx.fillStyle='#333'; ctx.font='400 10px -apple-system,sans-serif';
+    const tStr=trendParts.join('  ');
+    ctx.fillText(tStr.length>52?tStr.slice(0,52)+'…':tStr, 18, rowY); rowY+=18;
+
+    if(allSymptoms.length>0){
+      ctx.fillStyle='#888'; ctx.font='500 9px -apple-system,sans-serif';
+      ctx.fillText('ALL SYMPTOMS OBSERVED', 18, rowY); rowY+=13;
+      ctx.fillStyle='#333'; ctx.font='400 10px -apple-system,sans-serif';
+      const sym=allSymptoms.join(' · ');
+      ctx.fillText(sym.length>52?sym.slice(0,52)+'…':sym, 18, rowY); rowY+=18;
+    }
+    if(allMeds.length>0){
+      ctx.fillStyle='#888'; ctx.font='500 9px -apple-system,sans-serif';
+      ctx.fillText('MEDICATIONS TAKEN', 18, rowY); rowY+=13;
+      ctx.fillStyle='#333'; ctx.font='400 10px -apple-system,sans-serif';
+      ctx.fillText(allMeds.join(' · ').slice(0,52), 18, rowY); rowY+=18;
+    }
+    // Strip results
+    const sVals2=Object.values(allEntries);
+    const hasPos2=sVals2.some(e=>e.strip==='positive');
+    const hasNeg2=sVals2.some(e=>e.strip==='negative');
+    if(hasPos2||hasNeg2){
+      ctx.fillStyle='#888'; ctx.font='500 9px -apple-system,sans-serif';
+      ctx.fillText('RAPID TEST', 18, rowY); rowY+=13;
+      ctx.fillStyle=hasPos2?'#c62828':'#2e7d32';
+      ctx.font='600 10px -apple-system,sans-serif';
+      ctx.fillText(hasPos2?'Positive confirmed':'Negative on file', 18, rowY); rowY+=18;
+    }
+    ctx.fillStyle='#888'; ctx.font='500 9px -apple-system,sans-serif';
+    ctx.fillText('CLINICAL NOTE', 18, rowY); rowY+=13;
+    ctx.fillStyle='#333'; ctx.font='400 10px -apple-system,sans-serif';
+    ctx.fillText('Self-monitored illness log. Data collected via WELLlife Care.', 18, rowY);
+
+  } else {
+
   if(allSymptoms.length>0){
     ctx.fillStyle='#888'; ctx.font='500 9px -apple-system,sans-serif';
     ctx.fillText('SYMPTOMS REPORTED', 18, rowY);
@@ -1578,32 +1649,60 @@ function drawReportCanvas(cardId){
     ctx.fillText(recoveryLine, 18, rowY+4);
   }
 
+  } // end non-doctor
+
   // Footer
-  const footY=H-44;
+  const footY=H-56;
   ctx.fillStyle='#e0dbd0'; ctx.fillRect(0,footY,W,1);
   ctx.fillStyle='#bbb'; ctx.font='400 8px -apple-system,sans-serif';
-  ctx.fillText('Generated by WELLlife · '+purpose.note, 18, footY+14);
-  ctx.fillText('For reference only · Not a medical diagnosis', 18, footY+26);
+  ctx.fillText('WELLlife Care · '+purpose.note, 18, footY+12);
+  ctx.fillText('For reference only · Not a medical diagnosis', 18, footY+23);
+  ctx.fillStyle='#999'; ctx.font='400 7.5px -apple-system,sans-serif';
+  ctx.fillText("🔍 Search 'WELLlife Care' on App Store & Google Play", 18, footY+36);
+
+  // Right: WELLlife Care brand
   ctx.fillStyle='#0d5c3e'; ctx.font='700 10px -apple-system,sans-serif';
-  ctx.textAlign='right'; ctx.fillText('WELLlife', W-18, footY+20); ctx.textAlign='left';
+  ctx.textAlign='right'; ctx.fillText('WELLlife Care', W-18, footY+24); ctx.textAlign='left';
+}
+
+let _reportFormat = 'jpg';
+
+function setReportFormat(fmt){
+  _reportFormat = fmt;
+  ['jpg','pdf'].forEach(f=>{
+    const btn = document.getElementById('fmt-'+f);
+    if(!btn) return;
+    btn.style.background = f===fmt ? 'var(--teal)' : 'transparent';
+    btn.style.color = f===fmt ? '#fff' : 'var(--g3)';
+    btn.style.fontWeight = f===fmt ? '600' : '500';
+  });
+  const dlBtn = document.querySelector('#report-modal button[onclick="downloadReport()"]');
+  if(dlBtn) dlBtn.querySelector('span') && (dlBtn.lastChild.textContent = 'Download '+fmt.toUpperCase());
 }
 
 function downloadReport(){
   const canvas=document.getElementById('report-canvas');
   const c=CARDS[_reportCardId];
   const name=(c?c.name:'health').replace(/\s+/g,'_');
+  const date=new Date().toISOString().slice(0,10);
   try{
-    // Try standard download
-    const a=document.createElement('a');
-    a.download='welllife-report-'+name+'-'+new Date().toISOString().slice(0,10)+'.png';
-    a.href=canvas.toDataURL('image/png');
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  } catch(e){
-    // Fallback: open in new tab
-    window.open(canvas.toDataURL('image/png'),'_blank');
-  }
+    if(_reportFormat==='pdf'){
+      // Build PDF via canvas → image embedded in minimal HTML → print
+      const dataUrl=canvas.toDataURL('image/jpeg',0.92);
+      const win=window.open('','_blank');
+      if(win){
+        win.document.write(`<!DOCTYPE html><html><head><title>WELLlife Care Report</title>
+        <style>*{margin:0;padding:0}body{display:flex;justify-content:center;align-items:flex-start;background:#f0eeea;min-height:100vh;padding:24px}img{max-width:420px;width:100%;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.2)}@media print{body{background:#fff;padding:0}img{border-radius:0;box-shadow:none;width:100%;max-width:100%}}</style>
+        </head><body><img src="${dataUrl}" onload="window.print()"></body></html>`);
+        win.document.close();
+      }
+    } else {
+      const a=document.createElement('a');
+      a.download='welllife-report-'+name+'-'+date+'.jpg';
+      a.href=canvas.toDataURL('image/jpeg',0.92);
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    }
+  } catch(e){ window.open(canvas.toDataURL('image/jpeg',0.92),'_blank'); }
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -1744,7 +1843,7 @@ function updateMembersSection() {
   if (!section || !list) return;
 
   const members = getMembers();
-  section.style.display = members.length === 0 ? 'none' : 'block';
+  // section always visible — no need to toggle display
 
   const session = JSON.parse(localStorage.getItem('wl_session')||sessionStorage.getItem('wl_session')||'{}');
   const ownerName = session.name || 'Me';
@@ -1812,8 +1911,11 @@ function updateMemberUI() {
       pav.style.borderColor = info.color + '80';
     }
   }
+  // Profile header always shows account owner (never changes when switching members)
+  const session = JSON.parse(localStorage.getItem('wl_session')||sessionStorage.getItem('wl_session')||'{}');
+  const ownerName = session.name || 'Me';
   const pname = document.querySelector('.phdr [style*="font-s"]');
-  if (pname) pname.textContent = info.name;
+  if (pname) pname.textContent = ownerName;
   // Update bar + list
   updateMemberBar();
   updateMembersSection();
@@ -2180,7 +2282,7 @@ const HOME_REC={cardId:'flu',total:7,currentDay:Math.max(1,Math.min(7,(fluTodayI
 // ── Prediction helpers ──────────────────────────────────────────────────────
 const TONE_SEV={severe:4,mild:3,improving:2,recovered:1};
 const SEV_TONE={4:'severe',3:'mild',2:'improving',1:'recovered'};
-const SEV_COLOR={4:'#ef4d4c',3:'#e09517',2:'#f1c40f',1:'#2ecc71'};
+const SEV_COLOR={4:'#D66DAB',3:'#E3ABCE',2:'#F0DFED',1:'#2ecc71'};
 const ENERGY_TONE={'😞 Terrible':'severe','😟 Poor':'mild','😐 OK':'improving','🙂 Better':'improving','😊 Good':'recovered'};
 
 // Pre-populate HOME_REC.entries from existing flu card days (demo seed data)
@@ -2191,39 +2293,41 @@ CARDS.flu.days.forEach((day,i)=>{
 });
 
 function computePrediction(entries){
-  // Find last filled entry and the one before it
+  const total=entries.length;
+  const pred={};
+
+  // Find last filled entry and trend
   let lastIdx=-1,lastTone=null,prevTone=null;
-  for(let i=0;i<entries.length;i++){
+  for(let i=0;i<total;i++){
     if(entries[i]&&entries[i].tone){prevTone=lastTone;lastTone=entries[i].tone;lastIdx=i;}
   }
-  if(lastIdx===-1||!lastTone)return{};
+
+  if(lastIdx===-1){
+    // No data at all — default 7-day progression: mild(2)→mild(2)→improving→improving→improving→recovered→recovered
+    const defaults=['mild','mild','mild','improving','improving','improving','recovered'];
+    for(let i=0;i<total;i++){pred[i]=defaults[Math.min(i,defaults.length-1)];}
+    return pred;
+  }
+
   const curSev=TONE_SEV[lastTone]||1;
   const prevSev=prevTone?(TONE_SEV[prevTone]||1):null;
-  // Determine remaining days to recovery
-  let remaining;
-  if(prevSev===null){
-    // Only 1 data point — assume ascending phase
-    remaining={4:6,3:4,2:2,1:0}[curSev]||0;
-  } else {
-    const improving=curSev<prevSev;
-    if(curSev>=4)remaining=improving?3:4;
-    else if(curSev===3)remaining=improving?2:3;
-    else if(curSev===2)remaining=improving?1:2;
-    else remaining=0;
-  }
-  if(remaining===0)return{};
-  // Smooth descent from curSev → 1 (recovered) over `remaining` circles
-  const pred={};
+
+  // Remaining days after last logged
+  const remaining=total-(lastIdx+1);
+  if(remaining<=0)return pred;
+
+  // Determine target end severity
+  let endSev=1; // always end at recovered
+  // Smooth from curSev → 1 over remaining days
   for(let d=0;d<remaining;d++){
     const idx=lastIdx+1+d;
-    if(idx>=entries.length)break; // respect allocated circles
-    const t=remaining===1?1:d/(remaining-1);
+    const t=remaining===1?1:(d/(remaining-1));
     const sev=Math.max(1,Math.round(curSev-(curSev-1)*t));
     pred[idx]=SEV_TONE[sev];
   }
   return pred;
 }
-const RECOVERY_COLORS={severe:'#ef4d4c',mild:'#e09517',improving:'#f1c40f',recovered:'#2ecc71'};
+const RECOVERY_COLORS={severe:'#D66DAB',mild:'#E3ABCE',improving:'#F0DFED',recovered:'#2ecc71'};
 const RECOVERY_ADVICE=[
   {maxDay:2,cdc:'Stay hydrated, keep monitoring temperature changes, and consider a repeat test within 48 hours if symptoms rise.',ai:'This is usually the hardest stretch. Keep your routine simple and let rest do the heavy lifting.'},
   {maxDay:4,cdc:'If fever stays high, breathing worsens, or chest symptoms increase, contact a clinician promptly.',ai:'You are moving through the peak now. Even small improvements mean your body is responding.'},
@@ -2447,10 +2551,21 @@ function updateRecoveryBar(){
     const isPred=!entry&&predictions[idx]!==undefined;
     stop.className='recovery-stop tap-target'
       +(entry?' saved':'')
+      +(entry?' src-'+(entry.source||'symptoms'):'')
       +(day===HOME_REC.currentDay?' active':'')
       +(isPred?' predicted':'');
-    stop.style.setProperty('--stop-color',
-      isPred?SEV_COLOR[TONE_SEV[predictions[idx]]]:getRecoveryDisplayColor(entry));
+    const displayColor = isPred
+      ? SEV_COLOR[TONE_SEV[predictions[idx]]]
+      : getRecoveryDisplayColor(entry);
+    stop.style.setProperty('--stop-color', displayColor);
+    const dot = stop.querySelector('.day-dot');
+    if(dot) {
+      const tone = entry ? entry.tone : (predictions[idx]||null);
+      if(tone==='recovered') dot.style.color='#fff';           // green bg
+      else if(tone==='severe') dot.style.color='#fff';         // dark pink bg
+      else if(tone) dot.style.color='#6b2d5e';                 // light pink bg
+      else dot.style.color='';
+    }
     const lbl=stop.querySelector('.day-label');
     if(lbl){
       if(day===HOME_REC.currentDay){lbl.textContent='Today';}
@@ -2705,14 +2820,32 @@ function addCustomChip(containerId, cls, prefix){
 }
 function setLevel(tone){
   document.querySelectorAll('#dc-level .level-btn').forEach(b=>{
-    const active=b.dataset.tone===tone;
-    b.dataset.selected=active?'1':'';
-    b.style.opacity=active?'1':'0.4';
-    b.style.transform=active?'scale(1.06)':'scale(1)';
-    b.style.boxShadow=active?'0 4px 12px rgba(0,0,0,.12)':'none';
+    const active = b.dataset.tone === tone;
+    b.dataset.selected = active ? '1' : '';
+    b.style.border = active ? '1.5px solid var(--teal)' : '1.5px solid #ddd';
+    b.style.background = active ? 'var(--tl)' : '#fff';
+    b.style.color = active ? 'var(--teal)' : 'var(--i2)';
+    b.style.fontWeight = active ? '700' : '500';
   });
 }
 function saveDay(){
+  // ── Validate: at least 1 symptom AND severity must be selected ───────────
+  const selectedSymptoms = [...document.querySelectorAll('#dc-syms .dc.on')].map(el=>el.textContent.trim());
+  const levelBtn = document.querySelector('#dc-level .level-btn[data-selected="1"]');
+  if(!levelBtn){
+    const missing = 'Please select how you are feeling today';
+    const lbl = document.querySelector('#lp-symptoms .drlbl');
+    if(lbl){lbl.style.color='var(--red)';lbl.style.animation='shake .3s ease';setTimeout(()=>{lbl.style.color='';lbl.style.animation='';},1800);}
+    let toast=document.getElementById('save-toast');
+    if(!toast){toast=document.createElement('div');toast.id='save-toast';toast.style.cssText='position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#e24b4a;color:#fff;padding:9px 20px;border-radius:20px;font-size:13px;font-weight:500;z-index:9999;transition:opacity .3s;pointer-events:none;font-family:var(--font-b)';document.body.appendChild(toast);}
+    toast.style.background='#e24b4a';
+    toast.textContent=missing+' ✕';
+    toast.style.opacity='1';
+    clearTimeout(toast._t);
+    toast._t=setTimeout(()=>{toast.style.opacity='0';toast.style.background='#1c1c1a';},2200);
+    return;
+  }
+
   // Update pill in card detail
   const p=document.getElementById('pill-'+AD);
   if(p){p.className='dp dpdone';p.querySelector('.dp-l').textContent='Done';}
@@ -2720,27 +2853,39 @@ function saveDay(){
   const dd=document.getElementById('dd-'+AC);
   if(dd){const dots=dd.querySelectorAll('.dd');if(dots[AD]){dots[AD].className='dd done';}}
 
-  // If saving to the home recovery card, update HOME_REC.entries and refresh predictions
+  // If saving to the home recovery card, update HOME_REC.entries and refresh
   if(AC===HOME_REC.cardId){
-    const levelBtn=document.querySelector('#dc-level .level-btn[data-selected="1"]');
     const stripColorBtn=document.querySelector('.strip-color-btn[data-selected="1"]');
     const stripTone=stripColorBtn?stripColorBtn.dataset.tone:null;
-    // Use illness level button if set, otherwise fall back to strip color as proxy
-    const tone=levelBtn?levelBtn.dataset.tone:(stripTone||'mild');
-    HOME_REC.entries[AD]={tone,stripTone,disease:NC_DISEASES.length?NC_DISEASES[0]:'flua',symptoms:[],savedAt:new Date().toISOString().slice(0,10)};
+    const hasPositiveStrip=(document.getElementById('sb-pos')?.classList.contains('sel'));
+
+    // ── Priority: a > b > c ───────────────────────────────────────────────────
+    let tone, source;
+    if(hasPositiveStrip && stripTone){
+      tone   = stripTone;
+      source = 'strip';      // outer halo ring
+    } else {
+      tone   = levelBtn.dataset.tone;  // user-selected severity (b)
+      source = 'symptoms';             // solid circle
+    }
+
+    const meds=[...document.querySelectorAll('#dc-meds .dc.on-b')].map(el=>el.textContent.trim());
+    HOME_REC.entries[AD]={
+      tone, source, stripTone,
+      disease: NC_DISEASES.length?NC_DISEASES[0]:'flua',
+      symptoms: selectedSymptoms,
+      meds,
+      savedAt: new Date().toISOString().slice(0,10)
+    };
     document.getElementById('recovery-dots').innerHTML='';
     buildRecoveryBar();
     updateRecoveryBar();
   }
 
-  // Toast notification instead of alert
+  // Toast notification
   let toast=document.getElementById('save-toast');
-  if(!toast){
-    toast=document.createElement('div');
-    toast.id='save-toast';
-    toast.style.cssText='position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1c1c1a;color:#fff;padding:9px 20px;border-radius:20px;font-size:13px;font-weight:500;z-index:9999;transition:opacity .3s;pointer-events:none;font-family:var(--font-b)';
-    document.body.appendChild(toast);
-  }
+  if(!toast){toast=document.createElement('div');toast.id='save-toast';toast.style.cssText='position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#1c1c1a;color:#fff;padding:9px 20px;border-radius:20px;font-size:13px;font-weight:500;z-index:9999;transition:opacity .3s;pointer-events:none;font-family:var(--font-b)';document.body.appendChild(toast);}
+  toast.style.background='#1c1c1a';
   toast.textContent='Day '+(AD+1)+' saved ✓';
   toast.style.opacity='1';
   clearTimeout(toast._t);
