@@ -1836,14 +1836,22 @@ function loadMemberData(memberId) {
       const savedCards = JSON.parse(cardsRaw);
       Object.keys(CARDS).forEach(k => delete CARDS[k]);
       Object.assign(CARDS, savedCards);
+    } else if (memberId === 'owner') {
+      // Owner with no saved data → restore default demo cards so the static
+      // Flu / COVID tiles on the Cards screen remain clickable.
+      Object.keys(CARDS).forEach(k => delete CARDS[k]);
+      Object.assign(CARDS, JSON.parse(JSON.stringify(DEFAULT_CARDS)));
     } else {
-      // Reset to default empty state for new member
+      // Non-owner member with no saved data → start empty.
       Object.keys(CARDS).forEach(k => delete CARDS[k]);
     }
     if (homeRaw) {
       const savedHome = JSON.parse(homeRaw);
       Object.keys(HOME_REC).forEach(k => delete HOME_REC[k]);
       Object.assign(HOME_REC, savedHome);
+    } else if (memberId === 'owner') {
+      Object.keys(HOME_REC).forEach(k => delete HOME_REC[k]);
+      Object.assign(HOME_REC, JSON.parse(JSON.stringify(DEFAULT_HOME_REC)));
     } else {
       // Reset home rec
       Object.keys(HOME_REC).forEach(k => delete HOME_REC[k]);
@@ -2360,6 +2368,10 @@ const CARDS={
 };
 const fluTodayIndex=CARDS.flu.days.findIndex(d=>d===null);
 const HOME_REC={cardId:'flu',total:7,currentDay:Math.max(1,Math.min(7,(fluTodayIndex>=0?fluTodayIndex+1:CARDS.flu.logged)||1)),dragging:false,startX:0,moved:false,suppressTapUntil:0,pendingDay:null,entries:Array.from({length:7},()=>null)};
+// Snapshot defaults so we can restore the owner's demo state after any
+// loadMemberData() that would otherwise wipe CARDS/HOME_REC.
+const DEFAULT_CARDS = JSON.parse(JSON.stringify(CARDS));
+const DEFAULT_HOME_REC = JSON.parse(JSON.stringify(HOME_REC));
 
 // ── Prediction helpers ──────────────────────────────────────────────────────
 const TONE_SEV={severe:4,mild:3,improving:2,recovered:1};
@@ -2815,7 +2827,14 @@ function applyDiseaseSelection(value){
 }
 function setDisease(el){applyDiseaseSelection(el.dataset.disease);}
 function openCard(id, dayIdx){
-  AC=id;const c=CARDS[id];
+  const c=CARDS[id];
+  if(!c){
+    // Can happen if a non-owner member has no saved cards yet but the
+    // static demo tiles (Flu / COVID) in the Cards screen are still visible.
+    console.warn('[openCard] card not found for id:', id, '— available keys:', Object.keys(CARDS));
+    return;
+  }
+  AC=id;
   document.getElementById('cl').classList.add('hide');
   document.getElementById('nv').classList.remove('vis');
   document.getElementById('dv').classList.add('vis');
