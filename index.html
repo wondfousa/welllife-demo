@@ -136,10 +136,17 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .icp{background:#fff;border-radius:var(--r);border:.5px solid rgba(0,0,0,.08);padding:16px;margin-bottom:12px;cursor:pointer;transition:box-shadow .15s}
 .icp:hover{box-shadow:0 4px 20px rgba(0,0,0,.08)}
 .ddots{display:flex;gap:4px;margin-bottom:10px;flex-wrap:wrap}
-.dd{width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;flex-shrink:0}
+.dd{width:20px;height:20px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:500;flex-shrink:0;box-sizing:border-box}
 .dd.done{background:var(--teal);color:#fff}
 .dd.now{background:var(--amber);color:#fff}
 .dd.miss{background:var(--g2);color:var(--g3);border:.5px dashed rgba(0,0,0,.15)}
+/* Severity-based fills for the card-list mini-dots — sync with home whale timeline */
+.dd.dd-sev-severe{background:#D66DAB;color:#fff}
+.dd.dd-sev-mild{background:#E3ABCE;color:#6b2d5e}
+.dd.dd-sev-improving{background:#F0DFED;color:#6b2d5e}
+.dd.dd-sev-recovered{background:#2ecc71;color:#fff}
+/* Strip-verified halo on mini-dot */
+.dd.dd-strip{box-shadow:0 0 0 1.5px #fff inset, 0 0 0 2.5px var(--dd-strip-color,#0d9e7a)}
 .strip-chip{display:flex;align-items:center;gap:6px;background:var(--bl);border-radius:10px;padding:5px 10px;font-size:11px;color:var(--blue);font-weight:500}
 .sneg{background:var(--tl);color:var(--tm)}
 .dv{display:none}
@@ -160,10 +167,17 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .dscroll{overflow-x:auto;padding:0 16px 12px;scrollbar-width:none}
 .dscroll::-webkit-scrollbar{display:none}
 .dpills{display:flex;gap:5px;width:max-content}
-.dp{width:48px;height:64px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.dp{width:48px;height:64px;border-radius:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;box-sizing:border-box}
 .dp.dpdone{background:var(--teal);color:#fff}
 .dp.dpnow{background:var(--amber);color:#fff}
 .dp.dpempty{background:var(--gray);color:var(--g3);border:.5px dashed rgba(0,0,0,.15)}
+/* Severity-based fills for card DAILY LOG — kept in sync with home whale timeline */
+.dp.dp-sev-severe{background:#D66DAB;color:#fff}
+.dp.dp-sev-mild{background:#E3ABCE;color:#6b2d5e}
+.dp.dp-sev-improving{background:#F0DFED;color:#6b2d5e}
+.dp.dp-sev-recovered{background:#2ecc71;color:#fff}
+/* Strip-verified halo — matches home rec-stops' outer white+color ring */
+.dp.dp-strip{box-shadow:0 0 0 2px #fff inset, 0 0 0 3.5px var(--dp-strip-color,#0d9e7a)}
 .dp-n{font-family:var(--font-s);font-size:18px;line-height:1}
 .dp-l{font-size:10px;margin-top:2px;opacity:.85}
 .dcard{margin:0 24px;background:#fff;border-radius:var(--r);border:.5px solid rgba(0,0,0,.08);overflow:hidden}
@@ -451,11 +465,26 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 
     <!-- ── Page content ────────────────────────────────────── -->
 
-    <!-- YouTube video -->
+    <!-- YouTube video (uses youtube-nocookie.com for broader embed compatibility — works
+         even when the parent document is about:srcdoc, file://, or has a restrictive CSP.
+         A fallback link is always shown so users can open YouTube directly if the embed is
+         blocked — e.g. Error 153 from nested-iframe / corporate-network restrictions.) -->
     <div style="background:#0a2820;padding:16px">
-      <div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.6);margin-bottom:10px">How to use WELLlife Care</div>
-      <div style="border-radius:12px;overflow:hidden;aspect-ratio:16/9">
-        <iframe width="100%" height="100%" src="https://www.youtube.com/embed/AjLwNfod2iI" title="WELLlife Care — Getting Started" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen style="display:block"></iframe>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.6)">How to use WELLlife Care</div>
+        <a href="https://www.youtube.com/watch?v=AjLwNfod2iI" target="_blank" rel="noopener"
+           style="font-size:11px;color:#7fd0b2;text-decoration:none;font-weight:500">Open on YouTube ↗</a>
+      </div>
+      <div style="border-radius:12px;overflow:hidden;aspect-ratio:16/9;background:#000;position:relative">
+        <iframe width="100%" height="100%"
+                src="https://www.youtube-nocookie.com/embed/AjLwNfod2iI?rel=0"
+                title="WELLlife Care — Getting Started"
+                frameborder="0"
+                loading="lazy"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowfullscreen
+                style="display:block;position:absolute;inset:0"></iframe>
       </div>
     </div>
 
@@ -2409,6 +2438,7 @@ function buildDots(id,c){
   const el=document.getElementById('dd-'+id);if(!el)return;el.innerHTML='';
   // Wrap every 7 into its own row so 9-day cards show 7+2 instead of a single long line
   const ROW=7;
+  const isHome=(id===HOME_REC.cardId);
   for(let row=0;row<Math.ceil(c.dur/ROW);row++){
     const rowEl=document.createElement('div');
     rowEl.style.cssText='display:flex;gap:4px;margin-bottom:4px;flex-wrap:nowrap';
@@ -2416,7 +2446,29 @@ function buildDots(id,c){
       const i=row*ROW+j;
       if(i>=c.dur)break;
       const d=document.createElement('div');d.className='dd';
-      d.classList.add(c.days[i]===null?'now':c.days[i]?'done':'miss');
+      // Resolve tone + source from the same place the detail pills use,
+      // so the card-list mini-dots and the detail-view pills stay identical.
+      let tone=null, source=null;
+      if(isHome){
+        const e=HOME_REC.entries[i];
+        if(e&&e.tone){tone=e.tone;source=e.source||'symptoms';}
+      } else if(c.days[i]&&c.days[i].energy){
+        tone=ENERGY_TONE[c.days[i].energy]||null;
+      }
+      const hasSaved=isHome?!!HOME_REC.entries[i]:!!c.days[i];
+      if(c.days[i]===null && !hasSaved){
+        d.classList.add('now');
+      } else if(hasSaved && tone){
+        d.classList.add('dd-sev-'+tone);
+        if(source==='strip'){
+          d.classList.add('dd-strip');
+          d.style.setProperty('--dd-strip-color', RECOVERY_COLORS[tone]||'#0d9e7a');
+        }
+      } else if(hasSaved){
+        d.classList.add('done');
+      } else {
+        d.classList.add('miss');
+      }
       d.textContent=i+1;rowEl.appendChild(d);
     }
     el.appendChild(rowEl);
@@ -2764,7 +2816,8 @@ function buildPills(c, cardId){
   }
   const todayIdx=c.days.findIndex(d=>d===null);
   const curIdx=todayIdx>=0?todayIdx:c.days.length-1;
-  const predictions=(cardId===HOME_REC.cardId)?computePrediction(HOME_REC.entries):{};
+  const isHome=(cardId===HOME_REC.cardId);
+  const predictions=isHome?computePrediction(HOME_REC.entries):{};
   const startDate=c.recoveryStart||null;
   for(let i=0;i<c.dur;i++){
     // Compute M/D label
@@ -2776,18 +2829,48 @@ function buildPills(c, cardId){
     }
     const p=document.createElement('div');p.className='dp';
     const isToday=i===curIdx&&c.days[i]===null;
-    const isPred=!c.days[i]&&!isToday&&predictions[i]!==undefined;
+    // Resolve severity tone + source (strip vs symptoms) for day i
+    // - Home card: drive from HOME_REC.entries (same source as whale timeline)
+    // - Other cards: fall back to ENERGY_TONE on legacy energy field
+    let tone=null, source=null;
+    if(isHome){
+      const e=HOME_REC.entries[i];
+      if(e&&e.tone){tone=e.tone;source=e.source||'symptoms';}
+    } else if(c.days[i]&&c.days[i].energy){
+      tone=ENERGY_TONE[c.days[i].energy]||null;
+    }
+    // For the home card, "saved" is driven by HOME_REC.entries (which may be populated
+    // via saveDay even when c.days[i] is still null). For other cards use c.days[i].
+    const hasSaved=isHome?!!HOME_REC.entries[i]:!!c.days[i];
+    const isPred=!hasSaved&&!isToday&&predictions[i]!==undefined;
     if(isPred){
       const col=SEV_COLOR[TONE_SEV[predictions[i]]];
       p.classList.add('dppred');
       p.style.color=col;p.style.borderColor=col;
       p.innerHTML='<span class="dp-n">'+(i+1)+'</span>'
         +'<span class="dp-l" style="font-size:9px">'+(dateLabel||'~pred')+'</span>';
-    } else {
-      p.classList.add(isToday?'dpnow':c.days[i]?'dpdone':'dpempty');
-      const lbl=isToday?'Today':(dateLabel||'—');
+    } else if(isToday){
+      p.classList.add('dpnow');
       p.innerHTML='<span class="dp-n">'+(i+1)+'</span>'
-        +'<span class="dp-l" style="font-size:9px">'+lbl+'</span>';
+        +'<span class="dp-l" style="font-size:9px">Today</span>';
+    } else if(hasSaved && tone){
+      // Severity-driven colored pill — same color as home whale timeline
+      p.classList.add('dp-sev-'+tone);
+      if(source==='strip'){
+        p.classList.add('dp-strip');
+        p.style.setProperty('--dp-strip-color', RECOVERY_COLORS[tone]||'#0d9e7a');
+      }
+      p.innerHTML='<span class="dp-n">'+(i+1)+'</span>'
+        +'<span class="dp-l" style="font-size:9px">'+(dateLabel||'—')+'</span>';
+    } else if(hasSaved){
+      // Saved but no tone info — fall back to teal done style
+      p.classList.add('dpdone');
+      p.innerHTML='<span class="dp-n">'+(i+1)+'</span>'
+        +'<span class="dp-l" style="font-size:9px">'+(dateLabel||'—')+'</span>';
+    } else {
+      p.classList.add('dpempty');
+      p.innerHTML='<span class="dp-n">'+(i+1)+'</span>'
+        +'<span class="dp-l" style="font-size:9px">'+(dateLabel||'—')+'</span>';
     }
     p.onclick=(function(idx){return function(){selectDay(idx,CARDS[AC]);};})(i);
     p.id='pill-'+i;
@@ -2864,9 +2947,12 @@ function setStripTest(tested){
   const yes=document.getElementById('st-yes');
   const no=document.getElementById('st-no');
   const section=document.getElementById('strip-color-section');
+  const photoRow=document.getElementById('strip-photo-row');
   if(yes){ yes.style.background=tested?'var(--tl)':'#fff'; yes.style.borderColor=tested?'var(--teal)':'#ddd'; yes.style.color=tested?'var(--teal)':'var(--i2)'; yes.style.fontWeight=tested?'700':'500'; }
   if(no){  no.style.background=!tested?'var(--gray)':'#fff'; no.style.borderColor=!tested?'#aaa':'#ddd'; no.style.color=!tested?'var(--i2)':'var(--i2)'; no.style.fontWeight=!tested?'600':'500'; }
   if(section) section.style.display=tested?'block':'none';
+  // Show "Take or upload photo" as soon as user clicks Yes — don't require a color pick first
+  if(photoRow) photoRow.style.display=tested?'block':'none';
   if(!tested){ setStripColor(null); }
 }
 function setStripColor(tone){
@@ -2957,12 +3043,12 @@ function saveDay(){
     return;
   }
 
-  // Update pill in card detail
-  const p=document.getElementById('pill-'+AD);
-  if(p){p.className='dp dpdone';p.querySelector('.dp-l').textContent='Done';}
-  // Update small dot in card list
-  const dd=document.getElementById('dd-'+AC);
-  if(dd){const dots=dd.querySelectorAll('.dd');if(dots[AD]){dots[AD].className='dd done';}}
+  // Card-list mini-dots will be rebuilt below for the home card after HOME_REC is updated.
+  // For non-home cards, still fall back to the simple .done marker.
+  if(AC!==HOME_REC.cardId){
+    const dd=document.getElementById('dd-'+AC);
+    if(dd){const dots=dd.querySelectorAll('.dd');if(dots[AD]){dots[AD].className='dd done';}}
+  }
 
   // If saving to the home recovery card, update HOME_REC.entries and refresh
   if(AC===HOME_REC.cardId){
@@ -3001,6 +3087,13 @@ function saveDay(){
     document.getElementById('recovery-dots').innerHTML='';
     buildRecoveryBar();
     updateRecoveryBar();
+    // Re-render card DAILY LOG pills AND card-list mini-dots with the new severity color
+    // (kept in sync with the home whale timeline)
+    const cardForPills=CARDS[AC];
+    if(cardForPills){
+      buildPills(cardForPills, AC);
+      buildDots(AC, cardForPills);
+    }
   }
 
   // Toast notification
@@ -3270,8 +3363,16 @@ async function sendAIMessage(){
 
   } catch(err) {
     removeTyping();
-    appendMessage('assistant', 'Unable to connect. Please try again.');
-    console.warn('[AI Chat]', err.message);
+    // If running inside a file:// or about:srcdoc bundled page, cross-origin
+    // fetch to Lambda will fail because the browser sends Origin: null. Give
+    // the user a clear, actionable hint instead of a generic error.
+    const origin = (typeof location!=='undefined' && location.origin) || '';
+    const isNullOrigin = !origin || origin==='null' || origin.indexOf('file:')===0;
+    const hint = isNullOrigin
+      ? 'Unable to reach the AI service from this local file. Open the app via the local server (start_presentation.bat) or from https:// to enable chat.'
+      : 'Unable to connect. Please try again in a moment.';
+    appendMessage('assistant', hint);
+    console.warn('[AI Chat] fetch failed. origin=', origin, 'err=', err && err.message);
   }
 
   if(sendBtn) sendBtn.disabled = false;
