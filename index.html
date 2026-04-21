@@ -707,32 +707,17 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
               <button type="button" class="level-btn" data-tone="recovered" onclick="setLevel('recovered')" style="width:100%;padding:8px 4px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:var(--i2);font-family:var(--font-b)">Recovered</button>
             </div>
           </div>
-          <!-- Symptoms with custom add -->
-          <div class="drow" style="margin-bottom:10px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-              <div class="drlbl" style="margin-bottom:0">Symptoms</div>
-              <button onclick="addCustomChip('dc-syms','on','🤕 ')" style="background:none;border:.5px solid var(--teal);border-radius:12px;padding:2px 8px;font-size:11px;color:var(--teal);cursor:pointer;font-family:var(--font-b)">+ Add</button>
-            </div>
-            <div class="drchips" id="dc-syms">
-              <span class="dc" onclick="tog(this,'on')">🤒 Fever</span>
-              <span class="dc" onclick="tog(this,'on')">💢 Headache</span>
-              <span class="dc" onclick="tog(this,'on')">😮‍💨 Cough</span>
-              <span class="dc" onclick="tog(this,'on')">😩 Fatigue</span>
-              <span class="dc" onclick="tog(this,'on')">🤧 Runny nose</span>
-              <span class="dc" onclick="tog(this,'on')">🦴 Body aches</span>
-              <span class="dc" onclick="tog(this,'on')">🍽️ No taste/smell</span>
-            </div>
-          </div>
+          <!-- Strip test — now first -->
           <div class="drow" style="margin-bottom:10px">
             <div class="drlbl">Strip test today?</div>
-            <div class="srow">
-              <button class="sb2 ss2 sel" id="sb-skip" onclick="setSt('skip')">Not today</button>
-              <button class="sb2 sp2" id="sb-pos" onclick="setSt('pos')">Positive ＋</button>
-              <button class="sb2 sn2" id="sb-neg" onclick="setSt('neg')">Negative −</button>
+            <!-- Step 1: Did you test today? -->
+            <div style="display:flex;gap:8px;margin-bottom:10px">
+              <button id="st-yes" onclick="setStripTest(true)"  style="flex:1;padding:8px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:13px;font-weight:500;color:var(--i2);font-family:var(--font-b)">Yes</button>
+              <button id="st-no"  onclick="setStripTest(false)" style="flex:1;padding:8px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:13px;font-weight:500;color:var(--i2);font-family:var(--font-b)">No</button>
             </div>
-            <!-- Strip color — shown only when Positive -->
-            <div id="strip-color-row" style="margin-top:10px;display:none">
-              <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--g3);margin-bottom:8px">Strip color result</div>
+            <!-- Step 2: Color — only shown when Yes -->
+            <div id="strip-color-section" style="display:none">
+              <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--g3);margin-bottom:8px">Select strip color result <span style="color:var(--red);font-size:12px">*</span></div>
               <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">
                 <button type="button" class="strip-color-btn" data-tone="severe" onclick="setStripColor('severe')"
                   style="display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border-radius:10px;border:2px solid transparent;background:transparent;cursor:pointer;font-family:var(--font-b)">
@@ -751,12 +736,14 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
                 </button>
                 <button type="button" class="strip-color-btn" data-tone="recovered" onclick="setStripColor('recovered')"
                   style="display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border-radius:10px;border:2px solid transparent;background:transparent;cursor:pointer;font-family:var(--font-b)">
-                  <span style="width:28px;height:28px;border-radius:50%;background:#fff;display:block;border:1px solid rgba(0,0,0,.15)"></span>
-                  <span style="font-size:9px;font-weight:500;color:var(--i2)">Recovered</span>
+                  <span style="width:28px;height:28px;border-radius:50%;background:#fff;display:block;border:1.5px solid #ccc"></span>
+                  <span style="font-size:9px;font-weight:500;color:var(--i2)">Negative</span>
                 </button>
               </div>
-              <!-- Strip photo — optional, pure record -->
-              <div style="margin-top:10px">
+              <!-- Auto result label -->
+              <div id="strip-result-label" style="display:none;margin-top:8px;font-size:11px;font-weight:600;padding:5px 10px;border-radius:8px;width:fit-content"></div>
+              <!-- Strip photo -->
+              <div id="strip-photo-row" style="margin-top:10px;display:none">
                 <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--g3);margin-bottom:6px">Strip photo <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
                 <div id="strip-photo-preview" style="display:none;margin-bottom:8px;position:relative">
                   <img id="strip-photo-img" style="width:100%;border-radius:10px;display:block;max-height:160px;object-fit:cover;border:.5px solid rgba(0,0,0,.1)" src="" alt="Strip photo">
@@ -768,6 +755,22 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
                   <input type="file" accept="image/*" capture="environment" style="display:none" onchange="handleStripPhoto(this)">
                 </label>
               </div>
+            </div>
+          </div>
+          <!-- Symptoms with custom add — now second -->
+          <div class="drow" style="margin-bottom:10px">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+              <div class="drlbl" style="margin-bottom:0">Symptoms</div>
+              <button onclick="addCustomChip('dc-syms','on','🤕 ')" style="background:none;border:.5px solid var(--teal);border-radius:12px;padding:2px 8px;font-size:11px;color:var(--teal);cursor:pointer;font-family:var(--font-b)">+ Add</button>
+            </div>
+            <div class="drchips" id="dc-syms">
+              <span class="dc" onclick="tog(this,'on')">🤒 Fever</span>
+              <span class="dc" onclick="tog(this,'on')">💢 Headache</span>
+              <span class="dc" onclick="tog(this,'on')">😮‍💨 Cough</span>
+              <span class="dc" onclick="tog(this,'on')">😩 Fatigue</span>
+              <span class="dc" onclick="tog(this,'on')">🤧 Runny nose</span>
+              <span class="dc" onclick="tog(this,'on')">🦴 Body aches</span>
+              <span class="dc" onclick="tog(this,'on')">🍽️ No taste/smell</span>
             </div>
           </div>
           <!-- Medications with custom add -->
@@ -2850,9 +2853,21 @@ function updSpo2(el){
 }
 function setSt(v){
   ['skip','pos','neg'].forEach(k=>{const e=document.getElementById('sb-'+k);if(e)e.classList.toggle('sel',k===v);});
-  const row=document.getElementById('strip-color-row');
-  if(row)row.style.display=(v==='pos')?'block':'none';
-  if(v!=='pos')setStripColor(null); // clear selection when not positive
+  const colorRow=document.getElementById('strip-color-row');
+  const photoRow=document.getElementById('strip-photo-row');
+  if(colorRow) colorRow.style.display=(v==='pos')?'block':'none';
+  if(photoRow) photoRow.style.display=(v==='pos'||v==='neg')?'block':'none';
+  if(v!=='pos') setStripColor(null);
+}
+function setSt(v){} // kept for compatibility
+function setStripTest(tested){
+  const yes=document.getElementById('st-yes');
+  const no=document.getElementById('st-no');
+  const section=document.getElementById('strip-color-section');
+  if(yes){ yes.style.background=tested?'var(--tl)':'#fff'; yes.style.borderColor=tested?'var(--teal)':'#ddd'; yes.style.color=tested?'var(--teal)':'var(--i2)'; yes.style.fontWeight=tested?'700':'500'; }
+  if(no){  no.style.background=!tested?'var(--gray)':'#fff'; no.style.borderColor=!tested?'#aaa':'#ddd'; no.style.color=!tested?'var(--i2)':'var(--i2)'; no.style.fontWeight=!tested?'600':'500'; }
+  if(section) section.style.display=tested?'block':'none';
+  if(!tested){ setStripColor(null); }
 }
 function setStripColor(tone){
   document.querySelectorAll('.strip-color-btn').forEach(b=>{
@@ -2861,6 +2876,21 @@ function setStripColor(tone){
     b.style.background=active?'rgba(45,125,210,.06)':'transparent';
     b.dataset.selected=active?'1':'';
   });
+  const label=document.getElementById('strip-result-label');
+  const photoRow=document.getElementById('strip-photo-row');
+  if(!tone){
+    if(label)label.style.display='none';
+    if(photoRow)photoRow.style.display='none';
+    return;
+  }
+  if(photoRow)photoRow.style.display='block';
+  if(label){
+    const isNeg=(tone==='recovered');
+    label.style.display='block';
+    label.style.background=isNeg?'#ecfdf5':'#fef0f7';
+    label.style.color=isNeg?'#065f46':'#9d174d';
+    label.textContent=isNeg?'✓ Negative — no virus detected':'＋ Positive — '+{severe:'high viral load',mild:'moderate viral load',improving:'low viral load'}[tone];
+  }
 }
 function handleStripPhoto(input){
   if(!input.files||!input.files[0])return;
@@ -2936,18 +2966,28 @@ function saveDay(){
 
   // If saving to the home recovery card, update HOME_REC.entries and refresh
   if(AC===HOME_REC.cardId){
-    const stripColorBtn=document.querySelector('.strip-color-btn[data-selected="1"]');
-    const stripTone=stripColorBtn?stripColorBtn.dataset.tone:null;
-    const hasPositiveStrip=(document.getElementById('sb-pos')?.classList.contains('sel'));
+  const stripColorBtn=document.querySelector('.strip-color-btn[data-selected="1"]');
+  const stripTone=stripColorBtn?stripColorBtn.dataset.tone:null;
+  const testedYes=document.getElementById('st-yes')?.style.fontWeight==='700';
+  if(testedYes && !stripTone){
+    const lbl=document.querySelector('#strip-color-section > div');
+    if(lbl){lbl.style.color='var(--red)';lbl.style.animation='shake .3s ease';setTimeout(()=>{lbl.style.color='';lbl.style.animation='';},1800);}
+    let toast=document.getElementById('save-toast');
+    if(!toast){toast=document.createElement('div');toast.id='save-toast';toast.style.cssText='position:fixed;bottom:100px;left:50%;transform:translateX(-50%);background:#e24b4a;color:#fff;padding:9px 20px;border-radius:20px;font-size:13px;font-weight:500;z-index:9999;transition:opacity .3s;pointer-events:none;font-family:var(--font-b)';document.body.appendChild(toast);}
+    toast.style.background='#e24b4a';toast.textContent='Please select your strip color result ✕';
+    toast.style.opacity='1';clearTimeout(toast._t);toast._t=setTimeout(()=>{toast.style.opacity='0';},2200);
+    return;
+  }
 
     // ── Priority: a > b > c ───────────────────────────────────────────────────
+    const hasPositiveStrip=stripTone&&stripTone!=='recovered';
     let tone, source;
-    if(hasPositiveStrip && stripTone){
+    if(hasPositiveStrip){
       tone   = stripTone;
       source = 'strip';      // outer halo ring
     } else {
-      tone   = levelBtn.dataset.tone;  // user-selected severity (b)
-      source = 'symptoms';             // solid circle
+      tone   = levelBtn.dataset.tone;
+      source = 'symptoms';
     }
 
     const meds=[...document.querySelectorAll('#dc-meds .dc.on-b')].map(el=>el.textContent.trim());
