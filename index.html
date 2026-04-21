@@ -1467,6 +1467,14 @@ function drawReportCanvas(cardId){
   canvas.style.width = W+'px'; canvas.style.height = H+'px';
   const ctx = canvas.getContext('2d');
   ctx.scale(DPR, DPR);
+
+  // Opaque base fill FIRST so JPEG never exports transparent/black even if
+  // subsequent drawing throws (GitHub Pages + blob/iframe contexts can break
+  // localStorage / gradients silently).
+  ctx.fillStyle = '#f8f7f4';
+  ctx.fillRect(0, 0, W, H);
+
+  try {
   const purpose = REPORT_PURPOSES[_reportPurpose];
 
   // BG
@@ -1508,7 +1516,14 @@ function drawReportCanvas(cardId){
   ctx.fillText(c.dates||'', 18, 72);
 
   // Patient row
-  const session = JSON.parse(localStorage.getItem('wl_session')||sessionStorage.getItem('wl_session')||'{}');
+  let session = {};
+  try {
+    session = JSON.parse(
+      (localStorage.getItem('wl_session')) ||
+      (sessionStorage.getItem('wl_session')) ||
+      '{}'
+    );
+  } catch(_e){ session = {}; }
   const patient = session.name||'Patient';
   ctx.fillStyle='#888'; ctx.font='500 9px -apple-system,sans-serif';
   ctx.fillText('PATIENT', 18, 108);
@@ -1702,6 +1717,19 @@ function drawReportCanvas(cardId){
   // Right: WELLlife Care brand
   ctx.fillStyle='#0d5c3e'; ctx.font='700 10px -apple-system,sans-serif';
   ctx.textAlign='right'; ctx.fillText('WELLlife Care', W-18, footY+24); ctx.textAlign='left';
+  } catch(err){
+    // Surface the error so it's easy to diagnose; the canvas already has
+    // an opaque cream background so the download/preview won't be pure black.
+    console.error('[drawReportCanvas] failed:', err);
+    try {
+      ctx.fillStyle = '#c0392b';
+      ctx.font = '600 12px -apple-system,sans-serif';
+      ctx.fillText('Report render error — please reload the page.', 18, 40);
+      ctx.fillStyle = '#555';
+      ctx.font = '400 10px -apple-system,sans-serif';
+      ctx.fillText(String(err && err.message || err).slice(0,40), 18, 58);
+    } catch(_){}
+  }
 }
 
 let _reportFormat = 'jpg';
@@ -1724,23 +1752,35 @@ function downloadReport(){
   const name=(c?c.name:'health').replace(/\s+/g,'_');
   const date=new Date().toISOString().slice(0,10);
   try{
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
     if(_reportFormat==='pdf'){
-      // Build PDF via canvas → image embedded in minimal HTML → print
-      const dataUrl=canvas.toDataURL('image/jpeg',0.92);
-      const win=window.open('','_blank');
-      if(win){
-        win.document.write(`<!DOCTYPE html><html><head><title>WELLlife Care Report</title>
-        <style>*{margin:0;padding:0}body{display:flex;justify-content:center;align-items:flex-start;background:#f0eeea;min-height:100vh;padding:24px}img{max-width:420px;width:100%;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.2)}@media print{body{background:#fff;padding:0}img{border-radius:0;box-shadow:none;width:100%;max-width:100%}}</style>
-        </head><body><img src="${dataUrl}" onload="window.print()"></body></html>`);
-        win.document.close();
+      // Build a printable HTML doc. Prefer blob URL + anchor (works in
+      // sandboxed iframes / GitHub Pages). Fall back to window.open if blob
+      // URLs are blocked.
+      const html = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>WELLlife Care Report</title>
+<style>*{margin:0;padding:0;box-sizing:border-box}body{display:flex;justify-content:center;align-items:flex-start;background:#f0eeea;min-height:100vh;padding:24px;font-family:-apple-system,sans-serif}img{max-width:420px;width:100%;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,.2)}@media print{body{background:#fff;padding:0}img{border-radius:0;box-shadow:none;width:100%;max-width:100%}}</style>
+</head><body><img src="${dataUrl}" onload="setTimeout(()=>window.print(),150)"></body></html>`;
+      const blob = new Blob([html], {type:'text/html'});
+      const url = URL.createObjectURL(blob);
+      const win = window.open(url, '_blank');
+      if(!win){
+        // Popup blocked — offer the HTML as a download instead
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'welllife-report-'+name+'-'+date+'.html';
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
       }
+      setTimeout(()=>URL.revokeObjectURL(url), 60000);
     } else {
       const a=document.createElement('a');
       a.download='welllife-report-'+name+'-'+date+'.jpg';
-      a.href=canvas.toDataURL('image/jpeg',0.92);
+      a.href=dataUrl;
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
     }
-  } catch(e){ window.open(canvas.toDataURL('image/jpeg',0.92),'_blank'); }
+  } catch(e){
+    console.error('[downloadReport] failed:', e);
+    try { window.open(canvas.toDataURL('image/jpeg',0.92),'_blank'); } catch(_){}
+  }
 }
 // ─────────────────────────────────────────────────────────────────────────────
 
