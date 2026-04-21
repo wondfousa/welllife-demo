@@ -22,7 +22,7 @@
 body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:center;padding:20px 12px;min-height:100vh}
 .phone{width:390px;height:760px;background:#fff;border-radius:44px;overflow:hidden;position:relative;border:1px solid rgba(0,0,0,0.08);box-shadow:0 24px 64px rgba(0,0,0,0.12);display:flex;flex-direction:column}
 .sb{background:#fff;padding:14px 28px 8px;display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:500;color:var(--i2);flex-shrink:0}
-.screen{display:none;flex:1;overflow-y:auto;padding-bottom:100px}
+.screen{display:none;flex:1;overflow-y:auto;padding-bottom:100px;min-height:0}
 .screen.active{display:block}
 .tabs{position:absolute;bottom:0;left:0;right:0;height:80px;background:#fff;border-top:.5px solid rgba(0,0,0,.08);display:flex;padding-bottom:16px;z-index:100}
 .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;color:var(--g3);font-size:11px;font-weight:500}
@@ -366,11 +366,12 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
         <input type="hidden" id="recovery-color-recovered" value="#2ecc71">
       </div>
     </div>
+    <div id="test-reminder" style="display:none;margin:0 16px 12px;border-radius:12px;padding:10px 14px;flex-shrink:0;align-items:center;gap:10px"></div>
     <div class="sp" style="padding-top:0;padding-bottom:0">
       <div class="advice-card">
         <div class="advice-head"><span class="advice-dot"></span><span>Current guidance</span></div>
         <div class="cdc-box">
-          <div class="cdc-label">CDC tip</div>
+          <div class="cdc-label" id="cdc-disease-label">COVID-19</div>
           <div class="cdc-copy" id="cdc-tip-text"></div>
         </div>
       </div>
@@ -460,7 +461,11 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 
     <!-- Step-by-step guide -->
     <div style="padding:16px 16px 8px">
-      <div style="font-size:13px;font-weight:600;color:var(--ink);margin-bottom:12px">Step-by-step guide</div>
+      <button onclick="toggleSteps(this)" style="width:100%;display:flex;align-items:center;justify-content:space-between;background:#fff;border:.5px solid rgba(0,0,0,.08);border-radius:14px;padding:12px 16px;cursor:pointer;font-family:var(--font-b)">
+        <span style="font-size:13px;font-weight:600;color:var(--ink)">📋 Step-by-step guide</span>
+        <span style="font-size:11px;color:var(--teal);font-weight:600" id="steps-toggle-label">Show ▾</span>
+      </button>
+      <div id="steps-content" style="display:none;margin-top:10px">
       
         <div style="background:#fff;border-radius:14px;border:.5px solid rgba(0,0,0,.08);overflow:hidden;margin-bottom:10px">
           <div style="background:linear-gradient(135deg,#0d9e7a,#0a7a5e);padding:10px 14px;display:flex;align-items:center;gap:10px">
@@ -570,6 +575,7 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
             <img src="data:image/jpeg;base64,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GM9HdQ9A71KzWHsbIwte0OaRgg8igjw264gjzPH7kfpDsW/dlf8Abx/WC496aHxOH6gTvTQ+Jw/UCDt3ZW/bx/WCr6b2S9ILro3Bzd0wZBypXemh8Th+oF3gqwVgRBEyMHnsjGUHVVWskNt6U5xAaLXEnq8BytVpNBFYZsTRtkb2OGQg07sr/t4/rBO7K/7eP6wXHvTQ+Jw/UCd6aHxOH6gQdu7K/wC3j+sFC0Ig1rBByDYeQR18l3700PicP1ApMUUcEYjiY1jBya0YCDdYdzWVh3NBlERAREQEREBERAREQEREBERAREQEREBERAREQeR6QWpqWtWZ6zg2ZmnksJGQDthZlsavVmFeO8Z5Z6ZsN22DwXNI4DyHK9PLTrzvLpYWPc5uySRzHYtu54t42Tdt22N2GuxxA7EHkZuk1q3XltUnhlZpigMhGQ17j4TvmUHXb1qGS3pjtRFyA096SQNprttvMhe4ZQqx1n12V4xC8kuYG8CTzXKPRtOiDgynENobJ8HmOxB5VmqWW25akUsdRstsROsbA8EbsH6T5VZ9Hy8a/qsb7gt7AjAk4Z5cjjhlXcmm05Y5I5K8bmSHacC3me1Zq0KtLa7lgZFtc9kYz50EhERAREQEREBERAREQEREBERAREQEREBERAWHc1lYdzQZREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAREQEREBERAWHc0RB//2Q==" style="width:120px;flex-shrink:0;border-radius:8px;display:block" loading="lazy">
           </div>
         </div>
+      </div>
     </div>
 
     <!-- Buy Strip Tests -->
@@ -586,9 +592,9 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
           </div>
         </div>
         <div style="display:flex;gap:8px">
-          <a href="https://www.amazon.com/s?k=wondfo+covid+flu+rapid+test" target="_blank" style="flex:1;text-decoration:none;background:#FF9900;color:#fff;border-radius:10px;padding:9px 0;text-align:center;font-size:12px;font-weight:700;font-family:var(--font-b);display:block">🛒 Amazon</a>
-          <a href="https://www.walmart.com/search?q=wondfo+rapid+test" target="_blank" style="flex:1;text-decoration:none;background:#0071CE;color:#fff;border-radius:10px;padding:9px 0;text-align:center;font-size:12px;font-weight:700;font-family:var(--font-b);display:block">🛒 Walmart</a>
-          <a href="https://wondfo.com.cn/en/" target="_blank" style="flex:1;text-decoration:none;background:var(--teal);color:#fff;border-radius:10px;padding:9px 0;text-align:center;font-size:12px;font-weight:700;font-family:var(--font-b);display:block">🌐 Official</a>
+          <a href="https://www.amazon.com/stores/page/6BE25D6B-B4D5-4179-B433-E7030A551312" target="_blank" style="flex:1;text-decoration:none;background:#FF9900;color:#fff;border-radius:10px;padding:9px 0;text-align:center;font-size:12px;font-weight:700;font-family:var(--font-b);display:block">🛒 Amazon</a>
+          <a href="https://www.walmart.com/ip/WELLlife-COVID-19-Influenza-A-B-FLU-A-B-Home-Testing-kit-2-Tests/5645236670?classType=VARIANT&adsRedirect=true" target="_blank" style="flex:1;text-decoration:none;background:#0071CE;color:#fff;border-radius:10px;padding:9px 0;text-align:center;font-size:12px;font-weight:700;font-family:var(--font-b);display:block">🛒 Walmart</a>
+          <a href="https://welllifebio.com" target="_blank" style="flex:1;text-decoration:none;background:var(--teal);color:#fff;border-radius:10px;padding:9px 0;text-align:center;font-size:12px;font-weight:700;font-family:var(--font-b);display:block">🌐 Official</a>
         </div>
       </div>
     </div>
@@ -1144,6 +1150,50 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 
   </div>
 
+  <!-- REPORT SCREEN -->
+  <div class="screen" id="s-report" style="overflow-y:auto">
+    <!-- Header -->
+    <div style="background:linear-gradient(135deg,#0a3d2e,#1d9e75);padding:16px 20px;color:#fff;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+      <div>
+        <div style="font-size:15px;font-weight:700">Health Report</div>
+        <div style="font-size:11px;opacity:.7;margin-top:2px">Preview before sharing</div>
+      </div>
+      <button onclick="closeReport()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 12px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:5px;flex-shrink:0;font-family:var(--font-b)">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>Back
+      </button>
+    </div>
+    <!-- Canvas preview -->
+    <div style="padding:14px;background:#f0eeea;display:flex;justify-content:center">
+      <canvas id="report-canvas" style="border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.18);display:block;max-width:100%;height:auto"></canvas>
+    </div>
+    <!-- Purpose selector -->
+    <div style="padding:14px 16px 10px">
+      <div style="font-size:10px;font-weight:700;color:var(--g3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Select report purpose</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button onclick="setReportPurpose('family')" id="rp-family" class="rp-btn">👥 Friends</button>
+        <button onclick="setReportPurpose('sick_leave')" id="rp-sick_leave" class="rp-btn">🏢 Sick Leave</button>
+        <button onclick="setReportPurpose('doctor')" id="rp-doctor" class="rp-btn">🩺 Doctor</button>
+        <button onclick="setReportPurpose('insurance')" id="rp-insurance" class="rp-btn">📋 Insurance</button>
+      </div>
+    </div>
+    <!-- Format toggle -->
+    <div style="padding:0 16px 12px;display:flex;align-items:center;justify-content:space-between">
+      <span style="font-size:11px;font-weight:600;color:var(--g3);text-transform:uppercase;letter-spacing:.06em">Format</span>
+      <div style="display:flex;background:var(--gray);border-radius:12px;padding:3px;gap:2px">
+        <button onclick="setReportFormat('jpg')" id="fmt-jpg" style="padding:5px 14px;border-radius:9px;border:none;background:var(--teal);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-b)">JPG</button>
+        <button onclick="setReportFormat('pdf')" id="fmt-pdf" style="padding:5px 14px;border-radius:9px;border:none;background:transparent;color:var(--g3);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-b)">PDF</button>
+      </div>
+    </div>
+    <!-- Download -->
+    <div style="padding:0 16px 20px">
+      <button onclick="downloadReport()" style="width:100%;background:var(--teal);color:#fff;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.02em">
+        <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 10l4 5 4-5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 17h14" stroke="white" stroke-width="2.2" stroke-linecap="round"/></svg>
+        Download Image
+      </button>
+      <div style="text-align:center;font-size:11px;color:var(--g3);margin-top:8px">Image saves to your device · share anytime</div>
+    </div>
+  </div>
+
   <div class="tabs">
     <div class="tab on" id="t-home" onclick="go('home')"><svg class="ti" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 9.5L11 3l8 6.5V19a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M8 20v-7h6v7"/></svg>Home</div>
     <div class="tab" id="t-cards" onclick="go('cards')"><svg class="ti" viewBox="0 0 22 22" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="4" width="16" height="14" rx="2"/><path d="M7 8h8M7 12h5"/></svg>Cards</div>
@@ -1179,48 +1229,7 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 
 
 <!-- ── REPORT MODAL (outside phone, full viewport) ── -->
-<div id="report-modal" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.7);align-items:center;justify-content:center;padding:16px;overflow-y:auto">
-  <div style="background:#fff;border-radius:20px;width:100%;max-width:380px;margin:auto;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.4)">
-    <!-- Header -->
-    <div style="background:linear-gradient(135deg,#0a3d2e,#1d9e75);padding:16px 20px;color:#fff;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
-      <div>
-        <div style="font-size:15px;font-weight:700">Health Report</div>
-        <div style="font-size:11px;opacity:.7;margin-top:2px">Preview before sharing</div>
-      </div>
-      <button onclick="closeReport()" style="background:rgba(255,255,255,.2);border:none;color:#fff;width:32px;height:32px;border-radius:50%;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;flex-shrink:0">×</button>
-    </div>
-    <!-- Canvas preview area -->
-    <div style="padding:14px;background:#f0eeea;display:flex;justify-content:center">
-      <canvas id="report-canvas" style="border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.18);display:block;max-width:100%;height:auto"></canvas>
-    </div>
-    <!-- Purpose selector -->
-    <div style="padding:14px 16px 10px">
-      <div style="font-size:10px;font-weight:700;color:var(--g3);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Select report purpose</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button onclick="setReportPurpose('family')" id="rp-family" class="rp-btn">👥 Friends</button>
-        <button onclick="setReportPurpose('sick_leave')" id="rp-sick_leave" class="rp-btn">🏢 Sick Leave</button>
-        <button onclick="setReportPurpose('doctor')" id="rp-doctor" class="rp-btn">🩺 Doctor</button>
-        <button onclick="setReportPurpose('insurance')" id="rp-insurance" class="rp-btn">📋 Insurance</button>
-      </div>
-    </div>
-    <!-- Format toggle -->
-    <div style="padding:0 16px 12px;display:flex;align-items:center;justify-content:space-between">
-      <span style="font-size:11px;font-weight:600;color:var(--g3);text-transform:uppercase;letter-spacing:.06em">Format</span>
-      <div style="display:flex;background:var(--gray);border-radius:12px;padding:3px;gap:2px">
-        <button onclick="setReportFormat('jpg')" id="fmt-jpg" style="padding:5px 14px;border-radius:9px;border:none;background:var(--teal);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--font-b)">JPG</button>
-        <button onclick="setReportFormat('pdf')" id="fmt-pdf" style="padding:5px 14px;border-radius:9px;border:none;background:transparent;color:var(--g3);font-size:12px;font-weight:500;cursor:pointer;font-family:var(--font-b)">PDF</button>
-      </div>
-    </div>
-    <!-- Download -->
-    <div style="padding:0 16px 20px">
-      <button onclick="downloadReport()" style="width:100%;background:var(--teal);color:#fff;border:none;border-radius:14px;padding:14px;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;letter-spacing:.02em">
-        <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M10 3v10M6 10l4 5 4-5" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 17h14" stroke="white" stroke-width="2.2" stroke-linecap="round"/></svg>
-        Download Image
-      </button>
-      <div style="text-align:center;font-size:11px;color:var(--g3);margin-top:8px">Image saves to your device · share anytime</div>
-    </div>
-  </div>
-</div>
+
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/topojson/3.0.2/topojson.min.js"></script>
@@ -1393,15 +1402,13 @@ function generateReport(cardId){
   _reportPurpose = 'family';
   document.querySelectorAll('.rp-btn').forEach(b=>b.classList.remove('rp-active'));
   document.getElementById('rp-family').classList.add('rp-active');
-  const modal = document.getElementById('report-modal');
-  modal.style.display = 'flex';
+  go('report');
   _reportFormat = 'jpg'; setReportFormat('jpg');
-  // Wait 2 frames so modal is fully painted before canvas draws
   requestAnimationFrame(() => requestAnimationFrame(() => drawReportCanvas(cardId)));
 }
 
 function closeReport(){
-  document.getElementById('report-modal').style.display = 'none';
+  go(_prevScreen||'cards');
 }
 
 function _roundRect(ctx, x, y, w, h, r){
@@ -1676,8 +1683,7 @@ function setReportFormat(fmt){
     btn.style.color = f===fmt ? '#fff' : 'var(--g3)';
     btn.style.fontWeight = f===fmt ? '600' : '500';
   });
-  const dlBtn = document.querySelector('#report-modal button[onclick="downloadReport()"]');
-  if(dlBtn) dlBtn.querySelector('span') && (dlBtn.lastChild.textContent = 'Download '+fmt.toUpperCase());
+
 }
 
 function downloadReport(){
@@ -2023,11 +2029,15 @@ function initMemberSystem() {
 // ─────────────────────────────────────────────────────────────────────────────
 
 
+let _prevScreen = 'cards';
 function go(name){
+  const prev = document.querySelector('.screen.active');
+  if(prev && prev.id) _prevScreen = prev.id.replace('s-','');
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('on'));
   document.getElementById('s-'+name).classList.add('active');
-  document.getElementById('t-'+name).classList.add('on');
+  const tab = document.getElementById('t-'+name);
+  if(tab) tab.classList.add('on');
   if(name==='cards'){closeCard();closeNew();}
   if(name==='profile'){updateMembersSection();}
   document.getElementById('s-'+name).scrollTop=0;
@@ -2328,11 +2338,41 @@ function computePrediction(entries){
   return pred;
 }
 const RECOVERY_COLORS={severe:'#D66DAB',mild:'#E3ABCE',improving:'#F0DFED',recovered:'#2ecc71'};
+const CDC_GUIDANCE={
+  covid:{
+    severe:{head:'🚨 Seek Emergency Care',body:'Warning signs — call 911: difficulty breathing, persistent chest pain, confusion, bluish lips or face, or SpO₂ below 94%.',tip:'⚠️ Severe COVID requires hospital evaluation. Do not wait.',tipBg:'#fef2f2',tipBorder:'#fca5a5',tipColor:'#991b1b'},
+    mild:{head:'🏠 Rest at Home',body:'Stay home and away from others. Rest, hydrate, monitor temperature and SpO₂. Paxlovid must be started within 5 days of symptom onset — contact your doctor today if eligible.',tip:'💊 Paxlovid window: within 5 days of symptoms. Contact your provider today.',tipBg:'#eff6ff',tipBorder:'#bfdbfe',tipColor:'#1e40af'},
+    improving:{head:'📋 Almost There — 5-Day Precautions',body:'Return when both are true for 24+ hours: symptoms improving AND fever-free without medication. For the next 5 days: wear a mask, improve ventilation, maintain distance, wash hands frequently.',tip:'🔁 If fever returns after resuming activities — stay home again and restart the 24-hour clock.',tipBg:'#f5f3ff',tipBorder:'#c4b5fd',tipColor:'#5b21b6'},
+    recovered:{head:'✅ Clear to Return',body:'Get a negative rapid test before returning to work or school. Continue mask and hygiene precautions for 5 days total. Watch for Long COVID: fatigue, brain fog, or shortness of breath.',tip:'🧪 A negative strip test gives confidence you are no longer contagious.',tipBg:'#ecfdf5',tipBorder:'#6ee7b7',tipColor:'#065f46'}
+  },
+  flu:{
+    severe:{head:'🚨 Emergency Signs — Flu',body:'Seek emergency care for: difficulty breathing, persistent chest pain, sudden dizziness or confusion, severe vomiting, or flu symptoms that improve then return with worsening fever and cough.',tip:'⚠️ Flu can cause pneumonia, myocarditis and sepsis in high-risk individuals.',tipBg:'#fef2f2',tipBorder:'#fca5a5',tipColor:'#991b1b'},
+    mild:{head:'🏠 Rest & Treat — Flu',body:'Flu hits suddenly: fever, chills, muscle aches, fatigue. Tamiflu must be started within 48 hours of onset — it shortens illness and is prioritized for high-risk groups. OTC fever and pain relief. Most recover in 3-7 days.',tip:'💊 48-hour Tamiflu window — contact your doctor as soon as symptoms start.',tipBg:'#fff7ed',tipBorder:'#fdba74',tipColor:'#9a3412'},
+    improving:{head:'📋 Return When Ready — Flu',body:'Return when for 24+ hours: symptoms improving AND fever-free without medication. For 5 days after: mask around vulnerable people, improve ventilation, good hand hygiene. Fatigue and mild cough may linger.',tip:'⚡ Flu is contagious 1 day before symptoms and up to 5-7 days after onset.',tipBg:'#f5f3ff',tipBorder:'#c4b5fd',tipColor:'#5b21b6'},
+    recovered:{head:'✅ Fully Recovered — Flu',body:'A negative rapid Flu A/B test before returning to work provides extra confidence. Watch for secondary infections in the 2 weeks after. Get your annual flu shot if not yet vaccinated this season.',tip:'💉 Annual flu vaccination is the best prevention — available Oct-Nov each year.',tipBg:'#ecfdf5',tipBorder:'#6ee7b7',tipColor:'#065f46'}
+  },
+  rsv:{
+    severe:{head:'🚨 RSV — High-Risk Alert',body:'RSV is dangerous for infants, adults 60+, and the immunocompromised. Seek emergency care for: fast or labored breathing, wheezing, bluish color around mouth, infant not feeding, or dehydration.',tip:'⚠️ RSV is the leading cause of infant hospitalization. Act fast for babies under 6 months.',tipBg:'#fef2f2',tipBorder:'#fca5a5',tipColor:'#991b1b'},
+    mild:{head:'🏠 Supportive Care — RSV',body:'No specific antiviral for most people. Care is supportive: rest, stay hydrated, use nasal saline for infants, OTC pain/fever relief (no aspirin for children), consider a humidifier. Symptoms peak on days 3-5.',tip:'🧬 No antiviral for RSV — rest, fluids, and monitoring are the main treatment.',tipBg:'#eff6ff',tipBorder:'#bfdbfe',tipColor:'#1e40af'},
+    improving:{head:'📋 Gradual Recovery — RSV',body:'Return when for 24+ hours: symptoms improving AND fever-free without medication. RSV can linger — mild cough or congestion may persist 1-3 weeks. Extra caution around infants and elderly.',tip:'⚡ RSV can spread for 3-8 days. Extra caution around newborns and elderly after recovery.',tipBg:'#f5f3ff',tipBorder:'#c4b5fd',tipColor:'#5b21b6'},
+    recovered:{head:'✅ RSV Cleared',body:'RSV recovery takes 1-2 weeks. A negative rapid test provides reassurance before returning. Adults 60+: ask your doctor about the RSV vaccine (Arexvy/mRESVIA) for next season.',tip:'💉 RSV vaccines now available for adults 60+ and pregnant women to protect newborns.',tipBg:'#ecfdf5',tipBorder:'#6ee7b7',tipColor:'#065f46'}
+  }
+};
+function getCdcGuidance(){
+  const card=CARDS[HOME_REC.cardId];
+  let disease='covid';
+  if(card){const d=(card.disease||'').toLowerCase();if(d.includes('flu'))disease='flu';else if(d.includes('rsv'))disease='rsv';}
+  const entry=getRecoveryEntry(HOME_REC.currentDay);
+  const tone=entry?entry.tone:null;
+  let stage='mild';
+  if(tone==='severe')stage='severe';
+  else if(tone==='mild')stage='mild';
+  else if(tone==='improving')stage='improving';
+  else if(tone==='recovered')stage='recovered';
+  return CDC_GUIDANCE[disease]?.[stage]||CDC_GUIDANCE.covid.mild;
+}
 const RECOVERY_ADVICE=[
-  {maxDay:2,cdc:'Stay hydrated, keep monitoring temperature changes, and consider a repeat test within 48 hours if symptoms rise.',ai:'This is usually the hardest stretch. Keep your routine simple and let rest do the heavy lifting.'},
-  {maxDay:4,cdc:'If fever stays high, breathing worsens, or chest symptoms increase, contact a clinician promptly.',ai:'You are moving through the peak now. Even small improvements mean your body is responding.'},
-  {maxDay:6,cdc:'Continue resting even if you feel better, and use a follow-up test if you need extra reassurance before resuming plans.',ai:'Recovery is underway. Protect the progress by easing back slowly instead of pushing through.'},
-  {maxDay:7,cdc:'If symptoms are nearly gone and follow-up testing is negative, you may be ready for a gradual return to normal activity.',ai:'You are close to the finish line. One more calm day can help recovery feel complete instead of rushed.'}
+  {maxDay:7,cdc:'',ai:''}
 ];
 const STRIP_TONES={
   severe:   {label:'Severe',          hex:'#D66DAB',indicator:'#e24b4a'},
@@ -2542,7 +2582,17 @@ function updateRecoveryBar(){
   document.getElementById('recovery-meta').textContent=
     card.name+' · Day '+HOME_REC.currentDay+' of '+HOME_REC.total+' · tap a circle to log';
   const tipEl=document.getElementById('cdc-tip-text');
-  if(tipEl)tipEl.textContent=advice.cdc;
+  if(tipEl){
+    const g=getCdcGuidance();
+    const card2=CARDS[HOME_REC.cardId];
+    const d2=(card2?.disease||'').toLowerCase();
+    const disLabel=d2.includes('flu')?'Influenza':d2.includes('rsv')?'RSV':'COVID-19';
+    const dlEl=document.getElementById('cdc-disease-label');
+    if(dlEl)dlEl.textContent=disLabel;
+    tipEl.innerHTML='<div style="font-size:13px;font-weight:700;color:var(--ink);margin-bottom:5px">'+g.head+'</div>'
+      +'<div style="font-size:12px;color:#444;line-height:1.65;margin-bottom:8px">'+g.body+'</div>'
+      +'<div style="padding:8px 10px;border-radius:9px;font-size:11.5px;font-weight:500;line-height:1.5;background:'+g.tipBg+';border:1px solid '+g.tipBorder+';color:'+g.tipColor+'">'+g.tip+'</div>';
+  }
   const predictions=computePrediction(HOME_REC.entries);
   document.querySelectorAll('.recovery-stop').forEach(stop=>{
     const day=Number(stop.dataset.day);
@@ -2573,7 +2623,38 @@ function updateRecoveryBar(){
     }
   });
   syncRecoveryPositions();
+  updateTestReminder();
 }
+
+function updateTestReminder(){
+  const el=document.getElementById('test-reminder');
+  if(!el)return;
+  const entries=HOME_REC.entries;
+  const today=HOME_REC.currentDay-1;
+  let lastStripIdx=-1,lastPositiveIdx=-1,hasAnyNeg=false;
+  for(let i=0;i<=today;i++){
+    const e=entries[i];if(!e)continue;
+    if(e.source==='strip'){lastStripIdx=i;if(e.tone&&e.tone!=='recovered')lastPositiveIdx=i;else hasAnyNeg=true;}
+  }
+  const todayEntry=entries[today]||null;
+  const todayTone=todayEntry?todayEntry.tone:null;
+  const daysSinceStrip=lastStripIdx>=0?(today-lastStripIdx):999;
+  let msg=null,bg=null,icon=null,color=null;
+  if(todayTone==='recovered'&&!hasAnyNeg){msg='Get a negative test before returning to work or school';bg='#e8f8f2';color='#0d7a5e';icon='✅';}
+  else if(lastPositiveIdx>=0&&daysSinceStrip>=2&&todayTone!=='recovered'){msg='Time to retest — 48h since your last strip test';bg='#fdecea';color='#c0392b';icon='🔴';}
+  else if(todayTone==='improving'&&lastStripIdx<0){msg='Feeling better? Confirm your recovery with a strip test';bg='#fff8e6';color='#b7770d';icon='🟡';}
+  else if(todayTone&&todayTone!=='recovered'&&lastStripIdx<0){msg='Consider taking a strip test to confirm your illness';bg='#fff8e6';color='#b7770d';icon='🧪';}
+  if(msg){el.style.display='flex';el.style.background=bg;el.innerHTML='<span style="font-size:15px;flex-shrink:0">'+icon+'</span><span style="font-size:12px;font-weight:500;color:'+color+';line-height:1.45">'+msg+'</span>';}
+  else{el.style.display='none';}
+}
+function toggleSteps(btn){
+  const content=document.getElementById('steps-content');
+  const label=document.getElementById('steps-toggle-label');
+  const open=content.style.display==='block';
+  content.style.display=open?'none':'block';
+  label.textContent=open?'Show ▾':'Hide ▴';
+}
+
 function nearestRecoveryDay(clientX){
   const track=document.getElementById('recovery-track');
   if(!track)return 1;
