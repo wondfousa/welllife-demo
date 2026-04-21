@@ -393,13 +393,13 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
     <div style="height:16px"></div>
     <div class="sp" style="padding-top:20px;padding-bottom:4px">
       <div class="sec-lbl">Recent health cards</div>
-      <div class="rc" onclick="go('cards');setTimeout(()=>openCard('covid'),50)">
-        <div class="ild" style="background:var(--red)"></div>
-        <div><div style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:2px">COVID-19 Infection</div><div style="font-size:12px;color:var(--g3)">Feb 3–11, 2025 · 9 days</div><div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><span class="tag t-covid">COVID+</span><span class="tag t-strip">Strip verified</span><span class="tag t-ok">Recovered</span></div></div>
-      </div>
       <div class="rc" onclick="go('cards');setTimeout(()=>openCard('flu'),50)">
         <div class="ild" style="background:var(--amber)"></div>
         <div><div style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:2px">Flu A Infection</div><div style="font-size:12px;color:var(--g3)">Oct 18–present · in progress</div><div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><span class="tag t-flu">Flu A+</span><span class="tag t-strip">Strip verified</span></div></div>
+      </div>
+      <div class="rc" onclick="go('cards');setTimeout(()=>openCard('covid'),50)">
+        <div class="ild" style="background:var(--red)"></div>
+        <div><div style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:2px">COVID-19 Infection</div><div style="font-size:12px;color:var(--g3)">Feb 3–11, 2024 · 9 days</div><div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><span class="tag t-covid">COVID+</span><span class="tag t-strip">Strip verified</span><span class="tag t-ok">Recovered</span></div></div>
       </div>
     </div>
   </div>
@@ -672,20 +672,20 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
       </div>
       <div class="tl">
         <div class="tly">2025</div>
-        <div class="icp" onclick="openCard('covid')">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div><div style="font-weight:500;font-size:15px;color:var(--ink);margin-bottom:2px">COVID-19 Infection</div><div style="font-size:11px;color:var(--g3)">Feb 3 – Feb 11, 2025</div></div><div><span style="font-size:22px;font-family:var(--font-s);color:var(--ink);display:block;text-align:right;line-height:1">9</span><span style="font-size:11px;color:var(--g3)">days</span></div></div>
-          <div class="ddots" id="dd-covid"></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><span class="tag t-covid">COVID+</span><span class="tag" style="background:var(--pl);color:var(--pur)">Fever</span><span class="tag t-ok">Recovered</span></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><div class="strip-chip">🧪 Day 1 · Positive</div><div class="strip-chip sneg">✓ Day 9 · Negative</div></div>
-          <div style="border-top:.5px solid rgba(0,0,0,.06);padding-top:10px;font-size:12px;color:var(--g3);display:flex;justify-content:space-between;align-items:center"><span>9/9 days logged</span><span style="color:var(--teal);font-size:11px">Open →</span></div>
-        </div>
-        <div class="tly">2024</div>
         <div class="icp" onclick="openCard('flu')">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div><div style="font-weight:500;font-size:15px;color:var(--ink);margin-bottom:2px">Flu A Infection</div><div style="font-size:11px;color:var(--g3)">Oct 18 – present</div></div><div><span style="font-size:22px;font-family:var(--font-s);color:var(--amber);display:block;text-align:right;line-height:1">4</span><span style="font-size:11px;color:var(--g3)">days so far</span></div></div>
           <div class="ddots" id="dd-flu"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><span class="tag t-flu">Flu A+</span><span class="tag" style="background:var(--pl);color:var(--pur)">Fever 39.1°</span><span class="tag" style="background:#fef3c7;color:#92400e">In progress</span></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><div class="strip-chip">🧪 Day 1 · Flu A Positive</div></div>
           <div style="border-top:.5px solid rgba(0,0,0,.06);padding-top:10px;font-size:12px;color:var(--g3);display:flex;justify-content:space-between;align-items:center"><span>3/4 days logged</span><span style="color:var(--amber);font-weight:500">Log today →</span></div>
+        </div>
+        <div class="tly">2024</div>
+        <div class="icp" onclick="openCard('covid')">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div><div style="font-weight:500;font-size:15px;color:var(--ink);margin-bottom:2px">COVID-19 Infection</div><div style="font-size:11px;color:var(--g3)">Feb 3 – Feb 11, 2024</div></div><div><span style="font-size:22px;font-family:var(--font-s);color:var(--ink);display:block;text-align:right;line-height:1">9</span><span style="font-size:11px;color:var(--g3)">days</span></div></div>
+          <div class="ddots" id="dd-covid"></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><span class="tag t-covid">COVID+</span><span class="tag" style="background:var(--pl);color:var(--pur)">Fever</span><span class="tag t-ok">Recovered</span></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><div class="strip-chip">🧪 Day 1 · Positive</div><div class="strip-chip sneg">✓ Day 9 · Negative</div></div>
+          <div style="border-top:.5px solid rgba(0,0,0,.06);padding-top:10px;font-size:12px;color:var(--g3);display:flex;justify-content:space-between;align-items:center"><span>9/9 days logged</span><span style="color:var(--teal);font-size:11px">Open →</span></div>
         </div>
       </div>
     </div>
@@ -2298,7 +2298,7 @@ fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(r=>r.json(
   fetchCDCRiskMap();
 });
 const CARDS={
-  covid:{name:"COVID-19 Infection",dates:"Feb 3 – Feb 11, 2025",dur:9,logged:9,strips:2,disease:"COVID+",recoveryStart:"2025-02-03",tags:["COVID+","Fever","Fatigue","Recovered"],
+  covid:{name:"COVID-19 Infection",dates:"Feb 3 – Feb 11, 2024",dur:9,logged:9,strips:2,disease:"COVID+",recoveryStart:"2024-02-03",tags:["COVID+","Fever","Fatigue","Recovered"],
     days:[
       {date:"Feb 3",syms:["🤒 Fever","💢 Headache","😩 Fatigue"],temp:38.8,strip:"pos",meds:["💊 Ibuprofen"],energy:"😞 Terrible",note:"Woke up with chills. Took ibuprofen at 8am."},
       {date:"Feb 4",syms:["🤒 Fever","😩 Fatigue","🦴 Body aches"],temp:39.2,strip:"skip",meds:["💊 Ibuprofen","💊 Paracetamol"],energy:"😞 Terrible",note:"Worst day. High fever all day."},
