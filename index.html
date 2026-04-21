@@ -1832,29 +1832,35 @@ function loadMemberData(memberId) {
   try {
     const cardsRaw = localStorage.getItem(getMemberStorageKey(memberId, 'cards'));
     const homeRaw  = localStorage.getItem(getMemberStorageKey(memberId, 'home_rec'));
-    if (cardsRaw) {
-      const savedCards = JSON.parse(cardsRaw);
-      Object.keys(CARDS).forEach(k => delete CARDS[k]);
+
+    // Parse saved cards (may be null, "{}", or a real map)
+    let savedCards = null;
+    if (cardsRaw) { try { savedCards = JSON.parse(cardsRaw); } catch(_e){ savedCards = null; } }
+    const hasSavedCards = savedCards && typeof savedCards === 'object' && Object.keys(savedCards).length > 0;
+
+    Object.keys(CARDS).forEach(k => delete CARDS[k]);
+    if (hasSavedCards) {
       Object.assign(CARDS, savedCards);
     } else if (memberId === 'owner') {
-      // Owner with no saved data → restore default demo cards so the static
-      // Flu / COVID tiles on the Cards screen remain clickable.
-      Object.keys(CARDS).forEach(k => delete CARDS[k]);
+      // Owner with no (or empty) saved data → restore default demo cards so
+      // the static Flu / COVID tiles on the Cards screen remain clickable.
+      // Also handles the case where a previous buggy version saved an empty
+      // CARDS object to localStorage.
       Object.assign(CARDS, JSON.parse(JSON.stringify(DEFAULT_CARDS)));
-    } else {
-      // Non-owner member with no saved data → start empty.
-      Object.keys(CARDS).forEach(k => delete CARDS[k]);
     }
-    if (homeRaw) {
-      const savedHome = JSON.parse(homeRaw);
-      Object.keys(HOME_REC).forEach(k => delete HOME_REC[k]);
+    // else: non-owner member with no saved data → CARDS stays empty.
+
+    // Parse saved home rec
+    let savedHome = null;
+    if (homeRaw) { try { savedHome = JSON.parse(homeRaw); } catch(_e){ savedHome = null; } }
+    const hasSavedHome = savedHome && typeof savedHome === 'object' && savedHome.cardId;
+
+    Object.keys(HOME_REC).forEach(k => delete HOME_REC[k]);
+    if (hasSavedHome) {
       Object.assign(HOME_REC, savedHome);
     } else if (memberId === 'owner') {
-      Object.keys(HOME_REC).forEach(k => delete HOME_REC[k]);
       Object.assign(HOME_REC, JSON.parse(JSON.stringify(DEFAULT_HOME_REC)));
     } else {
-      // Reset home rec
-      Object.keys(HOME_REC).forEach(k => delete HOME_REC[k]);
       HOME_REC.cardId = null; HOME_REC.total = 0; HOME_REC.currentDay = 1;
       HOME_REC.dragging = false; HOME_REC.startX = 0; HOME_REC.moved = false;
       HOME_REC.suppressTapUntil = 0; HOME_REC.pendingDay = null; HOME_REC.entries = [];
