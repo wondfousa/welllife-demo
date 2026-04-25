@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5b2c91"/>
+      <stop offset="1" stop-color="#3d1a6b"/>
+    </linearGradient>
+    <linearGradient id="leaf" x1="0" y1="1" x2="1" y2="0">
+      <stop offset="0" stop-color="#0d9e7a"/>
+      <stop offset="1" stop-color="#1d9e75"/>
+    </linearGradient>
+  </defs>
+  <!-- Background tile -->
+  <rect width="1024" height="1024" rx="220" fill="url(#bg)"/>
+  <!-- Soft highlight -->
+  <ellipse cx="320" cy="220" rx="380" ry="200" fill="#ffffff" opacity="0.08"/>
+  <!-- Stylized 'W' wellness mark -->
+  <path d="M 240 360 L 360 720 L 460 520 L 512 660 L 564 520 L 664 720 L 784 360"
+        fill="none" stroke="#ffffff" stroke-width="60"
+        stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- Heartbeat / wellness pulse -->
+  <path d="M 220 820 L 380 820 L 430 760 L 480 880 L 540 720 L 600 860 L 650 820 L 804 820"
+        fill="none" stroke="url(#leaf)" stroke-width="28"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

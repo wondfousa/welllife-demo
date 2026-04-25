@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 2732 2732">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0a3d2e"/>
+      <stop offset="0.6" stop-color="#0d5c3e"/>
+      <stop offset="1" stop-color="#1d9e75"/>
+    </linearGradient>
+  </defs>
+  <rect width="2732" height="2732" fill="url(#bg)"/>
+  <!-- Centered logo (scaled) -->
+  <g transform="translate(854, 854) scale(1.0)">
+    <rect width="1024" height="1024" rx="220" fill="#5b2c91"/>
+    <ellipse cx="320" cy="220" rx="380" ry="200" fill="#ffffff" opacity="0.08"/>
+    <path d="M 240 360 L 360 720 L 460 520 L 512 660 L 564 520 L 664 720 L 784 360"
+          fill="none" stroke="#ffffff" stroke-width="60"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 220 820 L 380 820 L 430 760 L 480 880 L 540 720 L 600 860 L 650 820 L 804 820"
+          fill="none" stroke="#0d9e7a" stroke-width="28"
+          stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <!-- Wordmark -->
+  <text x="1366" y="2200" font-family="Georgia, serif" font-size="120" font-weight="500"
+        text-anchor="middle" fill="#ffffff" opacity="0.95">WELLlife Care</text>
+</svg>

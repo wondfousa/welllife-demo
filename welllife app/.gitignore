@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# iOS
+ios/App/Pods/
+ios/App/build/
+ios/App/App.xcworkspace/xcuserdata/
+ios/App/App.xcodeproj/xcuserdata/
+ios/DerivedData/
+*.xcuserstate
+
+# Android
+android/.gradle/
+android/build/
+android/app/build/
+android/local.properties
+android/.idea/
+android/captures/
+android/app/release/
+*.apk
+*.aab
+*.keystore
+
+# Misc
+.DS_Store
+*.log
+*.tmp
+*.swp
+.vscode/
+.idea/
