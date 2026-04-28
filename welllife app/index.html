@@ -323,6 +323,34 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .hdr .risk-card .mwrap{background:#e8e2f0!important}
 .hdr .risk-card .mf-btn:not(.on){background:rgba(91,44,145,.06)!important;border-color:rgba(91,44,145,.2)!important;color:#3d1a6b!important}
 .hdr .recovery-wrap .recovery-disclaimer{font-size:9.5px;line-height:1.45;color:#9a9890;margin-top:6px;letter-spacing:.01em}
+
+/* === Vital signs row below recovery track === */
+.vitals-row{display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:.5px solid rgba(0,0,0,.07)}
+.vital-chip{flex:1;display:flex;align-items:center;gap:8px;background:#fff;border:.5px solid rgba(0,0,0,.07);border-radius:10px;padding:8px 10px;min-width:0}
+.vital-chip[data-empty="true"]{opacity:.55;background:#f7f6f2}
+.vital-icon{font-size:18px;line-height:1;flex-shrink:0;width:22px;text-align:center}
+.vital-meta{display:flex;flex-direction:column;min-width:0;line-height:1.2}
+.vital-label{font-size:10px;font-weight:600;color:var(--g3);letter-spacing:.04em;text-transform:uppercase}
+.vital-value{font-size:12px;font-weight:600;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vital-chip[data-empty="true"] .vital-value{color:var(--g3)}
+.vital-trend{font-size:10px;margin-left:3px;font-weight:700}
+.vital-trend.up{color:#e24b4a}
+.vital-trend.down{color:#0d9e7a}
+
+/* === Map info collapsible (CDC details fold by default) === */
+.risk-toggle{display:inline-flex;align-items:center;justify-content:center;gap:5px;margin-left:auto;background:transparent;border:1.5px solid rgba(91,44,145,.18);border-radius:20px;color:rgba(61,26,107,.78);font-family:var(--font-b);font-size:11px;font-weight:500;letter-spacing:.02em;padding:5px 12px;cursor:pointer;transition:all .15s}
+.risk-toggle:hover{background:rgba(91,44,145,.06);color:#3d1a6b;border-color:rgba(91,44,145,.32)}
+.risk-toggle:hover{color:#3d1a6b}
+.risk-toggle-icon{font-size:9px;transition:transform .2s ease;display:inline-block}
+.risk-toggle[aria-expanded="true"] .risk-toggle-icon{transform:rotate(180deg)}
+.risk-toggle[aria-expanded="true"] .risk-toggle-label::after{content:"";}
+.risk-collapsible{margin-top:8px;animation:risk-fade .25s ease}
+@keyframes risk-fade{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+/* Disclaimer font fix (works wherever recovery-wrap lives) */
+.recovery-disclaimer{font-family:var(--font-b);font-size:9.5px;line-height:1.45;color:#9a9890;margin-top:6px;letter-spacing:.01em;font-weight:500}
+
+.vital-trend.flat{color:#9ca3af;font-weight:600}
 </style>
 </head>
 <body>
@@ -348,7 +376,40 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
           <div id="member-chips" style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"></div>
         </div>
       </div>
-<div class="recovery-wrap" style="margin-bottom:14px">
+      <div class="risk-card">
+        <div class="mwrap">
+          <svg id="us-map" width="100%" viewBox="0 0 960 560" style="display:block"></svg>
+          <div class="mttip" id="mttip"></div>
+        </div>
+        <div class="map-filters">
+          <button class="mf-btn mf-covid on" onclick="switchMapDisease('covid')">COVID-19</button>
+          <button class="mf-btn mf-flu"   onclick="switchMapDisease('flu')">Flu</button>
+          <button class="mf-btn mf-rsv"   onclick="switchMapDisease('rsv')">RSV</button>
+          <button type="button" class="risk-toggle" onclick="toggleRiskDetails(event)" aria-expanded="false">
+            <span class="risk-toggle-label">More info</span>
+            <span class="risk-toggle-icon">▼</span>
+          </button>
+        </div>
+        <div class="risk-collapsible" id="risk-collapsible" style="display:none">
+        <div class="risk-hdr">
+          <span class="risk-ttl" style="font-size:11.5px;letter-spacing:.01em">Respiratory Risk · United States</span>
+          <span id="map-status" class="risk-bdg">loading…</span>
+        </div>
+        <div style="font-size:10.5px;opacity:.75;margin:-4px 0 8px;color:#4a4a47;font-weight:500">Updated weekly from CDC NHSN hospital admissions data</div>
+        <div class="risk-ft">
+          <div class="ri"><div class="rd" style="background:#d1d5db;border:.5px solid rgba(0,0,0,.15)"></div>No data</div>
+          <div class="ri"><div class="rd" style="background:#94c47d"></div>Very Low</div>
+          <div class="ri"><div class="rd" style="background:#5cb85c"></div>Low</div>
+          <div class="ri"><div class="rd" style="background:#f1c232"></div>Moderate</div>
+          <div class="ri"><div class="rd" style="background:#e69138"></div>High</div>
+          <div class="ri"><div class="rd" style="background:#cc0000"></div>Very High</div>
+          <div style="margin-left:auto;font-size:10px;opacity:.7;color:#4a4a47" id="map-src-lbl">CDC NHSN</div>
+        </div>
+      </div>        </div>
+
+    </div>
+    <div class="sp" style="padding-bottom:8px">
+      <div class="recovery-wrap">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2px">
           <div class="recovery-title" style="font-size:20px">Recovery tracker</div>
           <button onclick="markRecovered(event)" style="background:var(--tl);border:1.5px solid rgba(13,158,122,.35);border-radius:20px;padding:6px 14px;font-size:11px;font-weight:600;color:var(--teal);cursor:pointer;font-family:var(--font-b);display:flex;align-items:center;gap:5px;flex-shrink:0">
@@ -364,10 +425,10 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
           <img class="whale-icon" id="recovery-whale" src="data:image/png;base64,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" alt="Recovery whale guide">
         </div>
         <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px">
-          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:#D66DAB;flex-shrink:0;display:inline-block"></span>Severe</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:#D66DAB;flex-shrink:0;display:inline-block"></span>Strong</div>
           <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:#E3ABCE;flex-shrink:0;display:inline-block"></span>Mild</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:#F0DFED;flex-shrink:0;display:inline-block"></span>Recovering</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:#2ecc71;flex-shrink:0;display:inline-block"></span>Recovered</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:#F0DFED;flex-shrink:0;display:inline-block"></span>Faint</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:transparent;border:1px solid #cfd6de;flex-shrink:0;display:inline-block;box-sizing:border-box"></span>None</div>
           <div style="display:flex;align-items:center;gap:5px;margin-left:auto;flex-shrink:0">
             <button onclick="adjustHomeDays(-1)" style="width:26px;height:26px;border-radius:7px;border:1px solid #ccc;background:#f0eeea;cursor:pointer;font-size:17px;color:#333;line-height:26px;text-align:center;padding:0;box-sizing:border-box">-</button>
             <span id="home-days-count" style="font-size:12px;font-weight:700;color:var(--ink);min-width:18px;text-align:center">7</span>
@@ -380,42 +441,28 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
             <span style="width:13px;height:13px;border-radius:50%;background:#D66DAB;box-shadow:0 0 0 2px #fff,0 0 0 3.5px #D66DAB;flex-shrink:0;display:inline-block"></span>Strip test
           </div>
           <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--g3)">
-            <span style="width:13px;height:13px;border-radius:50%;background:#D66DAB;flex-shrink:0;display:inline-block"></span>Symptoms
-          </div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--g3)">
             <span style="width:13px;height:13px;border-radius:50%;border:1.5px dashed rgba(91,44,145,.4);flex-shrink:0;display:inline-block;opacity:.9"></span>Upcoming
           </div>
         </div>
         <div class="recovery-disclaimer">Dashed dots are a visual extension only — not predictions. Colors update as you log each day.</div>
+        <div class="vitals-row" id="vitals-row">
+          <div class="vital-chip" id="vital-temp" data-empty="true">
+            <div class="vital-icon">🌡</div>
+            <div class="vital-meta"><div class="vital-label">Temp</div><div class="vital-value">—</div></div>
+          </div>
+          <div class="vital-chip" id="vital-spo2" data-empty="true">
+            <div class="vital-icon">💨</div>
+            <div class="vital-meta"><div class="vital-label">SpO₂</div><div class="vital-value">—</div></div>
+          </div>
+          <div class="vital-chip" id="vital-bp" data-empty="true">
+            <div class="vital-icon">💗</div>
+            <div class="vital-meta"><div class="vital-label">BP</div><div class="vital-value">—</div></div>
+          </div>
+        </div>
         <input type="hidden" id="recovery-color-severe" value="#ef4d4c">
         <input type="hidden" id="recovery-color-mild" value="#e09517">
         <input type="hidden" id="recovery-color-improving" value="#f1c40f">
         <input type="hidden" id="recovery-color-recovered" value="#2ecc71">
-      </div>
-      <div class="risk-card">
-        <div class="risk-hdr">
-          <span class="risk-ttl">Respiratory Risk · United States</span>
-          <span id="map-status" class="risk-bdg">loading…</span>
-        </div>
-        <div style="font-size:10.5px;opacity:.75;margin:-4px 0 8px;color:#4a4a47;font-weight:500">Updated weekly from CDC NHSN hospital admissions data</div>
-        <div class="map-filters">
-          <button class="mf-btn mf-covid on" onclick="switchMapDisease('covid')">COVID-19</button>
-          <button class="mf-btn mf-flu"   onclick="switchMapDisease('flu')">Flu</button>
-          <button class="mf-btn mf-rsv"   onclick="switchMapDisease('rsv')">RSV</button>
-        </div>
-        <div class="mwrap">
-          <svg id="us-map" width="100%" viewBox="0 0 960 560" style="display:block"></svg>
-          <div class="mttip" id="mttip"></div>
-        </div>
-        <div class="risk-ft">
-          <div class="ri"><div class="rd" style="background:#c8c0d4;border:.5px solid rgba(0,0,0,.15)"></div>No data</div>
-          <div class="ri"><div class="rd" style="background:#2ecc71"></div>Low</div>
-          <div class="ri"><div class="rd" style="background:#f1c40f"></div>Low-Mod</div>
-          <div class="ri"><div class="rd" style="background:#e67e22"></div>Moderate</div>
-          <div class="ri"><div class="rd" style="background:#e74c3c"></div>High</div>
-          <div class="ri"><div class="rd" style="background:#8e44ad"></div>Very High</div>
-          <div style="margin-left:auto;font-size:10px;opacity:.7;color:#4a4a47" id="map-src-lbl">CDC NHSN</div>
-        </div>
       </div>
     </div>
     <div id="test-reminder" style="display:none;margin:0 16px 12px;border-radius:12px;padding:10px 14px;flex-shrink:0;align-items:center;gap:10px"></div>
@@ -2465,7 +2512,7 @@ async function fetchCDCRiskMap() {
 // ── Map rendering ────────────────────────────────────────────────────────────
 let activeDisease = 'covid';
 let riskData = DISEASE_DATA.covid;
-const RC = ["#1a5c30","#2ecc71","#f1c40f","#e67e22","#e74c3c","#8e44ad"];
+const RC = ["#d1d5db","#94c47d","#5cb85c","#f1c232","#e69138","#cc0000"];
 const RL = ["No data","Low","Low-Mod","Moderate","High","Very High"];
 
 function switchMapDisease(d) {
@@ -3060,6 +3107,7 @@ function updateRecoveryBar(){
   });
   syncRecoveryPositions();
   updateTestReminder();
+  try { updateVitals(); } catch(_) {}
 }
 
 function updateTestReminder(){
@@ -3636,6 +3684,46 @@ buildRecoveryBar();
 bindRecoveryBar();
 updateRecoveryBar();
 renderRecoveryHistory();
+// Vital signs row: Temperature / SpO2 / BP, computed from HOME_REC.entries.
+// Greys out + shows "—" when no value; arrow shows trend (latest vs previous reading).
+function updateVitals(){
+  try{
+    var ents = (typeof HOME_REC!=="undefined" && HOME_REC.entries) ? HOME_REC.entries : [];
+    var pick = function(field){
+      var arr = [];
+      for (var i=0;i<ents.length;i++){
+        var e = ents[i];
+        if (e && e[field]!=null && e[field]!=="") arr.push({day:i, val:e[field]});
+      }
+      return arr;
+    };
+    var fmt = function(field, unit){
+      var arr = pick(field);
+      if (!arr.length) return {empty:true, txt:"—", trend:""};
+      var last = arr[arr.length-1].val;
+      var prev = arr.length>1 ? arr[arr.length-2].val : null;
+      var trend = "";
+      if (prev!=null && typeof last==="number" && typeof prev==="number"){
+        if (last < prev)      trend = "<span class=\"vital-trend down\">↓</span>";
+        else if (last > prev) trend = "<span class=\"vital-trend up\">↑</span>";
+      }
+      return {empty:false, txt: last + unit, trend:trend};
+    };
+    var apply = function(id, field, unit){
+      var chip = document.getElementById(id);
+      if (!chip) return;
+      var r = fmt(field, unit);
+      chip.dataset.empty = r.empty ? "true" : "false";
+      var v = chip.querySelector(".vital-value");
+      if (v) v.innerHTML = r.txt + (r.trend||"");
+    };
+    apply("vital-temp", "temperature", "°F");
+    apply("vital-spo2", "spo2", "%");
+    apply("vital-bp",   "bp",   "");
+  }catch(_){}
+}
+try { updateVitals(); } catch(_) {}
+
 applyNewCardCopy();
 window.addEventListener('resize',syncRecoveryPositions);
 updT();
@@ -3841,6 +3929,23 @@ document.addEventListener('DOMContentLoaded', () => {
   if (pav) pav.innerHTML = `<img src="${getAvatar('owner')}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
 });
 // ─────────────────────────────────────────────────────────────────────────────
+
+function toggleRiskDetails(e){
+  if(e&&e.preventDefault)e.preventDefault();
+  var btn = e ? e.currentTarget : document.querySelector(".risk-toggle");
+  var panel = document.getElementById("risk-collapsible");
+  if(!panel||!btn) return;
+  var open = panel.style.display !== "none" && panel.style.display !== "";
+  if (open) {
+    panel.style.display = "none";
+    btn.setAttribute("aria-expanded","false");
+    var lbl = btn.querySelector(".risk-toggle-label"); if(lbl) lbl.textContent = "More info";
+  } else {
+    panel.style.display = "block";
+    btn.setAttribute("aria-expanded","true");
+    var lbl2 = btn.querySelector(".risk-toggle-label"); if(lbl2) lbl2.textContent = "Hide details";
+  }
+}
 </script>
 
 <!-- Hidden avatar file input -->
