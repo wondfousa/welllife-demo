@@ -77,8 +77,7 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .recovery-dots{position:absolute;inset:12px 0 0;display:flex;justify-content:space-between;align-items:flex-start}
 .recovery-stop{width:48px;display:flex;flex-direction:column;align-items:center;gap:10px;--stop-color:var(--rec-idle)}
 .recovery-stop.tap-target{cursor:pointer}
-.day-dot{width:36px;height:36px;border-radius:50%;border:2px solid #b6b1a6;background:transparent;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#9a9890;box-shadow:0 2px 8px rgba(12,28,25,.05);transition:transform .2s ease,background .2s ease,color .2s ease,border-color .2s ease,box-shadow .2s ease;position:relative}
-.day-dot::before{content:attr(data-log);position:absolute;top:calc(100% + 2px);left:50%;transform:translateX(-50%);font-size:12px;font-weight:900;color:#166534;line-height:1;pointer-events:none}
+.day-dot{width:36px;height:36px;border-radius:50%;border:none;background:transparent;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700;color:#9a9890;transition:transform .2s ease,background .2s ease,color .2s ease,border-color .2s ease,box-shadow .2s ease;position:relative}
 .day-label{font-size:11px;font-weight:700;letter-spacing:.02em;color:#a6acb4;transition:color .2s ease,font-size .2s ease}
 .recovery-stop.saved .day-dot{background:var(--stop-color);border-color:transparent;color:#fff}
 .recovery-stop.saved .day-label{color:var(--stop-color)}
@@ -95,7 +94,7 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .recovery-stop.saved.src-strip .day-dot{background:var(--stop-color);border-color:transparent;color:#fff;box-shadow:0 0 0 2.5px #fff,0 0 0 4.5px #D66DAB}
 .recovery-stop.saved.src-symptoms .day-dot{background:var(--stop-color);border-color:transparent;color:#fff}
 .recovery-stop.saved .day-dot{background:var(--stop-color);border-color:transparent}
-.recovery-stop.predicted .day-dot{position:relative;background:var(--stop-color)!important;border-color:transparent!important;border-style:solid!important;border-width:0!important;color:#3d1a6b!important;box-shadow:0 2px 8px rgba(12,28,25,.05)!important}
+.recovery-stop.predicted .day-dot{position:relative;background:transparent!important;border-color:transparent!important;border-style:solid!important;border-width:0!important;color:#3d1a6b!important;box-shadow:0 2px 8px rgba(12,28,25,.05)!important}
 .recovery-stop.predicted .day-dot::after{content:"";position:absolute;top:-3px;left:-3px;right:-3px;bottom:-3px;border-radius:50%;border:1.8px dashed rgba(91,44,145,.65);pointer-events:none}
 .recovery-stop.predicted .day-label{opacity:.75}
 .dp.dppred{background:transparent!important;border-style:dashed!important;border-width:1.5px!important;border-color:currentColor;opacity:.65}
@@ -104,7 +103,7 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .recovery-color input::-webkit-color-swatch-wrapper{padding:0}
 .recovery-color input::-webkit-color-swatch{border:none;border-radius:50%}
 .recovery-color input::-moz-color-swatch{border:none;border-radius:50%}
-.advice-card{background:linear-gradient(150deg,#c5f0e8 0%,#a9e6df 55%,#96dbd0 100%);border-radius:20px;padding:16px 16px 14px;box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 20px 40px -14px rgba(18,82,74,.32),0 6px 14px rgba(18,82,74,.12);position:relative;overflow:hidden;border:.5px solid rgba(255,255,255,.5)}
+.advice-card{background:linear-gradient(150deg,#c5f0e8 0%,#a9e6df 55%,#96dbd0 100%);border-radius:20px;padding:16px 16px 10px;box-shadow:0 1px 0 rgba(255,255,255,.6) inset,0 20px 40px -14px rgba(18,82,74,.32),0 6px 14px rgba(18,82,74,.12);position:relative;overflow:hidden;border:.5px solid rgba(255,255,255,.5)}
 .advice-card::after{content:'';position:absolute;right:-30px;bottom:-44px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.18);filter:blur(2px);pointer-events:none}
 .advice-card::before{content:'';position:absolute;top:-40px;left:-30px;width:130px;height:130px;border-radius:50%;background:radial-gradient(circle,rgba(255,255,255,.5),transparent 70%);filter:blur(6px);pointer-events:none}
 .advice-head{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#244640;margin-bottom:10px;position:relative;z-index:1}
@@ -122,7 +121,7 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .cdc-label .src-pill.news{background:rgba(45,125,210,.16);color:#1a5ba5}
 .cdc-copy{font-size:15px;line-height:1.45;font-weight:700;color:var(--ink)}
 .cdc-news-meta{display:flex;align-items:center;gap:6px;font-size:10.5px;font-weight:600;color:#4f6b66;margin-top:8px;opacity:.85}
-.cdc-footer{position:relative;z-index:1;margin-top:10px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.cdc-footer{position:relative;z-index:1;margin-top:6px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .cdc-dots{display:flex;gap:6px;align-items:center}
 .cdc-dot{width:6px;height:6px;border-radius:50%;background:rgba(36,70,64,.25);cursor:pointer;transition:all .25s ease;border:none;padding:0}
 .cdc-dot.on{background:#244640;width:18px;border-radius:3px}
@@ -175,12 +174,17 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .dd.now{background:var(--g2);color:var(--g3);border:.5px dashed rgba(0,0,0,.15)}
 .dd.miss{background:var(--g2);color:var(--g3);border:.5px dashed rgba(0,0,0,.15)}
 /* Severity-based fills for the card-list mini-dots — sync with home whale timeline */
-.dd.dd-sev-strong{background:#D66DAB;color:#fff}
-.dd.dd-sev-mild{background:#E3ABCE;color:#6b2d5e}
-.dd.dd-sev-faint{background:#ECCBDF;color:#6b2d5e}
-.dd.dd-sev-none{background:#2ecc71;color:#fff}
+.dd.dd-sev-strong{background:transparent;border:2px solid #ef4d4c;color:#3d1a6b;box-sizing:border-box}
+.dd.dd-sev-mild{background:transparent;border:2px solid #e09517;color:#3d1a6b;box-sizing:border-box}
+.dd.dd-sev-faint{background:transparent;border:2px solid #f1c40f;color:#3d1a6b;box-sizing:border-box}
+.dd.dd-sev-none{background:transparent;border:2px solid #2ecc71;color:#3d1a6b;box-sizing:border-box}
+/* Strip source adds background color */
+.dd.dd-sev-strong.dd-strip{background:#D66DAB}
+.dd.dd-sev-mild.dd-strip{background:#ECCBDF}
+.dd.dd-sev-faint.dd-strip{background:#ECCBDF}
+.dd.dd-sev-none.dd-strip{background:#2ecc71}
 /* Strip-verified halo on mini-dot */
-.dd.dd-strip{box-shadow:0 0 0 1.5px #fff inset, 0 0 0 2.5px var(--dd-strip-color,#0d9e7a)}
+.dd.dd-strip{}
 .strip-chip{display:flex;align-items:center;gap:6px;background:var(--bl);border-radius:10px;padding:5px 10px;font-size:11px;color:var(--blue);font-weight:500}
 .sneg{background:var(--tl);color:var(--tm)}
 .dv{display:none}
@@ -206,14 +210,19 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .dp.dpnow{background:var(--gray);color:var(--g3);border:.5px dashed rgba(0,0,0,.15)}
 .dp.dpempty{background:var(--gray);color:var(--g3);border:.5px dashed rgba(0,0,0,.15)}
 /* Severity-based fills for card DAILY LOG — kept in sync with home whale timeline */
-.dp.dp-sev-strong{background:#D66DAB;color:#fff}
-.dp.dp-sev-mild{background:#E3ABCE;color:#6b2d5e}
-.dp.dp-sev-faint{background:#ECCBDF;color:#6b2d5e}
-.dp.dp-sev-none{background:#2ecc71;color:#fff}
+.dp.dp-sev-strong{background:transparent;border:2.4px solid #ef4d4c;color:#3d1a6b;box-sizing:border-box}
+.dp.dp-sev-mild{background:transparent;border:2.4px solid #e09517;color:#3d1a6b;box-sizing:border-box}
+.dp.dp-sev-faint{background:transparent;border:2.4px solid #f1c40f;color:#3d1a6b;box-sizing:border-box}
+.dp.dp-sev-none{background:transparent;border:2.4px solid #2ecc71;color:#3d1a6b;box-sizing:border-box}
+/* Strip source adds background color (= strip color) */
+.dp.dp-sev-strong.dp-strip{background:#D66DAB}
+.dp.dp-sev-mild.dp-strip{background:#ECCBDF}
+.dp.dp-sev-faint.dp-strip{background:#ECCBDF}
+.dp.dp-sev-none.dp-strip{background:#2ecc71}
 /* Strip-verified halo — matches home rec-stops' outer white+color ring */
-.dp.dp-strip{box-shadow:0 0 0 2px #fff inset, 0 0 0 3.5px var(--dp-strip-color,#0d9e7a)}
+.dp.dp-strip{}
 .dp-n{font-family:var(--font-s);font-size:18px;line-height:1}
-.dp-l{font-size:10px;margin-top:2px;opacity:.85}
+.dp-l{font-size:10px;margin-top:2px;opacity:1;color:#3d1a6b}
 .dcard{margin:0 24px;background:#fff;border-radius:var(--r);border:.5px solid rgba(0,0,0,.08);overflow:hidden}
 .dchdr{padding:12px 16px;background:var(--gray);display:flex;justify-content:space-between;border-bottom:.5px solid rgba(0,0,0,.06)}
 .dcday{font-weight:500;font-size:14px;color:var(--ink)}
@@ -373,6 +382,9 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
 .recovery-stop.active .day-label{color:#3d1a6b!important;font-size:12px}
 .recovery-stop.active:not(.saved) .day-label{color:#3d1a6b!important}
 .recovery-stop.predicted .day-label{opacity:1!important;color:#3d1a6b!important}
+
+/* === Two-axis dot encoding: ring=severity, fill=strip color === */
+.recovery-stop.saved .day-dot{border:none!important;background:var(--stop-color, transparent);box-shadow:0 0 0 2px #fff,0 0 0 3.5px var(--severity-color, transparent)!important}
 </style>
 <script>
 (function(){
@@ -460,30 +472,32 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
           <div class="recovery-dots" id="recovery-dots"></div>
           <div class="whale-icon" id="recovery-whale"><svg viewBox="0 0 12 9" width="12" height="9" style="display:block"><path d="M6 9 L0 0 L12 0 Z" fill="#5b2c91"/></svg></div>
         </div>
+        <div id="test-reminder" style="display:none;margin-top:2px;border-radius:10px;padding:6px 10px;align-items:center;gap:8px"></div>
         <!-- Data source legend (merged with +/- day-count adjuster on the right) -->
-        <div style="display:flex;gap:10px;margin-top:7px;padding-top:7px;border-top:.5px solid rgba(0,0,0,.07);align-items:center;flex-wrap:wrap">
+        <div style="display:flex;gap:10px;margin-top:2px;padding-top:4px;border-top:.5px solid rgba(0,0,0,.07);align-items:center;flex-wrap:wrap">
           <div onclick="toggleStripColors(event)" style="display:flex;align-items:center;gap:5px;font-size:10px;color:#3d1a6b;cursor:pointer;user-select:none;background:rgba(91,44,145,.07);border:.5px solid rgba(91,44,145,.22);border-radius:12px;padding:3px 9px 3px 4px;font-weight:600">
-            <span style="width:9px;height:9px;border-radius:50%;background:#D66DAB;box-shadow:0 0 0 1.6px #fff,0 0 0 3px #D66DAB;flex-shrink:0;display:inline-block;margin:2px"></span>Strip test <svg class="strip-chev" width="12" height="12" viewBox="0 0 12 12" style="margin-left:2px;transition:transform .2s ease;flex-shrink:0;display:inline-block;vertical-align:middle"><path d="M2 4.5 L6 8.5 L10 4.5" stroke="#5b2c91" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span style="width:13px;height:13px;border-radius:50%;background:#D66DAB;flex-shrink:0;display:inline-block"></span>Strip test <svg class="strip-chev" width="12" height="12" viewBox="0 0 12 12" style="margin-left:2px;transition:transform .2s ease;flex-shrink:0;display:inline-block;vertical-align:middle"><path d="M2 4.5 L6 8.5 L10 4.5" stroke="#5b2c91" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--g3)">
-            <svg width="13" height="13" viewBox="0 0 13 13" style="flex-shrink:0;display:inline-block;vertical-align:middle"><path d="M3 7 L5.5 9.5 L10 4.5" stroke="#166534" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>Log
+          <div onclick="toggleSeverityColors(event)" style="display:flex;align-items:center;gap:5px;font-size:10px;color:#3d1a6b;cursor:pointer;user-select:none;background:rgba(91,44,145,.07);border:.5px solid rgba(91,44,145,.22);border-radius:12px;padding:3px 9px 3px 6px;font-weight:600">
+            <span style="width:11px;height:11px;border-radius:50%;border:2px solid #ef4d4c;background:transparent;flex-shrink:0;display:inline-block;box-sizing:border-box"></span>Severity <svg class="sev-chev" width="12" height="12" viewBox="0 0 12 12" style="margin-left:2px;transition:transform .2s ease;flex-shrink:0;display:inline-block;vertical-align:middle"><path d="M2 4.5 L6 8.5 L10 4.5" stroke="#5b2c91" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:10px;color:var(--g3)">
-            <svg width="16" height="16" viewBox="0 0 16 16" style="flex-shrink:0;display:inline-block;vertical-align:middle"><circle cx="8" cy="8" r="3.5" fill="#E3ABCE"/><circle cx="8" cy="8" r="6.6" fill="none" stroke="rgba(91,44,145,.65)" stroke-width="1.6" stroke-dasharray="2.2 1.6"/></svg>Upcoming
-          </div>
-          <div style="display:flex;align-items:center;gap:5px;flex-shrink:0;margin-left:auto">
+          <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
             <button onclick="adjustHomeDays(-1)" style="width:24px;height:24px;border-radius:7px;border:1px solid #ccc;background:#f0eeea;cursor:pointer;font-size:15px;color:#333;line-height:22px;text-align:center;padding:0;box-sizing:border-box">-</button>
             <span id="home-days-count" style="font-size:12px;font-weight:700;color:var(--ink);min-width:18px;text-align:center">7</span>
             <button onclick="adjustHomeDays(1)"  style="width:24px;height:24px;border-radius:7px;border:1px solid #ccc;background:#f0eeea;cursor:pointer;font-size:15px;color:#333;line-height:22px;text-align:center;padding:0;box-sizing:border-box">+</button>
           </div>
         </div>
         <div id="strip-colors-row" style="display:none;gap:8px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:.5px dashed rgba(0,0,0,.06)">
-          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:#D66DAB;flex-shrink:0;display:inline-block"></span>Strong</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:#E3ABCE;flex-shrink:0;display:inline-block"></span>Mild</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:9px;height:9px;border-radius:50%;background:#ECCBDF;flex-shrink:0;display:inline-block"></span>Faint</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><svg width="11" height="11" viewBox="0 0 11 11" style="flex-shrink:0;display:inline-block;vertical-align:middle"><circle cx="5.5" cy="5.5" r="4.5" fill="#fff" stroke="#9a9890" stroke-width="1"/><line x1="2.5" y1="8.5" x2="8.5" y2="2.5" stroke="#9a9890" stroke-width="1.2" stroke-linecap="round"/></svg>None</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:11px;height:11px;border-radius:50%;background:#D66DAB;flex-shrink:0;display:inline-block"></span>Strong</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:11px;height:11px;border-radius:50%;background:#ECCBDF;flex-shrink:0;display:inline-block"></span>Faint</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:11px;height:11px;border-radius:50%;background:#2ecc71;flex-shrink:0;display:inline-block"></span>None</div>
         </div>
-        <div class="recovery-disclaimer">Forecasts only — not a medical prediction.</div>
+        <div id="severity-colors-row" style="display:none;gap:8px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:.5px dashed rgba(0,0,0,.06)">
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:13px;height:13px;border-radius:50%;border:2.4px solid #ef4d4c;background:transparent;flex-shrink:0;display:inline-block;box-sizing:border-box"></span>Strong</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:13px;height:13px;border-radius:50%;border:2.4px solid #e09517;background:transparent;flex-shrink:0;display:inline-block;box-sizing:border-box"></span>Mild</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:13px;height:13px;border-radius:50%;border:2.4px solid #f1c40f;background:transparent;flex-shrink:0;display:inline-block;box-sizing:border-box"></span>Faint</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:13px;height:13px;border-radius:50%;border:2.4px solid #2ecc71;background:transparent;flex-shrink:0;display:inline-block;box-sizing:border-box"></span>None</div>
+        </div>
         <div class="vitals-row" id="vitals-row">
           <div class="vital-chip" id="vital-temp" data-empty="true">
             <svg class="vital-curve" viewBox="0 0 24 16" xmlns="http://www.w3.org/2000/svg"><path d="M2,8 L22,8" stroke="#cfd6de" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
@@ -504,7 +518,6 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
         <input type="hidden" id="recovery-color-none" value="#2ecc71">
       </div>
     </div>
-    <div id="test-reminder" style="display:none;margin:0 16px 12px;border-radius:12px;padding:10px 14px;flex-shrink:0;align-items:center;gap:10px"></div>
     <div class="sp" style="padding-top:0;padding-bottom:0">
       <div class="advice-card" id="cdc-advice-card">
         <div class="advice-head">
@@ -541,7 +554,7 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
         </div>
       </div>
     </div>
-    <div style="height:16px"></div>
+    <div style="height:4px"></div>
     <div class="sp" style="padding-top:20px;padding-bottom:4px">
       <div class="sec-lbl">Recent health cards</div>
       <div class="rc" onclick="go('cards');setTimeout(()=>openCard('flu'),50)">
@@ -3103,7 +3116,10 @@ function updateRecoveryBar(){
   const predictions=computePrediction(HOME_REC.entries);
   // Predicted dots snap to one of the 4 strip colors (no smooth interpolation).
   // 'none' tone maps to None (white) since we no longer use the green recovered shade.
-  const _predColors={strong:'#D66DAB', mild:'#E3ABCE', faint:'#ECCBDF', none:'#ffffff'};
+  const _predColors={strong:'#D66DAB', mild:'#ECCBDF', faint:'#ECCBDF', none:'#2ecc71'};
+  // Severity → outside ring color (independent from strip-color fill)
+  const _sevColors={strong:'#ef4d4c', mild:'#e09517', faint:'#f1c40f', none:'#2ecc71'};
+
   document.querySelectorAll('.recovery-stop').forEach(stop=>{
     const day=Number(stop.dataset.day);
     const idx=day-1;
@@ -3115,19 +3131,30 @@ function updateRecoveryBar(){
       +(day===HOME_REC.currentDay?' active':'')
       +(isPred?' predicted':'');
     let displayColor;
+    let severityColor = 'transparent';
     if(isPred){
-      displayColor = _predColors[predictions[idx]] || '#ffffff';
+      // Predicted: dashed ring overlay, no fill, no severity
+      displayColor = 'transparent';
+      severityColor = 'transparent';
+    } else if (entry) {
+      // Logged: fill = strip color (only if recorded), ring = severity color
+      const isStripLogged = entry.source === 'strip';
+      const tone = entry.tone;
+      displayColor = isStripLogged ? (_predColors[tone] || 'transparent') : 'transparent';
+      severityColor = _sevColors[tone] || 'transparent';
     } else {
-      displayColor = getRecoveryDisplayColor(entry);
+      // No log past day — both transparent (no ring, blank center)
+      displayColor = 'transparent';
+      severityColor = 'transparent';
     }
     stop.style.setProperty('--stop-color', displayColor);
+    stop.style.setProperty('--severity-color', severityColor);
     const dot = stop.querySelector('.day-dot');
     if(dot) {
       const dayNum = stop.dataset.day;
       if (dayNum != null) {
         dot.innerHTML = dayNum;
       }
-      dot.dataset.log = entry ? '✓' : '';
       dot.style.color = '#3d1a6b';
     }
     const lbl=stop.querySelector('.day-label');
@@ -3155,7 +3182,7 @@ function updateTestReminder(){
   const todayTone=todayEntry?todayEntry.tone:null;
   const daysSinceStrip=lastStripIdx>=0?(today-lastStripIdx):999;
   let msg=null,bg=null,icon=null,color=null;
-  if(todayTone==='none'&&!hasAnyNeg){msg='Get a negative test before returning to work or school';bg='#e8f8f2';color='#0d7a5e';icon='✅';}
+  if(todayTone==='none'&&(!todayEntry||todayEntry.source!=='strip')&&!hasAnyNeg){msg='Get a negative test before returning to work or school';bg='#e8f8f2';color='#0d7a5e';icon='✅';}
   else if(lastPositiveIdx>=0&&daysSinceStrip>=2&&todayTone!=='none'){msg='Time to retest — 48h since your last strip test';bg='#fdecea';color='#c0392b';icon='🔴';}
   else if(todayTone==='faint'&&lastStripIdx<0){msg='Feeling better? Confirm your recovery with a strip test';bg='#fff8e6';color='#b7770d';icon='🟡';}
   else if(todayTone&&todayTone!=='none'&&lastStripIdx<0){msg='Consider taking a strip test to confirm your illness';bg='#fff8e6';color='#b7770d';icon='🧪';}
@@ -4014,6 +4041,26 @@ function toggleStripColors(e){
   var chev = e && e.currentTarget ? e.currentTarget.querySelector('.strip-chev') : null;
   if(!row) return;
   var open = row.style.display !== 'none' && row.style.display !== '';
+  // Close the Severity panel if open (mutually exclusive)
+  var sevRow = document.getElementById('severity-colors-row');
+  var sevChev = document.querySelector('.sev-chev');
+  if (sevRow) sevRow.style.display = 'none';
+  if (sevChev) sevChev.style.transform = 'rotate(0deg)';
+  row.style.display = open ? 'none' : 'flex';
+  if(chev) chev.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
+}
+
+function toggleSeverityColors(e){
+  if(e&&e.stopPropagation)e.stopPropagation();
+  var row = document.getElementById('severity-colors-row');
+  var chev = e && e.currentTarget ? e.currentTarget.querySelector('.sev-chev') : null;
+  if(!row) return;
+  var open = row.style.display !== 'none' && row.style.display !== '';
+  // Close the Strip test panel if open (mutually exclusive)
+  var stripRow = document.getElementById('strip-colors-row');
+  var stripChev = document.querySelector('.strip-chev');
+  if (stripRow) stripRow.style.display = 'none';
+  if (stripChev) stripChev.style.transform = 'rotate(0deg)';
   row.style.display = open ? 'none' : 'flex';
   if(chev) chev.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
 }
