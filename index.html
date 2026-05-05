@@ -90,10 +90,6 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .recovery-stop.saved.src-strip .day-dot{background:var(--stop-color);border-color:transparent;color:#fff;box-shadow:0 0 0 2.5px #fff,0 0 0 4.5px #D66DAB}
 .recovery-stop.saved.src-symptoms .day-dot{background:var(--stop-color);border-color:transparent;color:#fff}
 .recovery-stop.saved .day-dot{background:var(--stop-color);border-color:transparent}
-.recovery-stop.predicted .day-dot{position:relative;background:transparent!important;border-color:transparent!important;border-style:solid!important;border-width:0!important;color:#3d1a6b!important;box-shadow:0 2px 8px rgba(12,28,25,.05)!important}
-.recovery-stop.predicted .day-dot::after{content:"";position:absolute;top:-3px;left:-3px;right:-3px;bottom:-3px;border-radius:50%;border:1.8px dashed rgba(91,44,145,.65);pointer-events:none}
-.recovery-stop.predicted .day-label{opacity:.75}
-.dp.dppred{background:transparent!important;border-style:dashed!important;border-width:1.5px!important;border-color:currentColor;opacity:.65}
 
 .recovery-color input{width:20px;height:20px;border:none;padding:0;background:transparent;cursor:pointer}
 .recovery-color input::-webkit-color-swatch-wrapper{padding:0}
@@ -372,7 +368,6 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .recovery-stop.saved .day-label{color:#3d1a6b!important}
 .recovery-stop.active .day-label{color:#3d1a6b!important;font-size:12px}
 .recovery-stop.active:not(.saved) .day-label{color:#3d1a6b!important}
-.recovery-stop.predicted .day-label{opacity:1!important;color:#3d1a6b!important}
 
 /* === Two-axis dot encoding: ring=severity, fill=strip color === */
 .recovery-stop.saved .day-dot{border:none!important;background:var(--stop-color, transparent);box-shadow:0 0 0 2px #fff,0 0 0 3.5px var(--severity-color, transparent)!important}
@@ -2634,10 +2629,7 @@ const HOME_REC={cardId:'flu',total:7,currentDay:Math.max(1,Math.min(7,(fluTodayI
 const DEFAULT_CARDS = JSON.parse(JSON.stringify(CARDS));
 const DEFAULT_HOME_REC = JSON.parse(JSON.stringify(HOME_REC));
 
-// ── Prediction helpers ──────────────────────────────────────────────────────
-const TONE_SEV={strong:4,mild:3,faint:2,none:1};
-const SEV_TONE={4:'strong',3:'mild',2:'faint',1:'none'};
-const SEV_COLOR={4:'#D66DAB',3:'#E3ABCE',2:'#ECCBDF',1:'#2ecc71'};
+// Map legacy energy strings to tone labels (older cards' energy field)
 const ENERGY_TONE={'😞 Terrible':'strong','😟 Poor':'mild','😐 OK':'faint','🙂 Better':'faint','😊 Good':'none'};
 
 // Pre-populate HOME_REC.entries from existing flu card days (demo seed data)
@@ -2653,57 +2645,22 @@ if (HOME_REC.entries[0]) { HOME_REC.entries[0].stripPhoto = STRIP_PHOTO_DAY1; HO
 if (CARDS.flu.days[0]) CARDS.flu.days[0].stripPhoto = STRIP_PHOTO_DAY1;
 
 
-function computePrediction(entries){
-  const total=entries.length;
-  const pred={};
-
-  // Find last filled entry and trend
-  let lastIdx=-1,lastTone=null,prevTone=null;
-  for(let i=0;i<total;i++){
-    if(entries[i]&&entries[i].tone){prevTone=lastTone;lastTone=entries[i].tone;lastIdx=i;}
-  }
-
-  if(lastIdx===-1){
-    // No data at all — default 7-day progression: mild(2)→mild(2)→improving→improving→improving→recovered→recovered
-    const defaults=['mild','mild','mild','faint','faint','faint','none'];
-    for(let i=0;i<total;i++){pred[i]=defaults[Math.min(i,defaults.length-1)];}
-    return pred;
-  }
-
-  const curSev=TONE_SEV[lastTone]||1;
-  const prevSev=prevTone?(TONE_SEV[prevTone]||1):null;
-
-  // Remaining days after last logged
-  const remaining=total-(lastIdx+1);
-  if(remaining<=0)return pred;
-
-  // Determine target end severity
-  let endSev=1; // always end at recovered
-  // Smooth from curSev → 1 over remaining days
-  for(let d=0;d<remaining;d++){
-    const idx=lastIdx+1+d;
-    const t=remaining===1?1:(d/(remaining-1));
-    const sev=Math.max(1,Math.round(curSev-(curSev-1)*t));
-    pred[idx]=SEV_TONE[sev];
-  }
-  return pred;
-}
 const RECOVERY_COLORS={strong:'#D66DAB',mild:'#E3ABCE',faint:'#ECCBDF',none:'#2ecc71'};
 const CDC_GUIDANCE={
   covid:{
-    strong:{head:'🚨 Seek Emergency Care',body:'Warning signs — call 911: difficulty breathing, persistent chest pain, confusion, bluish lips or face, or SpO₂ below 94%.',tip:'⚠️ Severe COVID requires hospital evaluation. Do not wait.',tipBg:'#fef2f2',tipBorder:'#fca5a5',tipColor:'#991b1b'},
-    mild:{head:'🏠 Rest at Home',body:'Stay home and away from others. Rest, hydrate, monitor temperature and SpO₂. Paxlovid must be started within 5 days of symptom onset — contact your doctor today if eligible.',tip:'💊 Paxlovid window: within 5 days of symptoms. Contact your provider today.',tipBg:'#eff6ff',tipBorder:'#bfdbfe',tipColor:'#1e40af'},
+    strong:{head:'⚠️ Take Extra Care',body:'If you feel significantly unwell, contact your healthcare provider for personalized guidance. Rest, hydrate, and check in with someone you trust.',tip:'💬 Your provider can advise on next steps based on your symptoms and history.',tipBg:'#fef2f2',tipBorder:'#fca5a5',tipColor:'#991b1b'},
+    mild:{head:'🏠 Rest at Home',body:'Stay home and away from others. Rest and hydrate. If you have questions about treatment options, talk to your healthcare provider — they can advise on what may be appropriate for you.',tip:'💬 An early conversation with your provider can help you understand your options.',tipBg:'#eff6ff',tipBorder:'#bfdbfe',tipColor:'#1e40af'},
     faint:{head:'📋 Almost There — 5-Day Precautions',body:'Return when both are true for 24+ hours: symptoms improving AND fever-free without medication. For the next 5 days: wear a mask, improve ventilation, maintain distance, wash hands frequently.',tip:'🔁 If fever returns after resuming activities — stay home again and restart the 24-hour clock.',tipBg:'#f5f3ff',tipBorder:'#c4b5fd',tipColor:'#5b21b6'},
     none:{head:'✅ Clear to Return',body:'Get a negative rapid test before returning to work or school. Continue mask and hygiene precautions for 5 days total. Watch for Long COVID: fatigue, brain fog, or shortness of breath.',tip:'🧪 A negative strip test gives confidence you are no longer contagious.',tipBg:'#ecfdf5',tipBorder:'#6ee7b7',tipColor:'#065f46'}
   },
   flu:{
-    strong:{head:'🚨 Emergency Signs — Flu',body:'Seek emergency care for: difficulty breathing, persistent chest pain, sudden dizziness or confusion, severe vomiting, or flu symptoms that improve then return with worsening fever and cough.',tip:'⚠️ Flu can cause pneumonia, myocarditis and sepsis in high-risk individuals.',tipBg:'#fef2f2',tipBorder:'#fca5a5',tipColor:'#991b1b'},
-    mild:{head:'🏠 Rest & Treat — Flu',body:'Flu hits suddenly: fever, chills, muscle aches, fatigue. Tamiflu must be started within 48 hours of onset — it shortens illness and is prioritized for high-risk groups. OTC fever and pain relief. Most recover in 3-7 days.',tip:'💊 48-hour Tamiflu window — contact your doctor as soon as symptoms start.',tipBg:'#fff7ed',tipBorder:'#fdba74',tipColor:'#9a3412'},
+    strong:{head:'⚠️ Take Extra Care — Flu',body:'If you feel significantly unwell, contact your healthcare provider for personalized guidance. Rest, hydrate, and check in with someone if you live alone.',tip:'💬 Your provider can advise on next steps based on your symptoms.',tipBg:'#fef2f2',tipBorder:'#fca5a5',tipColor:'#991b1b'},
+    mild:{head:'🏠 Rest & Recover — Flu',body:'Flu can hit suddenly: fever, chills, muscle aches, fatigue. Rest, fluids, and OTC fever/pain relief usually help. If you want to discuss treatment options, talk to your healthcare provider — earlier conversations are typically more useful.',tip:'💬 An early conversation with your provider can help you understand your options.',tipBg:'#fff7ed',tipBorder:'#fdba74',tipColor:'#9a3412'},
     faint:{head:'📋 Return When Ready — Flu',body:'Return when for 24+ hours: symptoms improving AND fever-free without medication. For 5 days after: mask around vulnerable people, improve ventilation, good hand hygiene. Fatigue and mild cough may linger.',tip:'⚡ Flu is contagious 1 day before symptoms and up to 5-7 days after onset.',tipBg:'#f5f3ff',tipBorder:'#c4b5fd',tipColor:'#5b21b6'},
     none:{head:'✅ Fully Recovered — Flu',body:'A negative rapid Flu A/B test before returning to work provides extra confidence. Watch for secondary infections in the 2 weeks after. Get your annual flu shot if not yet vaccinated this season.',tip:'💉 Annual flu vaccination is the best prevention — available Oct-Nov each year.',tipBg:'#ecfdf5',tipBorder:'#6ee7b7',tipColor:'#065f46'}
   },
   rsv:{
-    strong:{head:'🚨 RSV — High-Risk Alert',body:'RSV is dangerous for infants, adults 60+, and the immunocompromised. Seek emergency care for: fast or labored breathing, wheezing, bluish color around mouth, infant not feeding, or dehydration.',tip:'⚠️ RSV is the leading cause of infant hospitalization. Act fast for babies under 6 months.',tipBg:'#fef2f2',tipBorder:'#fca5a5',tipColor:'#991b1b'},
+    strong:{head:'⚠️ RSV — Take Extra Care',body:'RSV can be more serious for infants, adults 60+, and the immunocompromised. If symptoms feel significant, contact a healthcare provider for guidance — especially for infants and at-risk adults.',tip:'💬 For infants and at-risk adults, check in with a provider sooner rather than later.',tipBg:'#fef2f2',tipBorder:'#fca5a5',tipColor:'#991b1b'},
     mild:{head:'🏠 Supportive Care — RSV',body:'No specific antiviral for most people. Care is supportive: rest, stay hydrated, use nasal saline for infants, OTC pain/fever relief (no aspirin for children), consider a humidifier. Symptoms peak on days 3-5.',tip:'🧬 No antiviral for RSV — rest, fluids, and monitoring are the main treatment.',tipBg:'#eff6ff',tipBorder:'#bfdbfe',tipColor:'#1e40af'},
     faint:{head:'📋 Gradual Recovery — RSV',body:'Return when for 24+ hours: symptoms improving AND fever-free without medication. RSV can linger — mild cough or congestion may persist 1-3 weeks. Extra caution around infants and elderly.',tip:'⚡ RSV can spread for 3-8 days. Extra caution around newborns and elderly after recovery.',tipBg:'#f5f3ff',tipBorder:'#c4b5fd',tipColor:'#5b21b6'},
     none:{head:'✅ RSV Cleared',body:'RSV recovery takes 1-2 weeks. A negative rapid test provides reassurance before returning. Adults 60+: ask your doctor about the RSV vaccine (Arexvy/mRESVIA) for next season.',tip:'💉 RSV vaccines now available for adults 60+ and pregnant women to protect newborns.',tipBg:'#ecfdf5',tipBorder:'#6ee7b7',tipColor:'#065f46'}
@@ -3091,9 +3048,7 @@ function updateRecoveryBar(){
       +'<div style="padding:8px 10px;border-radius:9px;font-size:11.5px;font-weight:500;line-height:1.5;background:'+g.tipBg+';border:1px solid '+g.tipBorder+';color:'+g.tipColor+'">'+g.tip+'</div>';
     if(!CDC_CAROUSEL.built)buildCdcCarousel();
   }
-  const predictions=computePrediction(HOME_REC.entries);
-  // Predicted dots snap to one of the 4 strip colors (no smooth interpolation).
-  // 'none' tone maps to None (white) since we no longer use the green recovered shade.
+  // Strip-tone fill colors (only applied when a strip color was logged).
   const _predColors={strong:'#D66DAB', mild:'#ECCBDF', faint:'#ECCBDF', none:'#2ecc71'};
   // Severity → outside ring color (independent from strip-color fill)
   const _sevColors={strong:'#ef4d4c', mild:'#e09517', faint:'#f1c40f', none:'#2ecc71'};
@@ -3102,19 +3057,13 @@ function updateRecoveryBar(){
     const day=Number(stop.dataset.day);
     const idx=day-1;
     const entry=getRecoveryEntry(day);
-    const isPred=!entry&&predictions[idx]!==undefined;
     stop.className='recovery-stop tap-target'
       +(entry?' saved':'')
       +(entry?' src-'+(entry.source||'symptoms'):'')
-      +(day===HOME_REC.currentDay?' active':'')
-      +(isPred?' predicted':'');
+      +(day===HOME_REC.currentDay?' active':'');
     let displayColor;
     let severityColor = 'transparent';
-    if(isPred){
-      // Predicted: dashed ring overlay, no fill, no severity
-      displayColor = 'transparent';
-      severityColor = 'transparent';
-    } else if (entry) {
+    if (entry) {
       // Logged: fill = strip color (only if recorded), ring = severity color
       const isStripLogged = entry.source === 'strip';
       const tone = entry.tone;
@@ -3289,7 +3238,6 @@ function buildPills(c, cardId){
   const todayIdx=c.days.findIndex(d=>d===null);
   const curIdx=todayIdx>=0?todayIdx:c.days.length-1;
   const isHome=(cardId===HOME_REC.cardId);
-  const predictions=isHome?computePrediction(HOME_REC.entries):{};
   const startDate=c.recoveryStart||null;
   for(let i=0;i<c.dur;i++){
     // Compute M/D label
@@ -3314,14 +3262,7 @@ function buildPills(c, cardId){
     // For the home card, "saved" is driven by HOME_REC.entries (which may be populated
     // via saveDay even when c.days[i] is still null). For other cards use c.days[i].
     const hasSaved=isHome?!!HOME_REC.entries[i]:!!c.days[i];
-    const isPred=!hasSaved&&!isToday&&predictions[i]!==undefined;
-    if(isPred){
-      const col=SEV_COLOR[TONE_SEV[predictions[i]]];
-      p.classList.add('dppred');
-      p.style.color=col;p.style.borderColor=col;
-      p.innerHTML='<span class="dp-n">'+(i+1)+'</span>'
-        +'<span class="dp-l" style="font-size:9px">'+(dateLabel||'~pred')+'</span>';
-    } else if(isToday){
+    if(isToday){
       p.classList.add('dpnow');
       p.innerHTML='<span class="dp-n">'+(i+1)+'</span>'
         +'<span class="dp-l" style="font-size:9px">Today</span>';
@@ -4048,5 +3989,3 @@ function toggleSeverityColors(e){
 <input type="file" id="avatar-file-input" accept="image/*" style="display:none" onchange="handleAvatarFile(this)">
 
 </body>
-</html>
-    
