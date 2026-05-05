@@ -71,7 +71,7 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .recovery-meta{font-size:12px;color:var(--g3);margin-bottom:18px}
 .recovery-track{position:relative;height:92px;touch-action:none;user-select:none;cursor:grab}
 .recovery-track.dragging{cursor:grabbing}
-.recovery-line,.recovery-fill{position:absolute;top:28px;left:24px;right:24px;height:4px;border-radius:999px;display:none}
+.recovery-line,.recovery-fill{position:absolute;top:28px;left:24px;right:24px;height:4px;border-radius:999px}
 .recovery-line{background:var(--rec-idle)}
 .recovery-fill{right:auto;width:0;background:var(--rec-fill);transition:width .22s ease}
 .recovery-dots{position:absolute;inset:12px 0 0;display:flex;justify-content:space-between;align-items:flex-start}
@@ -330,29 +330,20 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 .vc:focus{border-color:var(--teal);background:#fff}
 
 /* Native shell overrides (only active inside Capacitor or ?native=1) */
-html.native { height: 100%; width: 100%; }
 html.native, html.native body { background: #fff; }
 html.native body {
-  display: block;
   margin: 0;
-  box-sizing: border-box;
   padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
-  width: 100%;
-  height: 100vh;
-  height: 100dvh;
-  min-height: 0;
-  overflow: hidden;
+  min-height: 100vh;
+  min-height: 100dvh;
 }
 html.native .phone {
   border-radius: 0; border: none; box-shadow: none;
-  display: flex;
-  flex-direction: column;
   width: 100%;
   max-width: none;
-  height: 100%;
-  min-height: 0;
-  max-height: none;
-  margin: 0;
+  height: auto;
+  min-height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  min-height: calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
 }
 /* === LIGHT VARIANT overrides — patient-comfort home view ===
    The .hdr is now a soft lavender gradient with dark-purple text. Recovery-wrap reverts
@@ -4083,23 +4074,4 @@ function toggleSeverityColors(e){
   var stripChev = document.querySelector('.strip-chev');
   if (stripRow) stripRow.style.display = 'none';
   if (stripChev) stripChev.style.transform = 'rotate(0deg)';
-  row.style.display = open ? 'none' : 'flex';
-  if(chev) chev.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
-}
-</script>
-
-<!-- Hidden avatar file input -->
-<input type="file" id="avatar-file-input" accept="image/*" style="display:none" onchange="handleAvatarFile(this)">
-
-</body>
-</html>
-     ? 'none' : 'flex';
-  if(chev) chev.style.transform = open ? 'rotate(0deg)' : 'rotate(180deg)';
-}
-</script>
-
-<!-- Hidden avatar file input -->
-<input type="file" id="avatar-file-input" accept="image/*" style="display:none" onchange="handleAvatarFile(this)">
-
-</body>
-</html>
+  row.style.display = open
