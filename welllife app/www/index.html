@@ -911,17 +911,17 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
                 <button type="button" class="strip-color-btn" data-tone="strong" onclick="setStripColor('strong')"
                   style="display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border-radius:10px;border:2px solid transparent;background:transparent;cursor:pointer;font-family:var(--font-b)">
                   <span style="width:28px;height:28px;border-radius:50%;background:#D66DAB;display:block;border:.5px solid rgba(0,0,0,.08)"></span>
-                  <span style="font-size:9px;font-weight:500;color:var(--i2)">Severe</span>
+                  <span style="font-size:9px;font-weight:500;color:var(--i2)">Strong</span>
                 </button>
                 <button type="button" class="strip-color-btn" data-tone="faint" onclick="setStripColor('faint')"
                   style="display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border-radius:10px;border:2px solid transparent;background:transparent;cursor:pointer;font-family:var(--font-b)">
                   <span style="width:28px;height:28px;border-radius:50%;background:#ECCBDF;display:block;border:.5px solid rgba(0,0,0,.08)"></span>
-                  <span style="font-size:9px;font-weight:500;color:var(--i2)">Almost OK</span>
+                  <span style="font-size:9px;font-weight:500;color:var(--i2)">Faint</span>
                 </button>
                 <button type="button" class="strip-color-btn" data-tone="none" onclick="setStripColor('none')"
                   style="display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border-radius:10px;border:2px solid transparent;background:transparent;cursor:pointer;font-family:var(--font-b)">
                   <span style="width:28px;height:28px;border-radius:50%;background:#fff;display:block;border:1.5px solid #b9c2cb"></span>
-                  <span style="font-size:9px;font-weight:500;color:var(--i2)">Negative</span>
+                  <span style="font-size:9px;font-weight:500;color:var(--i2)">None</span>
                 </button>
               </div>
               <!-- Auto result label -->
@@ -3159,6 +3159,9 @@ function setRecoveryDay(day){
   updateRecoveryBar();
 }
 function openNewFromRecovery(day){
+  // Capture origin BEFORE we switch to the cards screen.
+  const _origin = document.querySelector('.screen.active');
+  const _originName = _origin ? _origin.id.replace('s-','') : 'home';
   setRecoveryDay(day);
   HOME_REC.pendingDay=day;
   go('cards');
@@ -3167,6 +3170,8 @@ function openNewFromRecovery(day){
   document.getElementById('nv').classList.remove('vis');
   // open the recovery card directly at the right day
   openCard(HOME_REC.cardId);
+  // openCard captured 'cards' as origin — override with the real origin (e.g., 'home').
+  CARD_RETURN_SCREEN = _originName;
 }
 function bindRecoveryBar(){
   const track=document.getElementById('recovery-track');
@@ -3206,6 +3211,9 @@ function applyDiseaseSelection(value){
   }
 }
 function setDisease(el){applyDiseaseSelection(el.dataset.disease);}
+// Remembers which screen the user came from when opening a card detail,
+// so saveDay() can auto-return to that screen instead of leaving them on cards.
+let CARD_RETURN_SCREEN = null;
 function openCard(id, dayIdx){
   const c=CARDS[id];
   if(!c){
@@ -3214,6 +3222,9 @@ function openCard(id, dayIdx){
     console.warn('[openCard] card not found for id:', id, '— available keys:', Object.keys(CARDS));
     return;
   }
+  // Capture origin (home / cards / etc.) — openNewFromRecovery will override after.
+  const _curScr = document.querySelector('.screen.active');
+  CARD_RETURN_SCREEN = _curScr ? _curScr.id.replace('s-','') : 'cards';
   AC=id;
   document.getElementById('cl').classList.add('hide');
   document.getElementById('nv').classList.remove('vis');
@@ -3547,6 +3558,15 @@ function saveDay(){
   toast.style.opacity='1';
   clearTimeout(toast._t);
   toast._t=setTimeout(()=>{toast.style.opacity='0';},1800);
+  // Auto-return to the screen the user came from, in sync with the toast fading.
+  // If origin was 'cards', closeCard alone is enough; otherwise also navigate back.
+  const _back = CARD_RETURN_SCREEN;
+  clearTimeout(saveDay._returnT);
+  saveDay._returnT = setTimeout(()=>{
+    closeCard();
+    if(_back && _back !== 'cards'){ go(_back); }
+    CARD_RETURN_SCREEN = null;
+  }, 1800);
   // Auto-save member snapshot
   try { saveMemberData(_activeMemberId||'owner'); } catch(e){}
 }
