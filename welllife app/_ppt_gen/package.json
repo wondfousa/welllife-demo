@@ -1,0 +1,13 @@
+{
+  "name": "codex-cowork-ppt-gen",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Generate the Codex x Claude Cowork 3-slide deck",
+  "main": "make_ppt.js",
+  "scripts": {
+    "build": "node make_ppt.js"
+  },
+  "dependencies": {
+    "pptxgenjs": "^3.12.0"
+  }
+}
