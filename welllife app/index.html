@@ -2144,11 +2144,24 @@ function switchMember(memberId) {
   // Switch
   setActiveMemberId(memberId);
   loadMemberData(memberId);
-  // Update UI
+  // Update UI (greeting / avatar / member bar)
   updateMemberUI();
-  // Refresh current view
-  try { renderCardList(); } catch(e){}
-  try { renderHome(); }     catch(e){}
+  // Rebuild card mini-dots (these CARDS objects were replaced by loadMemberData)
+  try {
+    Object.keys(CARDS).forEach(id => { try { buildDots(id, CARDS[id]); } catch(e){} });
+  } catch(e){}
+  // Rebuild the home recovery module — HOME_REC was replaced, the DOM still shows the old one
+  try {
+    const dots = document.getElementById('recovery-dots');
+    if (dots) dots.innerHTML = '';
+    if (typeof buildRecoveryBar === 'function')   buildRecoveryBar();
+    if (typeof updateRecoveryBar === 'function')  updateRecoveryBar();
+    if (typeof renderRecoveryHistory === 'function') renderRecoveryHistory();
+  } catch(e){ console.warn('[switchMember] home refresh failed:', e); }
+  // Reset any in-flight save / edit state from previous member
+  CARD_RETURN_SCREEN = null;
+  closeCard();
+  closeNew();
   go(document.querySelector('.tab.on')?.id?.replace('t-','') || 'home');
 }
 
