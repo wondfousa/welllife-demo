@@ -1,16 +1,37 @@
+# ============================================================
 # Dependencies
+# ============================================================
 node_modules/
 package-lock.json
+yarn.lock
 
+# ============================================================
+# Temporary files (Windows tooling sometimes leaves these)
+# ============================================================
+*.tmp
+*.tmp.*
+index.html.tmp.*
+*.log
+*.swp
+*.bak
+*~
+
+# ============================================================
 # iOS
+# ============================================================
 ios/App/Pods/
 ios/App/build/
 ios/App/App.xcworkspace/xcuserdata/
 ios/App/App.xcodeproj/xcuserdata/
 ios/DerivedData/
 *.xcuserstate
+# Don't commit personal Xcode user settings
+*.xcuserstate
+xcuserdata/
 
+# ============================================================
 # Android
+# ============================================================
 android/.gradle/
 android/build/
 android/app/build/
@@ -21,11 +42,53 @@ android/app/release/
 *.apk
 *.aab
 *.keystore
+*.jks
 
-# Misc
+# ============================================================
+# AWS Amplify
+# Amplify generates its own .gitignore inside amplify/ — leave it alone.
+# These are extra safety rules for files that should NEVER be committed.
+# ============================================================
+amplify/\#current-cloud-backend/
+amplify/.config/local-*
+amplify/logs/
+amplify/mock-data/
+amplify/backend/.temp/
+build/
+dist/
+aws-exports.js.bak
+awsconfiguration.json.bak
+
+# ============================================================
+# macOS
+# ============================================================
 .DS_Store
-*.log
-*.tmp
-*.swp
+.AppleDouble
+.LSOverride
+._*
+
+# ============================================================
+# Windows
+# ============================================================
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# ============================================================
+# Editors / IDEs
+# ============================================================
 .vscode/
 .idea/
+*.sublime-project
+*.sublime-workspace
+.history/
+
+# ============================================================
+# Misc
+# ============================================================
+.env
+.env.local
+.env.*.local
+coverage/
+*.pem
