@@ -329,6 +329,31 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 html.native, html.native body { background: #fff; }
 html.native body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
 html.native .phone { border-radius: 0; border: none; box-shadow: none; }
+
+/* ── Policy viewer (Privacy / Terms) ───────────────────────────── */
+.pol-modal{display:none;position:fixed;inset:0;z-index:9997;background:rgba(0,0,0,.45);align-items:flex-end;justify-content:center}
+.pol-modal.show{display:flex}
+.pol-sheet{background:#fff;border-radius:18px 18px 0 0;width:100%;max-width:430px;height:92%;display:flex;flex-direction:column;box-shadow:0 -12px 40px rgba(0,0,0,.2);overflow:hidden}
+.pol-hdr{display:flex;align-items:center;gap:12px;padding:14px 18px;border-bottom:.5px solid rgba(0,0,0,.08);flex-shrink:0}
+.pol-hdr h2{flex:1;font-family:var(--font-s);font-size:22px;color:var(--ink);margin:0;line-height:1.2}
+.pol-x{width:32px;height:32px;border-radius:50%;background:var(--gray);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.pol-body{flex:1;overflow-y:auto;padding:16px 20px 32px;font-family:var(--font-b);font-size:13px;line-height:1.6;color:var(--i2)}
+.pol-body h2{font-family:var(--font-s);font-size:18px;color:var(--ink);margin:22px 0 10px;line-height:1.25}
+.pol-body h2:first-of-type{margin-top:6px}
+.pol-body h3{font-size:13.5px;font-weight:700;color:var(--ink);margin:16px 0 6px}
+.pol-body p{margin:0 0 10px}
+.pol-body ul,.pol-body ol{margin:0 0 12px 18px;padding:0}
+.pol-body li{margin-bottom:5px}
+.pol-body strong{color:var(--ink);font-weight:600}
+.pol-body em{color:var(--g3);font-style:italic}
+.pol-body code{background:var(--gray);padding:1px 5px;border-radius:4px;font-family:Consolas,Menlo,monospace;font-size:12px;color:var(--brand)}
+.pol-body table{width:100%;border-collapse:collapse;margin:8px 0 14px;font-size:12px}
+.pol-body th,.pol-body td{border:.5px solid rgba(0,0,0,.1);padding:8px 10px;text-align:left;vertical-align:top}
+.pol-body th{background:var(--gray);font-weight:700;color:var(--ink);font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+.pol-body blockquote{margin:0 0 14px;padding:10px 14px;background:#fff7ed;border-left:3px solid #f59e0b;border-radius:6px;font-size:12px;color:#7c2d12}
+.pol-body blockquote strong{color:#7c2d12}
+.pol-body .pol-meta{font-size:11px;color:var(--g3);margin-bottom:14px}
+.pol-body hr{border:none;border-top:.5px solid rgba(0,0,0,.08);margin:18px 0}
 /* === LIGHT VARIANT overrides — patient-comfort home view ===
    The .hdr is now a soft lavender gradient with dark-purple text. Recovery-wrap reverts
    to its default white card (no overrides needed). Risk-card children that hard-coded
@@ -435,10 +460,11 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
         </div>
         <div class="risk-collapsible" id="risk-collapsible" style="display:none">
         <div class="risk-hdr">
-          <span class="risk-ttl" style="font-size:11.5px;letter-spacing:.01em">Respiratory Risk · United States</span>
+          <span class="risk-ttl" style="font-size:11.5px;letter-spacing:.01em">Respiratory activity · United States</span>
           <span id="map-status" class="risk-bdg">loading…</span>
         </div>
-        <div style="font-size:10.5px;opacity:.75;margin:-4px 0 8px;color:#4a4a47;font-weight:500">Updated weekly from CDC NHSN hospital admissions data</div>
+        <div style="font-size:10.5px;opacity:.75;margin:-4px 0 4px;color:#4a4a47;font-weight:500">Updated weekly from CDC NHSN hospital admissions data</div>
+        <div style="font-size:10px;opacity:.7;margin:0 0 8px;color:#4a4a47;line-height:1.4;font-style:italic">Public activity data only. This does not reflect your personal infection status or medical risk.</div>
         <div class="risk-ft">
           <div class="ri"><div class="rd" style="background:#BFE0DA"></div>Very Low</div>
           <div class="ri"><div class="rd" style="background:#A4D08A"></div>Low</div>
@@ -457,7 +483,7 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
           <div class="recovery-title" style="font-size:20px">Recovery tracker</div>
           <button id="mark-recovered-btn" onclick="markRecovered(event)" style="background:#fff;border:1.5px solid var(--teal);border-radius:20px;padding:6px 14px;font-size:11px;font-weight:600;color:var(--teal);cursor:pointer;font-family:var(--font-b);display:flex;align-items:center;gap:5px;flex-shrink:0">
             <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1.5v9 M1.5 6h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-            Mark as Recovered
+            I feel recovered
           </button>
         </div>
         <div class="recovery-meta" id="recovery-meta"></div>
@@ -474,7 +500,7 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
             <span style="width:13px;height:13px;border-radius:50%;background:#D66DAB;flex-shrink:0;display:inline-block"></span>Strip test <svg class="strip-chev" width="12" height="12" viewBox="0 0 12 12" style="margin-left:2px;transition:transform .2s ease;flex-shrink:0;display:inline-block;vertical-align:middle"><path d="M2 4.5 L6 8.5 L10 4.5" stroke="#5b2c91" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div onclick="toggleSeverityColors(event)" style="display:flex;align-items:center;gap:5px;font-size:10px;color:#3d1a6b;cursor:pointer;user-select:none;background:rgba(91,44,145,.07);border:.5px solid rgba(91,44,145,.22);border-radius:12px;padding:3px 9px 3px 6px;font-weight:600">
-            <span style="width:11px;height:11px;border-radius:50%;border:2px solid #ef4d4c;background:transparent;flex-shrink:0;display:inline-block;box-sizing:border-box"></span>Severity <svg class="sev-chev" width="12" height="12" viewBox="0 0 12 12" style="margin-left:2px;transition:transform .2s ease;flex-shrink:0;display:inline-block;vertical-align:middle"><path d="M2 4.5 L6 8.5 L10 4.5" stroke="#5b2c91" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span style="width:11px;height:11px;border-radius:50%;border:2px solid #ef4d4c;background:transparent;flex-shrink:0;display:inline-block;box-sizing:border-box"></span>How you felt <svg class="sev-chev" width="12" height="12" viewBox="0 0 12 12" style="margin-left:2px;transition:transform .2s ease;flex-shrink:0;display:inline-block;vertical-align:middle"><path d="M2 4.5 L6 8.5 L10 4.5" stroke="#5b2c91" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
             <button onclick="adjustHomeDays(-1)" style="width:24px;height:24px;border-radius:7px;border:1px solid #ccc;background:#f0eeea;cursor:pointer;font-size:15px;color:#333;line-height:22px;text-align:center;padding:0;box-sizing:border-box">-</button>
@@ -488,10 +514,10 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
           <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:11px;height:11px;border-radius:50%;background:#fff;border:1.5px solid #b9c2cb;flex-shrink:0;display:inline-block;box-sizing:border-box"></span>None</div>
         </div>
         <div id="severity-colors-row" style="display:none;gap:8px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:.5px dashed rgba(0,0,0,.06)">
-          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:13px;height:13px;border-radius:50%;border:2.4px solid #ef4d4c;background:transparent;flex-shrink:0;display:inline-block;box-sizing:border-box"></span>Strong</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:13px;height:13px;border-radius:50%;border:2.4px solid #ef4d4c;background:transparent;flex-shrink:0;display:inline-block;box-sizing:border-box"></span>Severe</div>
           <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:13px;height:13px;border-radius:50%;border:2.4px solid #e09517;background:transparent;flex-shrink:0;display:inline-block;box-sizing:border-box"></span>Mild</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:13px;height:13px;border-radius:50%;border:2.4px solid #f1c40f;background:transparent;flex-shrink:0;display:inline-block;box-sizing:border-box"></span>Faint</div>
-          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:13px;height:13px;border-radius:50%;border:2.4px solid #2ecc71;background:transparent;flex-shrink:0;display:inline-block;box-sizing:border-box"></span>None</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:13px;height:13px;border-radius:50%;border:2.4px solid #f1c40f;background:transparent;flex-shrink:0;display:inline-block;box-sizing:border-box"></span>Recovering</div>
+          <div style="display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;color:var(--i2)"><span style="width:13px;height:13px;border-radius:50%;border:2.4px solid #2ecc71;background:transparent;flex-shrink:0;display:inline-block;box-sizing:border-box"></span>No symptoms</div>
         </div>
         <div class="vitals-row" id="vitals-row">
           <div class="vital-chip" id="vital-temp" data-empty="true">
@@ -507,7 +533,7 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
             <div class="vital-meta"><div class="vital-label">BP</div><div class="vital-value">—</div></div>
           </div>
         </div>
-        <div class="strip-disclaimer" style="font-size:9.5px;line-height:1.45;color:#9a9890;margin-top:10px;padding-top:8px;border-top:.5px dashed rgba(0,0,0,.07);font-family:var(--font-b);font-weight:500">Test-line color may vary with sample timing, collection, and test conditions. It is not a measure of recovery status, symptom severity, viral load, or contagiousness.</div>
+        <div class="strip-disclaimer" style="font-size:9.5px;line-height:1.45;color:#9a9890;margin-top:10px;padding-top:8px;border-top:.5px dashed rgba(0,0,0,.07);font-family:var(--font-b);font-weight:500">Test-line color may vary with sample timing, collection, and test conditions. It is not a measure of recovery status, symptom severity, viral load, or contagiousness. Do not use strip results alone to make return-to-activity decisions.</div>
         <input type="hidden" id="recovery-color-strong" value="#ef4d4c">
         <input type="hidden" id="recovery-color-mild" value="#e09517">
         <input type="hidden" id="recovery-color-faint" value="#f1c40f">
@@ -555,11 +581,11 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
       <div class="sec-lbl">Recent health cards</div>
       <div class="rc" onclick="go('cards');setTimeout(()=>openCard('flu'),50)">
         <div class="ild" style="background:var(--amber)"></div>
-        <div><div style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:2px">Flu A Infection</div><div style="font-size:12px;color:var(--g3)">Oct 18, 2025–present · Day 4</div><div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><span class="tag t-flu">Flu A+</span><span class="tag t-strip">Strip verified</span></div></div>
+        <div><div style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:2px">Flu A Positive Test Log</div><div style="font-size:12px;color:var(--g3)">Oct 18, 2025–present · Day 4</div><div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><span class="tag t-flu">Flu A+</span><span class="tag t-strip">Rapid test logged</span></div></div>
       </div>
       <div class="rc" onclick="go('cards');setTimeout(()=>openCard('covid'),50)">
         <div class="ild" style="background:var(--red)"></div>
-        <div><div style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:2px">COVID-19 Infection</div><div style="font-size:12px;color:var(--g3)">Feb 3–11, 2024 · 9 days</div><div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><span class="tag t-covid">COVID+</span><span class="tag t-strip">Strip verified</span><span class="tag t-ok">Recovered</span></div></div>
+        <div><div style="font-size:14px;font-weight:500;color:var(--ink);margin-bottom:2px">COVID-19 Positive Test Log</div><div style="font-size:12px;color:var(--g3)">Feb 3–11, 2024 · 9 days</div><div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap"><span class="tag t-covid">COVID+</span><span class="tag t-strip">Rapid test logged</span><span class="tag t-ok">Recovery noted</span></div></div>
       </div>
     </div>
   </div>
@@ -589,7 +615,7 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
           </div>
           <div style="flex:1">
             <div style="font-size:14px;font-weight:600;color:var(--brand)">WELLlife AI</div>
-            <div style="font-size:11px;color:var(--g3)">Powered by AI · not a medical diagnosis</div>
+            <div style="font-size:11px;color:var(--g3)">AI-assisted information · not medical advice</div>
           </div>
           <button onclick="closeAIChat()" style="width:32px;height:32px;border-radius:50%;border:none;background:var(--gray);cursor:pointer;display:flex;align-items:center;justify-content:center">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="var(--i2)" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -602,14 +628,17 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
             </div>
             <div style="background:var(--gray);border-radius:18px 18px 18px 4px;padding:10px 14px;max-width:78%;font-size:13px;line-height:1.6;color:var(--ink)">
               Hi! I'm your WELLlife Care AI assistant. Ask me anything about your symptoms, recovery, or how to use the app. 👋
+              <div style="margin-top:8px;padding-top:8px;border-top:.5px solid rgba(0,0,0,.08);font-size:11px;line-height:1.45;color:var(--g3);font-weight:500">
+                <span style="font-weight:600;color:var(--i2)">Note:</span> I share general health information, not medical advice. For personal recommendations, please consult your healthcare provider.
+              </div>
             </div>
           </div>
         </div>
         <div id="ai-prompts" style="padding:0 14px 8px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;flex-shrink:0">
           <button onclick="sendAIPrompt(this)" style="flex-shrink:0;background:var(--tl);border:none;border-radius:20px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--teal);cursor:pointer;font-family:var(--font-b);white-space:nowrap">How long will I be sick?</button>
-          <button onclick="sendAIPrompt(this)" style="flex-shrink:0;background:var(--tl);border:none;border-radius:20px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--teal);cursor:pointer;font-family:var(--font-b);white-space:nowrap">Should I test today?</button>
-          <button onclick="sendAIPrompt(this)" style="flex-shrink:0;background:var(--tl);border:none;border-radius:20px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--teal);cursor:pointer;font-family:var(--font-b);white-space:nowrap">When can I go back to work?</button>
-          <button onclick="sendAIPrompt(this)" style="flex-shrink:0;background:var(--tl);border:none;border-radius:20px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--teal);cursor:pointer;font-family:var(--font-b);white-space:nowrap">What do my symptoms mean?</button>
+          <button onclick="sendAIPrompt(this)" style="flex-shrink:0;background:var(--tl);border:none;border-radius:20px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--teal);cursor:pointer;font-family:var(--font-b);white-space:nowrap">When is testing commonly recommended?</button>
+          <button onclick="sendAIPrompt(this)" style="flex-shrink:0;background:var(--tl);border:none;border-radius:20px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--teal);cursor:pointer;font-family:var(--font-b);white-space:nowrap">What should I consider before returning to work?</button>
+          <button onclick="sendAIPrompt(this)" style="flex-shrink:0;background:var(--tl);border:none;border-radius:20px;padding:6px 12px;font-size:11px;font-weight:500;color:var(--teal);cursor:pointer;font-family:var(--font-b);white-space:nowrap">What should I monitor?</button>
         </div>
         <div style="padding:8px 14px 24px;display:flex;gap:8px;align-items:center;border-top:.5px solid rgba(0,0,0,.06);flex-shrink:0;background:#fff">
           <input id="ai-input" type="text" placeholder="Ask anything about your health…"
@@ -675,7 +704,7 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
           </div>
           <div style="padding:12px 14px;display:flex;gap:12px;align-items:flex-start">
             <div style="flex:1;min-width:0">
-              <p style="font-size:12px;color:#555;line-height:1.65;margin:0">Verify kit has a background card. Twist open the large cap and place the tube in the holder. Take the cassette out and lay it on a flat surface.<br><br><em>Reminder: Use test cassette within 1 hour of opening.</em></p>
+              <p style="font-size:12px;color:#555;line-height:1.65;margin:0">Check that the kit has a background card. Twist open the large cap and place the tube in the holder. Take the cassette out and lay it on a flat surface.<br><br><em>Reminder: Use test cassette within 1 hour of opening.</em></p>
             </div>
             <img src="data:image/jpeg;base64,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" style="width:120px;flex-shrink:0;border-radius:8px;display:block" loading="lazy">
           </div>
@@ -833,7 +862,7 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
       <div class="tl">
         <div class="tly">2025</div>
         <div class="icp" onclick="openCard('flu')">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div><div style="font-weight:500;font-size:15px;color:var(--ink);margin-bottom:2px">Flu A Infection</div><div style="font-size:11px;color:var(--g3)">Oct 18 – present</div></div><div><span style="font-size:22px;font-family:var(--font-s);color:var(--ink);display:block;text-align:right;line-height:1">4</span><span style="font-size:11px;color:var(--g3)">days so far</span></div></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div><div style="font-weight:500;font-size:15px;color:var(--ink);margin-bottom:2px">Flu A Positive Test Log</div><div style="font-size:11px;color:var(--g3)">Oct 18 – present</div></div><div><span style="font-size:22px;font-family:var(--font-s);color:var(--ink);display:block;text-align:right;line-height:1">4</span><span style="font-size:11px;color:var(--g3)">days so far</span></div></div>
           <div class="ddots" id="dd-flu"></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><span class="tag t-flu">Flu A+</span><span class="tag" style="background:var(--pl);color:var(--pur)">Fever 39.1°</span><span class="tag" style="background:#fef3c7;color:#92400e">In progress</span></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><div class="strip-chip">🧪 Day 1 · Flu A Positive</div></div>
@@ -841,9 +870,9 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
         </div>
         <div class="tly">2024</div>
         <div class="icp" onclick="openCard('covid')">
-          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div><div style="font-weight:500;font-size:15px;color:var(--ink);margin-bottom:2px">COVID-19 Infection</div><div style="font-size:11px;color:var(--g3)">Feb 3 – Feb 11, 2024</div></div><div><span style="font-size:22px;font-family:var(--font-s);color:var(--ink);display:block;text-align:right;line-height:1">9</span><span style="font-size:11px;color:var(--g3)">days</span></div></div>
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px"><div><div style="font-weight:500;font-size:15px;color:var(--ink);margin-bottom:2px">COVID-19 Positive Test Log</div><div style="font-size:11px;color:var(--g3)">Feb 3 – Feb 11, 2024</div></div><div><span style="font-size:22px;font-family:var(--font-s);color:var(--ink);display:block;text-align:right;line-height:1">9</span><span style="font-size:11px;color:var(--g3)">days</span></div></div>
           <div class="ddots" id="dd-covid"></div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><span class="tag t-covid">COVID+</span><span class="tag" style="background:var(--pl);color:var(--pur)">Fever</span><span class="tag t-ok">Recovered</span></div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><span class="tag t-covid">COVID+</span><span class="tag" style="background:var(--pl);color:var(--pur)">Fever</span><span class="tag t-ok">Recovery noted</span></div>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px"><div class="strip-chip">🧪 Day 1 · Positive</div><div class="strip-chip sneg">✓ Day 9 · Negative</div></div>
           <div style="border-top:.5px solid rgba(0,0,0,.06);padding-top:10px;font-size:12px;color:var(--g3);display:flex;justify-content:space-between;align-items:center"><span>9/9 days logged</span><span style="color:var(--teal);font-size:11px">Open →</span></div>
         </div>
@@ -893,7 +922,7 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
               <button type="button" class="level-btn" data-tone="strong"    onclick="setLevel('strong')"    style="width:100%;padding:8px 4px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:var(--i2);font-family:var(--font-b)">Severe</button>
               <button type="button" class="level-btn" data-tone="mild"      onclick="setLevel('mild')"      style="width:100%;padding:8px 4px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:var(--i2);font-family:var(--font-b)">Mild</button>
               <button type="button" class="level-btn" data-tone="faint" onclick="setLevel('faint')" style="width:100%;padding:8px 4px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:var(--i2);font-family:var(--font-b)">Recovering</button>
-              <button type="button" class="level-btn" data-tone="none" onclick="setLevel('none')" style="width:100%;padding:8px 4px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:var(--i2);font-family:var(--font-b)">Recovered</button>
+              <button type="button" class="level-btn" data-tone="none" onclick="setLevel('none')" style="width:100%;padding:8px 4px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:var(--i2);font-family:var(--font-b)">No symptoms</button>
             </div>
           </div>
           <!-- Strip test — now first -->
@@ -906,7 +935,8 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
             </div>
             <!-- Step 2: Color — only shown when Yes -->
             <div id="strip-color-section" style="display:none">
-              <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--g3);margin-bottom:8px">What color is the result line? <span style="color:var(--red);font-size:12px">*</span></div>
+              <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--g3);margin-bottom:4px">Test line appearance <span style="color:var(--red);font-size:12px">*</span></div>
+              <div style="font-size:9.5px;color:#9a9890;margin-bottom:8px;line-height:1.4;font-weight:500">Describe how the line looks. This is a personal log — it does not indicate viral load, severity, or contagiousness.</div>
               <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
                 <button type="button" class="strip-color-btn" data-tone="strong" onclick="setStripColor('strong')"
                   style="display:flex;flex-direction:column;align-items:center;gap:5px;padding:8px 4px;border-radius:10px;border:2px solid transparent;background:transparent;cursor:pointer;font-family:var(--font-b)">
@@ -928,7 +958,8 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
               <div id="strip-result-label" style="display:none;margin-top:8px;font-size:11px;font-weight:600;padding:5px 10px;border-radius:8px;width:fit-content"></div>
               <!-- Strip photo -->
               <div id="strip-photo-row" style="margin-top:10px;display:none">
-                <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--g3);margin-bottom:6px">Strip photo <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
+                <div style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--g3);margin-bottom:3px">Strip photo <span style="font-weight:400;text-transform:none;letter-spacing:0">(optional)</span></div>
+                <div style="font-size:9.5px;color:#9a9890;margin-bottom:6px;line-height:1.4;font-weight:500">Saved as a personal record. The app does not read or analyze the image.</div>
                 <div id="strip-photo-preview" style="display:none;margin-bottom:8px;position:relative">
                   <img id="strip-photo-img" style="width:100%;border-radius:10px;display:block;max-height:220px;object-fit:contain;background:#f7f6f2;border:.5px solid rgba(0,0,0,.1)" src="" alt="Strip photo">
                   <button onclick="clearStripPhoto()" style="position:absolute;top:6px;right:6px;width:24px;height:24px;border-radius:50%;background:rgba(0,0,0,.5);border:none;cursor:pointer;color:#fff;font-size:14px;line-height:24px;text-align:center;padding:0">×</button>
@@ -1136,7 +1167,7 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
         </div>
 
         <!-- Privacy Policy -->
-        <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:.5px solid rgba(0,0,0,.06);cursor:pointer">
+        <div onclick="openPolicy('privacy')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:.5px solid rgba(0,0,0,.06);cursor:pointer">
           <div style="width:34px;height:34px;border-radius:10px;background:#f0f0f8;display:flex;align-items:center;justify-content:center;flex-shrink:0">
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M10 2L3 5v6c0 4 3.1 7.5 7 8.5C17 18.5 17 11 17 11V5l-7-3z" stroke="#6c5ce7" stroke-width="1.5" stroke-linejoin="round"/><path d="M7 10l2 2 4-4" stroke="#6c5ce7" stroke-width="1.5" stroke-linecap="round"/></svg>
           </div>
@@ -1145,7 +1176,7 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
         </div>
 
         <!-- Terms & Conditions -->
-        <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer">
+        <div onclick="openPolicy('terms')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;cursor:pointer">
           <div style="width:34px;height:34px;border-radius:10px;background:#f0f0f8;display:flex;align-items:center;justify-content:center;flex-shrink:0">
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><rect x="4" y="2" width="12" height="16" rx="2" stroke="#6c5ce7" stroke-width="1.5"/><path d="M7 7h6M7 10h6M7 13h4" stroke="#6c5ce7" stroke-width="1.5" stroke-linecap="round"/></svg>
           </div>
@@ -1181,7 +1212,19 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
       </div>
     </div>
 
-    <div style="text-align:center;padding:16px;font-size:11px;color:var(--g3)">version v1.0</div>
+    <!-- ── About this app — positioning & non-FDA disclaimer ────────────── -->
+    <div style="padding:16px 16px 4px">
+      <div style="background:#f7f6f2;border:.5px solid rgba(0,0,0,.06);border-radius:14px;padding:14px 16px">
+        <div style="font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--g3);margin-bottom:8px">About this app</div>
+        <div style="font-size:12px;line-height:1.55;color:var(--i2)">
+          WELLlife Care helps users log rapid test results, symptoms, temperature, SpO₂, and blood pressure, and provides general wellness guidance based on public health information.
+        </div>
+        <div style="margin-top:10px;font-size:11px;line-height:1.5;color:#9a9890;font-weight:500">
+          This app does not diagnose, treat, or determine infectiousness. It is not a substitute for the test manufacturer's instructions for use (IFU) or for advice from a qualified healthcare provider. Rapid test results must be read and interpreted by the user according to the test's IFU — this app only records what the user enters.
+        </div>
+      </div>
+    </div>
+    <div style="text-align:center;padding:12px 16px 16px;font-size:11px;color:var(--g3)">version v1.0</div>
   </div>
 
   <!-- ── AUTH SCREENS ──────────────────────────────────────── -->
@@ -1221,7 +1264,7 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
         </div>
         <label style="display:flex;align-items:flex-start;gap:8px;margin-bottom:16px;cursor:pointer">
           <input type="checkbox" id="privacy-agree" style="width:16px;height:16px;accent-color:var(--teal);cursor:pointer;margin-top:2px;flex-shrink:0">
-          <span style="font-size:12px;color:var(--g3);line-height:1.5">I agree to the <span style="color:var(--teal);font-weight:500">Privacy Policy</span> and <span style="color:var(--teal);font-weight:500">Terms of Service</span></span>
+          <span style="font-size:12px;color:var(--g3);line-height:1.5">I agree to the <span onclick="event.preventDefault();event.stopPropagation();openPolicy('privacy')" style="color:var(--teal);font-weight:500;cursor:pointer;text-decoration:underline">Privacy Policy</span> and <span onclick="event.preventDefault();event.stopPropagation();openPolicy('terms')" style="color:var(--teal);font-weight:500;cursor:pointer;text-decoration:underline">Terms of Service</span></span>
         </label>
         <button onclick="doLogin()" style="width:100%;background:var(--brand);color:#fff;border:none;border-radius:24px;padding:15px;font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font-b);margin-bottom:16px;box-shadow:0 6px 16px -6px rgba(91,44,145,.45)">Sign in</button>
         <div style="text-align:center;font-size:13px;color:var(--g3)">
@@ -1275,7 +1318,7 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
       </div>
       <div id="reg-err" style="display:none;background:#fff0f0;border-radius:10px;padding:10px 12px;font-size:12px;color:#e24b4a;margin-bottom:14px"></div>
       <button onclick="doRegister()" style="width:100%;background:var(--teal);color:#fff;border:none;border-radius:24px;padding:15px;font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font-b);margin-bottom:12px">Create account</button>
-      <div style="text-align:center;font-size:11px;color:var(--g3)">By signing up you agree to our Terms &amp; Privacy Policy</div>
+      <div style="text-align:center;font-size:11px;color:var(--g3)">By signing up you agree to our <span onclick="openPolicy('terms')" style="color:var(--teal);font-weight:500;cursor:pointer;text-decoration:underline">Terms</span> &amp; <span onclick="openPolicy('privacy')" style="color:var(--teal);font-weight:500;cursor:pointer;text-decoration:underline">Privacy Policy</span></div>
     </div>
 
     <!-- Verification Code screen -->
@@ -1390,6 +1433,264 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
 </div>
 
 <!-- ── ADD MEMBER MODAL ── -->
+<!-- ── POLICY VIEWER (Privacy Policy + Terms of Service) ─────────── -->
+<div id="policy-modal" class="pol-modal" onclick="if(event.target===this)closePolicy()">
+  <div class="pol-sheet">
+    <div class="pol-hdr">
+      <h2 id="policy-title">Privacy Policy</h2>
+      <button class="pol-x" onclick="closePolicy()" aria-label="Close">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 10M12 2L2 12" stroke="var(--i2)" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="pol-body" id="policy-body">
+      <!-- ───── PRIVACY POLICY ───── -->
+      <div id="pol-privacy" style="display:none">
+        <div class="pol-meta"><strong>Effective date:</strong> May 12, 2026 &nbsp;·&nbsp; <strong>Last updated:</strong> May 12, 2026</div>
+        <h2>1. Who we are</h2>
+        <p>WELLlife Care ("<strong>WELLlife Care</strong>", "<strong>we</strong>", "<strong>us</strong>", "<strong>our</strong>") is a consumer health-tracking mobile application operated by <strong>Wondfo USA, Inc.</strong> We can be reached at <strong>appadmin@wondfousa.com</strong> for any question relating to this policy or your data. Our mailing address is available on request.</p>
+        <p>For purposes of GDPR and similar regimes, Wondfo USA, Inc. is the <strong>data controller</strong>. The Service is offered for use in the United States; we have not designated an EU representative and do not target users in the European Economic Area.</p>
+
+        <h2>2. What WELLlife Care is — and is not</h2>
+        <p>WELLlife Care helps you <strong>log</strong> rapid-test results, symptoms, temperature, pulse oximetry (SpO₂), blood pressure, and personal notes; review CDC and other public-health information; and produce a personal record you can choose to share.</p>
+        <p><strong>WELLlife Care is not:</strong></p>
+        <ul>
+          <li>a medical device, a diagnostic tool, or a substitute for the <strong>instructions for use (IFU)</strong> that accompany any rapid test you take;</li>
+          <li>an FDA-cleared or FDA-authorized companion app to any specific rapid test;</li>
+          <li>a HIPAA-covered entity or a business associate of any health-care provider (see Section 8); and</li>
+          <li>a service that determines whether you are infectious, recovered, or fit to return to work, school, or any other activity.</li>
+        </ul>
+        <p>Our AI assistant provides general, public-health-style information only and <strong>does not provide medical advice</strong>.</p>
+
+        <h2>3. Information we collect</h2>
+        <h3>3.1 Information you give us</h3>
+        <table>
+          <tr><th>Category</th><th>Examples</th><th>When collected</th></tr>
+          <tr><td><strong>Account information</strong></td><td>Email, password (hashed via Firebase Authentication), display name</td><td>Registration / profile update</td></tr>
+          <tr><td><strong>Profile &amp; family members</strong></td><td>Names, initials, color tags, optional avatar photos</td><td>When you add a family member</td></tr>
+          <tr><td><strong>Self-reported health data</strong></td><td>Symptoms, severity self-rating, temperature, SpO₂, blood pressure, notes, dates</td><td>Each daily log save</td></tr>
+          <tr><td><strong>Rapid-test entries</strong></td><td>Test type, result you entered (positive / negative / invalid), line appearance, date</td><td>When you log a test</td></tr>
+          <tr><td><strong>Strip photos (optional)</strong></td><td>Photo of test strip — stored as a personal record only; we do <strong>not</strong> read, scan, analyze, or extract a result from this image</td><td>When you add a photo</td></tr>
+          <tr><td><strong>AI assistant chat</strong></td><td>Your questions and the assistant's replies</td><td>When using the assistant</td></tr>
+          <tr><td><strong>Support communications</strong></td><td>Messages to appadmin@wondfousa.com</td><td>When you contact us</td></tr>
+        </table>
+        <h3>3.2 Information collected automatically</h3>
+        <ul>
+          <li><strong>Device &amp; technical data</strong> — approximate device model, OS version, app version, crash reports.</li>
+          <li><strong>Logs</strong> — authentication events (sign-in success / failure), timestamps of saves.</li>
+        </ul>
+        <p>We <strong>do not</strong> use third-party advertising trackers, cross-app tracking SDKs, session-replay tools, or behavioral profiling.</p>
+        <h3>3.3 Information we do <em>not</em> collect</h3>
+        <ul>
+          <li>Precise geolocation</li>
+          <li>Contacts, calendar, microphone, or media library (other than a photo you explicitly upload)</li>
+          <li>Government identifiers (SSN, driver's-license number, etc.)</li>
+          <li>Payment card information (the current version is free)</li>
+        </ul>
+
+        <h2>4. How we use your information</h2>
+        <ol>
+          <li>Provide and operate the app (authentication, sync, member switching, AI chat).</li>
+          <li>Generate the personal reports you request.</li>
+          <li>Show public-health context (CDC respiratory-disease guidance, regional risk maps) — these features fetch only <strong>publicly available data</strong> from CDC endpoints; they do not send your personal data to CDC.</li>
+          <li>Maintain security, prevent abuse, and meet our legal obligations.</li>
+          <li>Send essential service messages (e.g., email verification). We do <strong>not</strong> send marketing email without your separate opt-in.</li>
+        </ol>
+        <p>We <strong>do not</strong> use your health data, photos, or chat messages for advertising, sale to third parties, training third-party AI models, or profiling.</p>
+
+        <h2>5. Legal basis (GDPR / UK GDPR users)</h2>
+        <ul>
+          <li><strong>Performance of a contract</strong> (Art. 6(1)(b)) — to provide the app.</li>
+          <li><strong>Explicit consent</strong> (Art. 9(2)(a)) — for special-category health data, test results, photos. You may withdraw consent at any time.</li>
+          <li><strong>Legitimate interests</strong> (Art. 6(1)(f)) — security, fraud prevention, service improvement.</li>
+          <li><strong>Legal obligation</strong> (Art. 6(1)(c)) — where law requires retention or disclosure.</li>
+        </ul>
+
+        <h2>6. Sharing and disclosure</h2>
+        <table>
+          <tr><th>Recipient</th><th>Purpose</th><th>Safeguard</th></tr>
+          <tr><td><strong>Google / Firebase</strong> (Authentication, Cloud Firestore, Cloud Storage)</td><td>Hosting, authentication, sync</td><td>Google DPA &amp; Security Terms; data stored in <strong>us-central1</strong></td></tr>
+          <tr><td><strong>CDC public APIs</strong></td><td>Read-only public data</td><td>No personal data sent; outbound only</td></tr>
+          <tr><td><strong>Law-enforcement / regulators</strong></td><td>Valid legal demand only</td><td>Minimum disclosure; notify you unless prohibited</td></tr>
+          <tr><td><strong>Successor entities</strong></td><td>Merger / acquisition / restructuring</td><td>Same protections required</td></tr>
+        </table>
+        <p>We <strong>do not sell</strong> your personal information. We <strong>do not share</strong> personal information for cross-context behavioral advertising. We <strong>do not</strong> disclose your health data to medical providers, employers, schools, or insurers — sharing a report with anyone is your action, taken outside the app.</p>
+
+        <h2>7. Where data is stored and how it is protected</h2>
+        <ul>
+          <li>Account and synced data: Google Cloud / Firebase in <strong>us-central1</strong>.</li>
+          <li>Strip photos and locally cached logs: stored on your device's encrypted application storage (the app's WebView <code>localStorage</code>).</li>
+          <li>Transport: all network traffic encrypted with TLS 1.2+.</li>
+          <li>Authentication: passwords hashed and salted by Firebase; we never see your plaintext password.</li>
+          <li>Access controls: only a small number of authorized engineers can access production data.</li>
+        </ul>
+        <p>No system is perfectly secure. If a breach occurs, we will notify affected users and the U.S. Federal Trade Commission as required by the <strong>FTC Health Breach Notification Rule</strong> (16 CFR Part 318), and any applicable state authorities, within the timeframes those rules require (typically within 60 days of discovery).</p>
+
+        <h2>8. HIPAA status</h2>
+        <p>WELLlife Care is a <strong>consumer-facing application</strong>. You install it, you enter your own data, and you decide whether to export or share any report. Accordingly, we are <strong>not</strong> a <em>covered entity</em> and <strong>not</strong> a <em>business associate</em> as those terms are defined in the federal Health Insurance Portability and Accountability Act of 1996 ("HIPAA"). HIPAA does <strong>not</strong> apply to the information you store in this app on your own behalf.</p>
+        <p>Because HIPAA does not apply, we instead hold ourselves to comparable security practices and to the consumer-health-data laws described below, but we <strong>cannot</strong> provide HIPAA-specific protections such as a Notice of Privacy Practices or a Business Associate Agreement.</p>
+
+        <h2>9. Your rights</h2>
+        <ul>
+          <li><strong>Access</strong> a copy of your information.</li>
+          <li><strong>Correct</strong> inaccurate information.</li>
+          <li><strong>Delete</strong> your account and the data we hold (irreversible).</li>
+          <li><strong>Export</strong> your data in a portable format (JSON or CSV).</li>
+          <li><strong>Withdraw consent</strong> to processing of your health data; this will close your account.</li>
+          <li><strong>Object</strong> to certain legitimate-interest-based processing.</li>
+          <li><strong>Lodge a complaint</strong> with your local data-protection authority or state attorney general.</li>
+        </ul>
+        <p>To exercise any right, email <strong>appadmin@wondfousa.com</strong> from the address on your account. We respond within 30 days (45 for U.S. CCPA, extendable to 90 days where allowed).</p>
+
+        <h3>9.1 California residents (CCPA / CPRA)</h3>
+        <p>In the last 12 months we have collected the categories listed in Section 3. We do <strong>not</strong> sell or "share" (as defined by CPRA) your information. California residents also have the right to know which categories we have collected and the sources / purposes; request correction or deletion; limit the use of "sensitive personal information" (your health data qualifies); and be free from retaliation. We honor the <strong>Global Privacy Control (GPC)</strong> signal where applicable. You may designate an authorized agent; we may verify the request with you.</p>
+
+        <h3>9.2 Washington residents (My Health My Data Act)</h3>
+        <p>WELLlife Care collects "consumer health data" as defined by the Washington <strong>My Health My Data Act</strong> (RCW 19.373). Washington residents have the right to confirm whether we are processing that data; access it; withdraw consent; and delete it from our systems and require us to instruct our processors to do the same.</p>
+        <p>We will <strong>not</strong> geofence health-care facilities or use precise location data in any form, in accordance with RCW 19.373.</p>
+        <p>To submit a request, email <strong>appadmin@wondfousa.com</strong> with subject line "WA MHMDA request". You may also appeal an adverse decision by replying to our response; if we deny, you may contact the Washington State Attorney General at <em>www.atg.wa.gov</em>.</p>
+
+        <h3>9.3 Other state laws</h3>
+        <p>Residents of Colorado, Connecticut, Texas, Virginia, Utah, Oregon, Montana, and similar states with comprehensive consumer-privacy statutes have rights substantially similar to those described above. The same email (appadmin@wondfousa.com) is the intake point for all such requests.</p>
+
+        <h2>10. Children</h2>
+        <p>WELLlife Care is <strong>not directed at children under 13</strong>, and we do not knowingly collect personal information from children under 13. If you are a parent or guardian and believe your child has provided us with personal information, contact us and we will delete it. Families using the "member" feature acknowledge that the account holder is responsible for any data they log on behalf of a minor in their household; we do not verify family relationships and store such entries as the account holder's own data.</p>
+
+        <h2>11. Data retention</h2>
+        <ul>
+          <li><strong>Account data</strong> — retained until you delete your account.</li>
+          <li><strong>Health logs and test entries</strong> — retained until you delete the relevant card or your account.</li>
+          <li><strong>Strip photos</strong> — stored on-device only by default; if synced to Firebase in a future version, the same deletion rules apply.</li>
+          <li><strong>AI chat history</strong> — retained for 12 months, then deleted.</li>
+          <li><strong>Backups</strong> — encrypted backups may persist up to 35 days beyond deletion.</li>
+          <li><strong>Logs</strong> — security and access logs retained up to 12 months.</li>
+        </ul>
+
+        <h2>12. International transfers</h2>
+        <p>If you access WELLlife Care from outside the United States, your information will be transferred to and processed in the United States and in any other country where Google operates Firebase infrastructure. We rely on Standard Contractual Clauses (Module 2) and supplementary measures for transfers from the EEA, UK, and Switzerland.</p>
+
+        <h2>13. Changes to this policy</h2>
+        <p>We will update the "Last updated" date if anything changes. If the change is material, we will notify you in-app and by email before it takes effect, and where required we will obtain your renewed consent.</p>
+
+        <h2>14. Contact</h2>
+        <ul>
+          <li><strong>Email:</strong> appadmin@wondfousa.com</li>
+          <li><strong>Mail:</strong> Wondfo USA, Inc. — mailing address available on request.</li>
+        </ul>
+      </div>
+
+      <!-- ───── TERMS OF SERVICE ───── -->
+      <div id="pol-terms" style="display:none">
+        <div class="pol-meta"><strong>Effective date:</strong> May 12, 2026 &nbsp;·&nbsp; <strong>Last updated:</strong> May 12, 2026</div>
+        <h2>1. Agreement</h2>
+        <p>These Terms of Service ("<strong>Terms</strong>") form a binding agreement between you and <strong>Wondfo USA, Inc.</strong> ("<strong>we</strong>", "<strong>us</strong>", "<strong>our</strong>") governing your access to and use of the WELLlife Care mobile application and any related websites or services (collectively, the "<strong>Service</strong>").</p>
+        <p>By creating an account, signing in, or otherwise using the Service, you acknowledge that you have read, understood, and agree to these Terms and to our Privacy Policy. If you do not agree, do not use the Service.</p>
+
+        <h2>2. What the Service is</h2>
+        <p>WELLlife Care is a <strong>consumer health-tracking application</strong>. It helps you log self-reported symptoms, temperature, SpO₂, blood pressure, and rapid-test results; attach optional photos of test strips as personal records; review general public-health information (including content sourced from the U.S. CDC); and produce personal reports.</p>
+
+        <h2>3. Important medical disclaimer — please read</h2>
+        <p><strong>The Service is for personal informational and logging purposes only.</strong></p>
+        <ul>
+          <li>The Service is <strong>not a medical device</strong>. It is <strong>not FDA-cleared, FDA-authorized, or FDA-approved</strong> for the diagnosis, treatment, cure, mitigation, or prevention of any disease.</li>
+          <li>The Service is <strong>not</strong> an authorized companion application to any specific rapid test. <strong>Rapid-test results must be read and interpreted by you, visually, according to the test manufacturer's instructions for use (IFU).</strong> The Service only records what you choose to enter; it does not read, scan, or analyze test strip images.</li>
+          <li>The Service does <strong>not</strong> diagnose any illness, determine your viral load, determine whether you are contagious, or determine whether you are safe to return to work, school, travel, or any other activity.</li>
+          <li>General information provided through the Service (including any output from the AI assistant) is educational only and is <strong>not</strong> medical advice, nor a substitute for consultation with a qualified health-care provider.</li>
+          <li><strong>Always seek the advice of your physician or other qualified health-care provider</strong> with any questions you have regarding a medical condition. Never disregard professional medical advice or delay seeking it because of something you read in the Service.</li>
+        </ul>
+        <h3>3.1 Emergencies</h3>
+        <p><strong>If you believe you are experiencing a medical emergency, call 911 (or your local emergency number) immediately.</strong> Do not use the Service to report an emergency. The Service is not designed for, and is not capable of, providing emergency response or real-time monitoring.</p>
+
+        <h2>4. Eligibility</h2>
+        <p>You must be <strong>at least 18 years old</strong> to create an account. By creating an account you represent that you meet this age requirement and that you have the legal capacity to enter into these Terms in your jurisdiction.</p>
+        <p>The Service is offered for use in the United States. If you access it from outside the United States, you do so on your own initiative and at your own risk; you remain responsible for compliance with local laws.</p>
+
+        <h2>5. Your account</h2>
+        <ul>
+          <li>You agree to provide accurate, current information when registering and to keep it up to date.</li>
+          <li>You are responsible for safeguarding your password and for any activity that occurs under your account. Notify us promptly at appadmin@wondfousa.com if you suspect unauthorized access.</li>
+          <li>You may not share your account, sell access to your account, or create an account on behalf of another adult without their authorization.</li>
+          <li>The "family member" feature is intended for managing logs for members of your own household. You represent that you have the right to enter and manage that information; you are responsible for what you choose to record about them.</li>
+        </ul>
+
+        <h2>6. Acceptable use</h2>
+        <p>You agree <strong>not</strong> to:</p>
+        <ul>
+          <li>Use the Service in a way that violates any law or third-party right;</li>
+          <li>Submit false, misleading, or fraudulent information;</li>
+          <li>Reverse-engineer, decompile, or attempt to extract the source code of the Service, except where applicable law expressly permits;</li>
+          <li>Use any automated means (bots, scrapers) to access the Service, except through interfaces we publicly document;</li>
+          <li>Interfere with or disrupt the Service or the servers and networks that host it; or attempt to gain unauthorized access to any portion of the Service;</li>
+          <li>Use the Service to develop a competing product or to train any third-party machine-learning model.</li>
+        </ul>
+        <p>We may suspend or terminate accounts that violate this section.</p>
+
+        <h2>7. Your content; your responsibility</h2>
+        <p>You retain ownership of the symptom logs, test entries, photos, notes, and other content you submit ("<strong>Your Content</strong>"). You grant us a limited, non-exclusive, royalty-free license to store, transmit, display, and back up Your Content <strong>solely to provide the Service to you and to perform the operations described in the Privacy Policy</strong>.</p>
+        <p>You — not WELLlife Care — are responsible for any report or content you choose to export, share, send to your doctor, or otherwise distribute. Once data leaves the Service at your direction, we no longer control its handling.</p>
+
+        <h2>8. Third-party services and content</h2>
+        <ul>
+          <li><strong>Rapid-test manufacturers</strong> — your rapid test is a separate product from the Service. Always follow the manufacturer's IFU. We make no representation about the performance of any specific test.</li>
+          <li><strong>CDC information</strong> — public-health content presented in the Service is drawn from publicly available CDC resources. CDC does not endorse or sponsor WELLlife Care.</li>
+          <li><strong>Firebase / Google Cloud</strong> — we use Firebase for authentication, data storage, and synchronization. Your use of the Service is also subject to Google's applicable terms; we remain accountable to you for the way we configure those services on your behalf.</li>
+        </ul>
+
+        <h2>9. Changes to the Service</h2>
+        <p>We may add, modify, or remove features of the Service at any time, with or without notice. We will not make a change that materially reduces the security or privacy protections of Your Content without prior notice.</p>
+
+        <h2>10. Termination</h2>
+        <ul>
+          <li><strong>By you.</strong> You may stop using the Service at any time and may delete your account from the in-app settings. Deletion is irreversible.</li>
+          <li><strong>By us.</strong> We may suspend or terminate your account if we reasonably believe you have violated these Terms, if we are required to do so by law, or if continued service would expose us or our users to material risk. We will give you reasonable notice and the opportunity to export your data unless doing so would itself violate law or our security obligations.</li>
+          <li>Provisions that by their nature should survive termination (including Sections 3, 7, 11, 12, 13, and 16) will survive.</li>
+        </ul>
+
+        <h2>11. Warranty disclaimer</h2>
+        <p>To the maximum extent permitted by applicable law, <strong>the Service is provided "AS IS" and "AS AVAILABLE", without warranties of any kind</strong>, whether express, implied, statutory, or otherwise. We specifically disclaim implied warranties of merchantability, fitness for a particular purpose, title, non-infringement, and any warranties arising from course of dealing or trade usage. We do not warrant that the Service will be uninterrupted, error-free, or free from harmful components, or that any specific health outcome will result from using it.</p>
+        <p>Some jurisdictions do not allow the exclusion of certain warranties; in those jurisdictions, the foregoing exclusions apply only to the extent permitted by law.</p>
+
+        <h2>12. Limitation of liability</h2>
+        <p>To the maximum extent permitted by applicable law:</p>
+        <ul>
+          <li><strong>No indirect damages.</strong> In no event will we or our affiliates, officers, employees, agents, or service providers be liable for any indirect, incidental, special, consequential, exemplary, or punitive damages — or for loss of profits, revenues, data, goodwill, or other intangible losses — arising out of or relating to the Service, even if we have been advised of the possibility of such damages.</li>
+          <li><strong>Liability cap.</strong> Our aggregate liability for any claim arising out of or relating to these Terms or the Service is limited to the greater of <strong>(a) USD 100</strong> or <strong>(b) the total fees you have paid us for the Service in the 12 months before the event giving rise to the claim</strong> (the Service is currently free, so (a) applies for most users).</li>
+          <li><strong>Essential basis.</strong> These limitations apply even if a remedy fails of its essential purpose.</li>
+        </ul>
+        <p>Some jurisdictions do not allow the limitation of liability for certain types of damages; in those jurisdictions the limitations above apply only to the extent permitted by law.</p>
+
+        <h2>13. Indemnification</h2>
+        <p>You agree to defend, indemnify, and hold harmless WELLlife Care, our affiliates, and our respective officers, directors, employees, and agents from and against any claims, liabilities, damages, losses, and expenses (including reasonable attorneys' fees) arising out of or related to: (a) Your Content; (b) your use or misuse of the Service; (c) your violation of these Terms; or (d) your violation of any law or any right of a third party.</p>
+
+        <h2>14. Governing law and dispute resolution</h2>
+        <p>These Terms are governed by the laws of the <strong>State of New York</strong>, without regard to its conflict-of-laws principles. The United Nations Convention on Contracts for the International Sale of Goods does not apply.</p>
+        <p>Any dispute, claim, or controversy arising out of or relating to these Terms or the Service will be resolved by <strong>binding, individual arbitration</strong> administered by the American Arbitration Association ("AAA") under its Consumer Arbitration Rules in effect at the time the dispute arises. The arbitration will take place in New York County, New York, or by remote hearing if both parties agree. Judgment on the award may be entered in any court of competent jurisdiction.</p>
+        <p><strong>You and we each waive any right to a jury trial and any right to participate in a class action, collective action, or representative proceeding.</strong> The arbitrator may not consolidate more than one person's claims and may not preside over any form of representative or class proceeding.</p>
+        <p><strong>30-day opt-out.</strong> You may opt out of this arbitration agreement by emailing <strong>appadmin@wondfousa.com</strong> with the subject line "Arbitration Opt-Out" within 30 days of first accepting these Terms. If you opt out, any dispute will be resolved exclusively in the state or federal courts located in New York County, New York, and you and we consent to the personal jurisdiction of those courts.</p>
+        <p>Notwithstanding the foregoing, either party may bring an individual action in small-claims court, and either party may seek injunctive or equitable relief in court to protect intellectual property rights.</p>
+
+        <h2>15. Changes to these Terms</h2>
+        <p>We may update these Terms from time to time. If a change is material, we will notify you in-app and by email at least 14 days before it takes effect. Your continued use of the Service after the effective date constitutes acceptance. If you do not agree to the new Terms, you must stop using the Service and may delete your account.</p>
+
+        <h2>16. Miscellaneous</h2>
+        <ul>
+          <li><strong>Entire agreement.</strong> These Terms, together with the Privacy Policy and any in-app notices we present at sign-up, are the entire agreement between you and us.</li>
+          <li><strong>Severability.</strong> If any provision is held unenforceable, the remaining provisions remain in effect.</li>
+          <li><strong>No waiver.</strong> Our failure to enforce any provision is not a waiver of our right to do so later.</li>
+          <li><strong>Assignment.</strong> You may not assign these Terms without our written consent. We may assign them to an affiliate or successor.</li>
+          <li><strong>Notices to you.</strong> We may give notice by email to the address on your account or by an in-app notice.</li>
+          <li><strong>Force majeure.</strong> We will not be liable for any failure or delay caused by circumstances beyond our reasonable control.</li>
+        </ul>
+
+        <h2>17. Contact</h2>
+        <ul>
+          <li><strong>Email:</strong> appadmin@wondfousa.com</li>
+          <li><strong>Mail:</strong> Wondfo USA, Inc. — mailing address available on request.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="add-member-modal" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(0,0,0,.6);align-items:flex-end;justify-content:center">
   <div style="background:#fff;border-radius:24px 24px 0 0;width:100%;max-width:430px;padding:0 0 32px;box-shadow:0 -12px 40px rgba(0,0,0,.2)">
     <div style="width:36px;height:4px;background:#e0ddd8;border-radius:2px;margin:12px auto 20px"></div>
@@ -1552,6 +1853,19 @@ function enterApp(name){
   setTimeout(()=>initMemberSystem(), 50);
 }
 
+// ── Policy viewer (Privacy / Terms) ────────────────────────────────
+function openPolicy(which){
+  const titles={privacy:'Privacy Policy',terms:'Terms of Service'};
+  document.getElementById('policy-title').textContent=titles[which]||'';
+  document.getElementById('pol-privacy').style.display=(which==='privacy')?'block':'none';
+  document.getElementById('pol-terms').style.display=(which==='terms')?'block':'none';
+  const m=document.getElementById('policy-modal');
+  m.classList.add('show');
+  // Reset scroll to top each time it opens
+  const body=document.getElementById('policy-body');
+  if(body)body.scrollTop=0;
+}
+function closePolicy(){document.getElementById('policy-modal').classList.remove('show');}
 function doLogout(){
   localStorage.removeItem('wl_session');
   document.getElementById('auth-wrap').style.display='flex';
@@ -1961,7 +2275,7 @@ function drawReportCanvas(cardId){
   // Recovery status note
   const recoveryLine = (() => {
     const last = sVals[sVals.length-1]||{};
-    if(last.tone==='none') return 'Status: Recovered ✓';
+    if(last.tone==='none') return 'Status: Recovery noted (self-report)';
     if(last.tone==='faint') return 'Status: Improving — monitoring continues';
     if(last.tone==='mild'||last.tone==='strong') return 'Status: Active illness — in recovery';
     return null;
@@ -2633,7 +2947,7 @@ fetch("https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json").then(r=>r.json(
   fetchCDCRiskMap();
 });
 const CARDS={
-  covid:{name:"COVID-19 Infection",dates:"Feb 3 – Feb 11, 2024",dur:9,logged:9,strips:2,disease:"COVID+",recoveryStart:"2024-02-03",tags:["COVID+","Fever","Fatigue","Recovered"],
+  covid:{name:"COVID-19 Positive Test Log",dates:"Feb 3 – Feb 11, 2024",dur:9,logged:9,strips:2,disease:"COVID+",recoveryStart:"2024-02-03",tags:["COVID+","Fever","Fatigue","Recovery noted"],
     days:[
       {date:"Feb 3",syms:["🤒 Fever","💢 Headache","😩 Fatigue"],temp:38.8,strip:"pos",meds:["💊 Ibuprofen"],energy:"😞 Terrible",note:"Woke up with chills. Took ibuprofen at 8am."},
       {date:"Feb 4",syms:["🤒 Fever","😩 Fatigue","🦴 Body aches"],temp:39.2,strip:"skip",meds:["💊 Ibuprofen","💊 Paracetamol"],energy:"😞 Terrible",note:"Worst day. High fever all day."},
@@ -2645,7 +2959,7 @@ const CARDS={
       {date:"Feb 10",syms:["😮‍💨 Cough"],temp:36.6,strip:"skip",meds:[],energy:"😊 Good",note:"Almost back to normal."},
       {date:"Feb 11",syms:[],temp:36.5,strip:"neg",meds:[],energy:"😊 Good",note:"Strip negative. All clear!"}
     ]},
-  flu:{name:"Flu A Infection",dates:"Oct 18 – present",dur:4,logged:3,strips:1,disease:"Flu A+",recoveryStart:"2025-10-18",tags:["Flu A+","Fever","In progress"],
+  flu:{name:"Flu A Positive Test Log",dates:"Oct 18 – present",dur:4,logged:3,strips:1,disease:"Flu A+",recoveryStart:"2025-10-18",tags:["Flu A+","Fever","In progress"],
     days:[
       {date:"Oct 18",syms:["🤒 Fever","🦴 Body aches","😩 Fatigue"],temp:39.1,strip:"pos",meds:["💊 Ibuprofen","💊 Tamiflu"],energy:"😞 Terrible",note:"Sudden onset. Very high fever."},
       {date:"Oct 19",syms:["🤒 Fever","🦴 Body aches","💢 Headache"],temp:38.7,strip:"skip",meds:["💊 Tamiflu"],energy:"😞 Terrible",note:"Tamiflu seems to be helping."},
@@ -2682,19 +2996,19 @@ const CDC_GUIDANCE={
     strong:{head:'⚠️ Take Extra Care',body:'If you feel significantly unwell, contact your healthcare provider for personalized guidance. Rest, hydrate, and check in with someone you trust.',tip:'💬 Your provider can advise on next steps based on your symptoms and history.',tipBg:'#fef2f2',tipBorder:'#fca5a5',tipColor:'#991b1b'},
     mild:{head:'🏠 Rest at Home',body:'Stay home and away from others. Rest and hydrate. If you have questions about treatment options, talk to your healthcare provider — they can advise on what may be appropriate for you.',tip:'💬 An early conversation with your provider can help you understand your options.',tipBg:'#eff6ff',tipBorder:'#bfdbfe',tipColor:'#1e40af'},
     faint:{head:'📋 Almost There — 5-Day Precautions',body:'Return when both are true for 24+ hours: symptoms improving AND fever-free without medication. For the next 5 days: wear a mask, improve ventilation, maintain distance, wash hands frequently.',tip:'🔁 If fever returns after resuming activities — stay home again and restart the 24-hour clock.',tipBg:'#f5f3ff',tipBorder:'#c4b5fd',tipColor:'#5b21b6'},
-    none:{head:'✅ Clear to Return',body:'Get a negative rapid test before returning to work or school. Continue mask and hygiene precautions for 5 days total. Watch for Long COVID: fatigue, brain fog, or shortness of breath.',tip:'🧪 A negative strip test gives confidence you are no longer contagious.',tipBg:'#ecfdf5',tipBorder:'#6ee7b7',tipColor:'#065f46'}
+    none:{head:'✅ Getting Back to Activities',body:'Consider a negative rapid test before returning to work or school. Continue mask and hygiene precautions for 5 days total. Watch for Long COVID symptoms: fatigue, brain fog, or shortness of breath. Talk with your healthcare provider for personal guidance.',tip:'🧪 A negative rapid test may provide additional reassurance, but it does not guarantee you are not contagious.',tipBg:'#ecfdf5',tipBorder:'#6ee7b7',tipColor:'#065f46'}
   },
   flu:{
     strong:{head:'⚠️ Take Extra Care — Flu',body:'If you feel significantly unwell, contact your healthcare provider for personalized guidance. Rest, hydrate, and check in with someone if you live alone.',tip:'💬 Your provider can advise on next steps based on your symptoms.',tipBg:'#fef2f2',tipBorder:'#fca5a5',tipColor:'#991b1b'},
     mild:{head:'🏠 Rest & Recover — Flu',body:'Flu can hit suddenly: fever, chills, muscle aches, fatigue. Rest, fluids, and OTC fever/pain relief usually help. If you want to discuss treatment options, talk to your healthcare provider — earlier conversations are typically more useful.',tip:'💬 An early conversation with your provider can help you understand your options.',tipBg:'#fff7ed',tipBorder:'#fdba74',tipColor:'#9a3412'},
     faint:{head:'📋 Return When Ready — Flu',body:'Return when for 24+ hours: symptoms improving AND fever-free without medication. For 5 days after: mask around vulnerable people, improve ventilation, good hand hygiene. Fatigue and mild cough may linger.',tip:'⚡ Flu is contagious 1 day before symptoms and up to 5-7 days after onset.',tipBg:'#f5f3ff',tipBorder:'#c4b5fd',tipColor:'#5b21b6'},
-    none:{head:'✅ Fully Recovered — Flu',body:'A negative rapid Flu A/B test before returning to work provides extra confidence. Watch for secondary infections in the 2 weeks after. Get your annual flu shot if not yet vaccinated this season.',tip:'💉 Annual flu vaccination is the best prevention — available Oct-Nov each year.',tipBg:'#ecfdf5',tipBorder:'#6ee7b7',tipColor:'#065f46'}
+    none:{head:'✅ Symptoms Improving — Flu',body:'A negative rapid Flu A/B test before returning to work may provide additional reassurance, though it does not guarantee you are no longer contagious. Watch for secondary infections in the 2 weeks after. Get your annual flu shot if not yet vaccinated this season. Talk with your healthcare provider for personal guidance.',tip:'💉 Annual flu vaccination is the best prevention — available Oct-Nov each year.',tipBg:'#ecfdf5',tipBorder:'#6ee7b7',tipColor:'#065f46'}
   },
   rsv:{
     strong:{head:'⚠️ RSV — Take Extra Care',body:'RSV can be more serious for infants, adults 60+, and the immunocompromised. If symptoms feel significant, contact a healthcare provider for guidance — especially for infants and at-risk adults.',tip:'💬 For infants and at-risk adults, check in with a provider sooner rather than later.',tipBg:'#fef2f2',tipBorder:'#fca5a5',tipColor:'#991b1b'},
     mild:{head:'🏠 Supportive Care — RSV',body:'No specific antiviral for most people. Care is supportive: rest, stay hydrated, use nasal saline for infants, OTC pain/fever relief (no aspirin for children), consider a humidifier. Symptoms peak on days 3-5.',tip:'🧬 No antiviral for RSV — rest, fluids, and monitoring are the main treatment.',tipBg:'#eff6ff',tipBorder:'#bfdbfe',tipColor:'#1e40af'},
     faint:{head:'📋 Gradual Recovery — RSV',body:'Return when for 24+ hours: symptoms improving AND fever-free without medication. RSV can linger — mild cough or congestion may persist 1-3 weeks. Extra caution around infants and elderly.',tip:'⚡ RSV can spread for 3-8 days. Extra caution around newborns and elderly after recovery.',tipBg:'#f5f3ff',tipBorder:'#c4b5fd',tipColor:'#5b21b6'},
-    none:{head:'✅ RSV Cleared',body:'RSV recovery takes 1-2 weeks. A negative rapid test provides reassurance before returning. Adults 60+: ask your doctor about the RSV vaccine (Arexvy/mRESVIA) for next season.',tip:'💉 RSV vaccines now available for adults 60+ and pregnant women to protect newborns.',tipBg:'#ecfdf5',tipBorder:'#6ee7b7',tipColor:'#065f46'}
+    none:{head:'✅ Symptoms Improving — RSV',body:'RSV recovery typically takes 1-2 weeks. A negative rapid test may provide additional reassurance before returning, but it does not guarantee you are no longer contagious. Adults 60+: ask your doctor about the RSV vaccine (Arexvy/mRESVIA) for next season.',tip:'💉 RSV vaccines now available for adults 60+ and pregnant women to protect newborns.',tipBg:'#ecfdf5',tipBorder:'#6ee7b7',tipColor:'#065f46'}
   }
 };
 function getCdcGuidance(){
@@ -3646,24 +3960,45 @@ function markRecovered(e){
   if(e)e.stopPropagation();
   const card=CARDS[HOME_REC.cardId];
   if(!card)return;
-  if(!card.tags.includes('None'))card.tags.push('None');
-  card.tags=card.tags.filter(t=>t!=='In progress');
-  // Update the recent cards list tag display
-  const allRc=document.querySelectorAll('.rc');
-  allRc.forEach(rc=>{
-    const tags=rc.querySelectorAll('.tag');
-    tags.forEach(t=>{if(t.textContent.trim()==='In progress'){t.textContent='None';t.className='tag t-ok';}});
-  });
-  // Persist the recovered state on the button (no auto-revert)
   const btn=(e&&e.currentTarget)||document.getElementById('mark-recovered-btn');
-  if(btn){
-    btn.innerHTML='<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Recovered';
-    btn.style.background='var(--teal)';
-    btn.style.color='#fff';
-    btn.style.borderColor='var(--teal)';
-    btn.style.cursor='default';
-    btn.disabled=true;
-    btn.setAttribute('aria-pressed','true');
+  const isRecovered=card.tags.includes('Self-reported recovered');
+
+  if(isRecovered){
+    // ── Undo (tap again to reverse a misclick) ─────────────────────
+    card.tags=card.tags.filter(t=>t!=='Self-reported recovered');
+    if(!card.tags.includes('In progress'))card.tags.push('In progress');
+    document.querySelectorAll('.rc .tag').forEach(t=>{
+      if(t.textContent.trim()==='Self-reported recovered'){
+        t.textContent='In progress';
+        t.className='tag';
+      }
+    });
+    if(btn){
+      btn.innerHTML='<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M6 1.5v9 M1.5 6h9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg> I feel recovered';
+      btn.style.background='#fff';
+      btn.style.color='var(--teal)';
+      btn.style.borderColor='var(--teal)';
+      btn.removeAttribute('aria-pressed');
+      btn.title='Tap to mark you feel recovered';
+    }
+  } else {
+    // ── Mark as self-reported recovered ─────────────────────────────
+    if(!card.tags.includes('Self-reported recovered'))card.tags.push('Self-reported recovered');
+    card.tags=card.tags.filter(t=>t!=='In progress'&&t!=='None'&&t!=='Log ended');
+    document.querySelectorAll('.rc .tag').forEach(t=>{
+      if(t.textContent.trim()==='In progress'){
+        t.textContent='Self-reported recovered';
+        t.className='tag t-ok';
+      }
+    });
+    if(btn){
+      btn.innerHTML='<svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg> Noted';
+      btn.style.background='var(--teal)';
+      btn.style.color='#fff';
+      btn.style.borderColor='var(--teal)';
+      btn.setAttribute('aria-pressed','true');
+      btn.title='Tap to undo';
+    }
   }
 }
 function adjustCardDays(delta){
