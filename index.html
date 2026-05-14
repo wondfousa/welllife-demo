@@ -437,8 +437,10 @@ html.native .sb { display: none; }
   } catch(e) {}
 })();
 </script>
-<!-- Amplify SDK bundle — built by `npm run build:amplify` from src/amplify-init.js -->
-<script defer src="amplify-bundle.js"></script>
+<!-- Amplify SDK bundle — built by `npm run build:amplify` from src/amplify-init.js.
+     If this fails to load (e.g. on a public GitHub Pages demo where we never publish the bundle),
+     we'll flip the page into a self-contained "demo mode" — no real auth, all data local. -->
+<script defer src="amplify-bundle.js" onerror="window.__bundleFailed=true;document.documentElement.classList.add('demo-mode');"></script>
 </head>
 <body>
 <div class="phone">
@@ -2325,12 +2327,52 @@ function finishOnboarding(){
   }
 })();
 
+// ── Demo mode (no real backend — used on public GitHub Pages preview) ────
+// We enter demo mode when:
+//   - amplify-bundle.js failed to load (the <script onerror> sets __bundleFailed), OR
+//   - we're on a github.io hostname, OR
+//   - 2.5s after page load amplify-ready never fired.
+// Demo mode skips auth/onboarding, drops the user into the app as "Demo User",
+// shows a small banner, and silences buttons that would call Cognito.
+window.__isDemoMode = function(){
+  return !!(window.__bundleFailed)
+      || /\.github\.io$/i.test(location.hostname)
+      || /^demo$/i.test(new URLSearchParams(location.search).get('mode')||'');
+};
+function enterDemoMode(){
+  if(window.__demoEntered) return; window.__demoEntered=true;
+  document.documentElement.classList.add('demo-mode');
+  // Hide auth and onboarding overlays so the main app shows immediately.
+  ['auth-wrap','onboard-wrap'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
+  try{ localStorage.setItem('wl_onboarded','1'); }catch(_){}
+  // Drop into the home screen as a generic demo user.
+  try{ enterApp('Demo User'); }catch(_){}
+  // Small floating badge so visitors know this isn't a real session.
+  if(!document.getElementById('demo-badge')){
+    const b=document.createElement('div');
+    b.id='demo-badge';
+    b.textContent='DEMO PREVIEW';
+    b.style.cssText='position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#f59e0b;color:#fff;padding:4px 12px;border-radius:14px;font-size:10px;font-weight:700;letter-spacing:.12em;z-index:9999;font-family:var(--font-b);box-shadow:0 4px 12px rgba(245,158,11,.4);pointer-events:none';
+    document.body.appendChild(b);
+  }
+  // Override auth-dependent functions so clicks do something sensible instead of erroring.
+  const demoNotice=()=>alert('This is a demo preview. Download the app to sign up and save your data.');
+  window.doLogin=demoNotice; window.doRegister=demoNotice; window.doForgot=demoNotice;
+  window.doVerify=demoNotice; window.doForgotConfirm=demoNotice; window.doLogout=demoNotice;
+  window.saveProfileName=demoNotice; window.sendEmailChangeCode=demoNotice;
+  window.confirmEmailChange=demoNotice; window.savePassword=demoNotice; window.confirmDeleteAccount=demoNotice;
+}
+
 // ── Auto-login on launch ──────────────────────────────────────────────
-// The Amplify bundle loads with `defer`, so it may finish AFTER this inline
-// script. Wait for the `amplify-ready` signal before asking Cognito who's
-// signed in. If there's a valid session (refresh token still good), skip
-// straight to the home screen.
+// In normal mode: wait for amplify-ready, then ask Cognito who's signed in.
+// In demo mode: skip Cognito entirely.
 (function(){
+  // Fast-path: github.io or explicit ?mode=demo — go straight into demo.
+  if(window.__isDemoMode()){
+    document.addEventListener('DOMContentLoaded',enterDemoMode,{once:true});
+    if(document.readyState!=='loading') enterDemoMode();
+    return;
+  }
   function tryAutoLogin(){
     if(!window.WelllifeAmplify){return;}
     window.WelllifeAmplify.auth.getCurrentUser().then(async (user)=>{
@@ -2349,6 +2391,13 @@ function finishOnboarding(){
   }else{
     document.addEventListener('amplify-ready',tryAutoLogin,{once:true});
   }
+  // Safety net: if the bundle never loads (slow/blocked), drop into demo after 2.5s.
+  setTimeout(()=>{
+    if(!window.WelllifeAmplify && !window.__demoEntered){
+      console.warn('[WELLlife] Amplify bundle never loaded — entering demo mode.');
+      enterDemoMode();
+    }
+  }, 2500);
 })();
 
 // ── PROFILE SUB-SCREENS (Edit / Change Email / Change Password / Delete) ─────
