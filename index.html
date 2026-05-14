@@ -327,8 +327,22 @@ body{font-family:var(--font-b);background:#f0eeea;display:flex;justify-content:c
 
 /* Native shell overrides (only active inside Capacitor or ?native=1) */
 html.native, html.native body { background: #fff; }
-html.native body { padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); }
-html.native .phone { border-radius: 0; border: none; box-shadow: none; }
+html.native body {
+  padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom);
+  display: block;
+  margin: 0;
+  min-height: 100vh;
+}
+html.native .phone {
+  width: 100%;
+  height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  max-width: none;
+  border-radius: 0;
+  border: none;
+  box-shadow: none;
+}
+/* Hide the simulated iOS status bar inside .phone when running native — the real OS status bar already shows time/signal */
+html.native .sb { display: none; }
 
 /* ── Policy viewer (Privacy / Terms) ───────────────────────────── */
 .pol-modal{display:none;position:fixed;inset:0;z-index:9997;background:rgba(0,0,0,.45);align-items:flex-end;justify-content:center}
@@ -413,13 +427,18 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
     var forced = qs.indexOf('native=1') !== -1;
     var inCapacitor = typeof window.Capacitor !== 'undefined' &&
       (window.Capacitor.isNativePlatform ? window.Capacitor.isNativePlatform() : true);
-    var nativeScheme = /^(capacitor|ionic|file):/.test(location.protocol);
+    // Treat only Capacitor's own schemes as native. Don't include file:// — it
+    // makes desktop Chrome double-clicking the HTML render in native fullscreen
+    // mode, which is not what we want for the desktop preview.
+    var nativeScheme = /^(capacitor|ionic):/.test(location.protocol);
     if (forced || inCapacitor || nativeScheme) {
       document.documentElement.classList.add('native');
     }
   } catch(e) {}
 })();
 </script>
+<!-- Amplify SDK bundle — built by `npm run build:amplify` from src/amplify-init.js -->
+<script defer src="amplify-bundle.js"></script>
 </head>
 <body>
 <div class="phone">
@@ -496,10 +515,10 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
         <div id="test-reminder" style="display:none;margin-top:2px;border-radius:10px;padding:6px 10px;align-items:center;gap:8px"></div>
         <!-- Data source legend (merged with +/- day-count adjuster on the right) -->
         <div style="display:flex;gap:10px;margin-top:2px;padding-top:4px;border-top:.5px solid rgba(0,0,0,.07);align-items:center;flex-wrap:wrap">
-          <div onclick="toggleStripColors(event)" style="display:flex;align-items:center;gap:5px;font-size:10px;color:#3d1a6b;cursor:pointer;user-select:none;background:rgba(91,44,145,.07);border:.5px solid rgba(91,44,145,.22);border-radius:12px;padding:3px 9px 3px 4px;font-weight:600">
+          <div onclick="toggleStripColors(event)" title="Rapid test results from at-home test strips. Tap to see what each color means." style="display:flex;align-items:center;gap:5px;font-size:10px;color:#3d1a6b;cursor:pointer;user-select:none;background:rgba(91,44,145,.07);border:.5px solid rgba(91,44,145,.22);border-radius:12px;padding:3px 9px 3px 4px;font-weight:600">
             <span style="width:13px;height:13px;border-radius:50%;background:#D66DAB;flex-shrink:0;display:inline-block"></span>Strip test <svg class="strip-chev" width="12" height="12" viewBox="0 0 12 12" style="margin-left:2px;transition:transform .2s ease;flex-shrink:0;display:inline-block;vertical-align:middle"><path d="M2 4.5 L6 8.5 L10 4.5" stroke="#5b2c91" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
-          <div onclick="toggleSeverityColors(event)" style="display:flex;align-items:center;gap:5px;font-size:10px;color:#3d1a6b;cursor:pointer;user-select:none;background:rgba(91,44,145,.07);border:.5px solid rgba(91,44,145,.22);border-radius:12px;padding:3px 9px 3px 6px;font-weight:600">
+          <div onclick="toggleSeverityColors(event)" title="Your daily symptom severity. Tap to see what each level means." style="display:flex;align-items:center;gap:5px;font-size:10px;color:#3d1a6b;cursor:pointer;user-select:none;background:rgba(91,44,145,.07);border:.5px solid rgba(91,44,145,.22);border-radius:12px;padding:3px 9px 3px 6px;font-weight:600">
             <span style="width:11px;height:11px;border-radius:50%;border:2px solid #ef4d4c;background:transparent;flex-shrink:0;display:inline-block;box-sizing:border-box"></span>How you felt <svg class="sev-chev" width="12" height="12" viewBox="0 0 12 12" style="margin-left:2px;transition:transform .2s ease;flex-shrink:0;display:inline-block;vertical-align:middle"><path d="M2 4.5 L6 8.5 L10 4.5" stroke="#5b2c91" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
           <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
@@ -919,15 +938,18 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
           <div class="drow" style="margin-bottom:14px">
             <div class="drlbl">How are you feeling today? <span style="color:var(--red);font-weight:700">*</span></div>
             <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:8px" id="dc-level">
-              <button type="button" class="level-btn" data-tone="strong"    onclick="setLevel('strong')"    style="width:100%;padding:8px 4px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:var(--i2);font-family:var(--font-b)">Severe</button>
-              <button type="button" class="level-btn" data-tone="mild"      onclick="setLevel('mild')"      style="width:100%;padding:8px 4px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:var(--i2);font-family:var(--font-b)">Mild</button>
-              <button type="button" class="level-btn" data-tone="faint" onclick="setLevel('faint')" style="width:100%;padding:8px 4px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:var(--i2);font-family:var(--font-b)">Recovering</button>
-              <button type="button" class="level-btn" data-tone="none" onclick="setLevel('none')" style="width:100%;padding:8px 4px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:var(--i2);font-family:var(--font-b)">No symptoms</button>
+              <button type="button" class="level-btn" data-tone="strong"    onclick="setLevel('strong')"    title="Significant symptoms — fever, strong cough, hard to function"    style="width:100%;padding:8px 4px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:var(--i2);font-family:var(--font-b)">Severe</button>
+              <button type="button" class="level-btn" data-tone="mild"      onclick="setLevel('mild')"      title="Noticeable but manageable symptoms"    style="width:100%;padding:8px 4px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:var(--i2);font-family:var(--font-b)">Mild</button>
+              <button type="button" class="level-btn" data-tone="faint" onclick="setLevel('faint')" title="Lingering symptoms — mostly better but not 100%" style="width:100%;padding:8px 4px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:var(--i2);font-family:var(--font-b)">Recovering</button>
+              <button type="button" class="level-btn" data-tone="none" onclick="setLevel('none')" title="Feeling completely fine today — no symptoms at all" style="width:100%;padding:8px 4px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:12px;font-weight:500;color:var(--i2);font-family:var(--font-b)">No symptoms</button>
+            </div>
+            <div style="font-size:10px;color:var(--g3);margin-top:6px;line-height:1.5">
+              <strong style="color:var(--i2)">Severe</strong>: significant · <strong style="color:var(--i2)">Mild</strong>: noticeable · <strong style="color:var(--i2)">Recovering</strong>: lingering only · <strong style="color:var(--i2)">No symptoms</strong>: feel 100% fine
             </div>
           </div>
           <!-- Strip test — now first -->
           <div class="drow" style="margin-bottom:10px">
-            <div class="drlbl">Strip test today?</div>
+            <div class="drlbl">Strip test today? <span style="color:var(--g3);font-size:11px;font-weight:500" title="At-home rapid test (e.g. COVID, Flu, RSV) — a quick nasal-swab test you do yourself">— did you take a rapid test?</span></div>
             <!-- Step 1: Did you test today? -->
             <div style="display:flex;gap:8px;margin-bottom:10px">
               <button id="st-yes" onclick="setStripTest(true)"  style="flex:1;padding:8px;border-radius:20px;border:1.5px solid #ddd;background:#fff;cursor:pointer;font-size:13px;font-weight:500;color:var(--i2);font-family:var(--font-b)">Yes</button>
@@ -1099,11 +1121,8 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
   <div class="screen" id="s-profile">
     <div class="phdr">
       <div style="display:flex;align-items:center;gap:16px">
-        <div style="position:relative;flex-shrink:0;cursor:pointer" onclick="triggerAvatarUpload('owner')">
-          <div class="pav" id="owner-pav">S</div>
-          <div style="position:absolute;bottom:0;right:0;width:20px;height:20px;border-radius:50%;background:#fff;border:1.5px solid rgba(0,0,0,.1);display:flex;align-items:center;justify-content:center;box-shadow:0 1px 4px rgba(0,0,0,.2)">
-            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M1 11V13h2l6-6-2-2-6 6z" fill="#555"/><path d="M13.5 3.5a1 1 0 00-1.4 0l-1 1 2 2 1-1a1 1 0 000-1.4l-.6-.6z" fill="#555"/><circle cx="5.5" cy="3.5" r="1.5" fill="none" stroke="#555" stroke-width="1.2"/><rect x="1" y="2" width="9" height="7" rx="1.5" stroke="#555" stroke-width="1.2"/></svg>
-          </div>
+        <div style="position:relative;flex-shrink:0;cursor:pointer" onclick="openProfile('edit')">
+          <div class="pav" id="owner-pav">?</div>
         </div>
         <div style="flex:1">
           <div style="font-family:var(--font-s);font-size:22px;margin-bottom:4px">Sarah Chen</div>
@@ -1140,7 +1159,7 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
     <div style="padding:0 16px 8px">
       <div style="background:#fff;border-radius:16px;border:.5px solid rgba(0,0,0,.08);overflow:hidden">
 
-        <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:.5px solid rgba(0,0,0,.06);cursor:pointer">
+        <div onclick="openProfile('edit')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:.5px solid rgba(0,0,0,.06);cursor:pointer">
           <div style="width:34px;height:34px;border-radius:10px;background:#f0f0f8;display:flex;align-items:center;justify-content:center;flex-shrink:0">
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M14.5 2.5l3 3L6 17H3v-3L14.5 2.5z" stroke="#6c5ce7" stroke-width="1.5" stroke-linecap="round"/></svg>
           </div>
@@ -1149,7 +1168,7 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
         </div>
 
         <!-- Change Email -->
-        <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:.5px solid rgba(0,0,0,.06);cursor:pointer">
+        <div onclick="openProfile('email')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:.5px solid rgba(0,0,0,.06);cursor:pointer">
           <div style="width:34px;height:34px;border-radius:10px;background:#f0f0f8;display:flex;align-items:center;justify-content:center;flex-shrink:0">
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><rect x="2" y="4" width="16" height="12" rx="2" stroke="#6c5ce7" stroke-width="1.5"/><path d="M2 7l8 5 8-5" stroke="#6c5ce7" stroke-width="1.5"/></svg>
           </div>
@@ -1158,7 +1177,7 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
         </div>
 
         <!-- Change Password -->
-        <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:.5px solid rgba(0,0,0,.06);cursor:pointer">
+        <div onclick="openProfile('pw')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:.5px solid rgba(0,0,0,.06);cursor:pointer">
           <div style="width:34px;height:34px;border-radius:10px;background:#f0f0f8;display:flex;align-items:center;justify-content:center;flex-shrink:0">
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><rect x="4" y="9" width="12" height="9" rx="2" stroke="#6c5ce7" stroke-width="1.5"/><path d="M7 9V6a3 3 0 016 0v3" stroke="#6c5ce7" stroke-width="1.5" stroke-linecap="round"/><circle cx="10" cy="13.5" r="1" fill="#6c5ce7"/></svg>
           </div>
@@ -1192,7 +1211,7 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
       <div style="background:#fff;border-radius:16px;border:.5px solid rgba(0,0,0,.08);overflow:hidden">
 
         <!-- Delete Account -->
-        <div style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:.5px solid rgba(0,0,0,.06);cursor:pointer">
+        <div onclick="openProfile('delete')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:.5px solid rgba(0,0,0,.06);cursor:pointer">
           <div style="width:34px;height:34px;border-radius:10px;background:#fff0f0;display:flex;align-items:center;justify-content:center;flex-shrink:0">
             <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><circle cx="10" cy="8" r="3.5" stroke="#e24b4a" stroke-width="1.5"/><path d="M3 19c0-3.866 3.134-7 7-7s7 3.134 7 7" stroke="#e24b4a" stroke-width="1.5" stroke-linecap="round"/><path d="M13 4l4 4M17 4l-4 4" stroke="#e24b4a" stroke-width="1.3" stroke-linecap="round"/></svg>
           </div>
@@ -1225,6 +1244,87 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
       </div>
     </div>
     <div style="text-align:center;padding:12px 16px 16px;font-size:11px;color:var(--g3)">version v1.0</div>
+  </div>
+
+  <!-- ── ONBOARDING (first-launch only) ──────────────────────── -->
+  <div id="onboard-wrap" style="position:absolute;inset:0;z-index:202;background:#fff;display:none;flex-direction:column;overflow:hidden">
+    <div style="position:absolute;top:14px;right:18px;z-index:5">
+      <button onclick="finishOnboarding()" style="background:transparent;border:none;color:var(--g3);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-b);padding:6px 10px">Skip</button>
+    </div>
+    <div id="onb-slides" style="flex:1;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;touch-action:pan-x;scrollbar-width:none">
+      <!-- Slide 1 — Welcome (purple brand) -->
+      <div class="onb-slide" style="min-width:100%;flex-shrink:0;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 32px;text-align:center">
+        <div style="width:120px;height:120px;border-radius:30px;background:linear-gradient(145deg,#f3e8ff 0%,#dec5fa 100%);display:flex;align-items:center;justify-content:center;margin-bottom:28px;box-shadow:0 10px 30px -8px rgba(91,44,145,.35)">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+            <path d="M32 56s-22-13-22-30a14 14 0 0125-9 14 14 0 0125 9c0 17-22 30-22 30" fill="#5b2c91" opacity=".15"/>
+            <path d="M32 56s-22-13-22-30a14 14 0 0125-9 14 14 0 0125 9c0 17-22 30-22 30" stroke="#3d1a6b" stroke-width="2.2" stroke-linejoin="round"/>
+            <path d="M14 32h6l3-8 4 16 3-12 4 8h16" stroke="#3d1a6b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </div>
+        <div style="font-family:var(--font-s);font-size:28px;color:var(--brand);margin-bottom:12px;line-height:1.2">Welcome to<br>WELLlife Care</div>
+        <div style="font-size:14px;color:var(--i2);line-height:1.55;max-width:280px;margin-bottom:28px">Your personal health companion for tracking symptoms, tests, and recovery.</div>
+        <button onclick="nextOnboarding()" style="background:var(--brand);color:#fff;border:none;border-radius:24px;padding:12px 32px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font-b);box-shadow:0 6px 16px -6px rgba(91,44,145,.45);display:flex;align-items:center;gap:6px">
+          Next <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M5 3l5 5-5 5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <!-- Slide 2 — Daily Log -->
+      <div class="onb-slide" style="min-width:100%;flex-shrink:0;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 32px;text-align:center">
+        <div style="width:120px;height:120px;border-radius:30px;background:linear-gradient(145deg,#fdf3e0 0%,#fbe4b9 100%);display:flex;align-items:center;justify-content:center;margin-bottom:28px;box-shadow:0 10px 30px -8px rgba(224,149,23,.3)">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+            <rect x="14" y="12" width="36" height="44" rx="4" fill="#e09517" opacity=".15"/>
+            <rect x="14" y="12" width="36" height="44" rx="4" stroke="#b36000" stroke-width="2"/>
+            <path d="M22 24h20M22 32h20M22 40h12" stroke="#b36000" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="46" cy="46" r="8" fill="#0d9e7a"/>
+            <path d="M42 46l3 3 5-5" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div style="font-family:var(--font-s);font-size:24px;color:var(--brand);margin-bottom:12px;line-height:1.2">Log how you feel each day</div>
+        <div style="font-size:14px;color:var(--i2);line-height:1.55;max-width:280px;margin-bottom:28px">Record symptoms, temperature, and rapid test results in seconds.</div>
+        <button onclick="nextOnboarding()" style="background:var(--brand);color:#fff;border:none;border-radius:24px;padding:12px 32px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font-b);box-shadow:0 6px 16px -6px rgba(91,44,145,.45);display:flex;align-items:center;gap:6px">
+          Next <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M5 3l5 5-5 5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <!-- Slide 3 — Recovery Tracker -->
+      <div class="onb-slide" style="min-width:100%;flex-shrink:0;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 32px;text-align:center">
+        <div style="width:120px;height:120px;border-radius:30px;background:linear-gradient(145deg,#e6f1fb 0%,#c9deef 100%);display:flex;align-items:center;justify-content:center;margin-bottom:28px;box-shadow:0 10px 30px -8px rgba(45,125,210,.3)">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+            <path d="M8 48l12-12 10 8 16-18 10 6" stroke="#2d7dd2" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+            <circle cx="20" cy="36" r="4" fill="#2d7dd2"/>
+            <circle cx="30" cy="44" r="4" fill="#e09517"/>
+            <circle cx="46" cy="26" r="4" fill="#f1c40f"/>
+            <circle cx="56" cy="32" r="4" fill="#2ecc71"/>
+          </svg>
+        </div>
+        <div style="font-family:var(--font-s);font-size:24px;color:var(--brand);margin-bottom:12px;line-height:1.2">See your recovery in one glance</div>
+        <div style="font-size:14px;color:var(--i2);line-height:1.55;max-width:280px;margin-bottom:28px">Visual timeline tracks symptom severity from "Severe" all the way to "No symptoms."</div>
+        <button onclick="nextOnboarding()" style="background:var(--brand);color:#fff;border:none;border-radius:24px;padding:12px 32px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font-b);box-shadow:0 6px 16px -6px rgba(91,44,145,.45);display:flex;align-items:center;gap:6px">
+          Next <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M5 3l5 5-5 5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <!-- Slide 4 — Share Report -->
+      <div class="onb-slide" style="min-width:100%;flex-shrink:0;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 32px;text-align:center">
+        <div style="width:120px;height:120px;border-radius:30px;background:linear-gradient(145deg,#f3e8ff 0%,#e3d1fa 100%);display:flex;align-items:center;justify-content:center;margin-bottom:28px;box-shadow:0 10px 30px -8px rgba(91,44,145,.3)">
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+            <rect x="14" y="10" width="36" height="44" rx="3" fill="#7c3aed" opacity=".15"/>
+            <rect x="14" y="10" width="36" height="44" rx="3" stroke="#5b2c91" stroke-width="2"/>
+            <path d="M22 22h20M22 30h20M22 38h14" stroke="#5b2c91" stroke-width="2" stroke-linecap="round"/>
+            <path d="M32 46l-4-4h3v-6h2v6h3l-4 4z" fill="#5b2c91"/>
+            <circle cx="48" cy="48" r="10" fill="#fff" stroke="#5b2c91" stroke-width="2"/>
+            <path d="M43 48l3 3 7-7" stroke="#5b2c91" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+          </svg>
+        </div>
+        <div style="font-family:var(--font-s);font-size:24px;color:var(--brand);margin-bottom:12px;line-height:1.2">Share with family or doctor</div>
+        <div style="font-size:14px;color:var(--i2);line-height:1.55;max-width:280px;margin-bottom:32px">Generate a clean health report — share with friends, request sick leave, or bring to your doctor.</div>
+        <button onclick="finishOnboarding()" style="width:100%;max-width:280px;background:var(--brand);color:#fff;border:none;border-radius:24px;padding:15px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font-b);box-shadow:0 6px 16px -6px rgba(91,44,145,.45)">Get started</button>
+      </div>
+    </div>
+    <!-- Dots -->
+    <div id="onb-dots" style="display:flex;justify-content:center;gap:8px;padding:12px 0 28px;flex-shrink:0">
+      <div class="onb-dot" data-i="0" style="width:8px;height:8px;border-radius:50%;background:var(--brand);transition:all .2s"></div>
+      <div class="onb-dot" data-i="1" style="width:8px;height:8px;border-radius:50%;background:#ddd;transition:all .2s"></div>
+      <div class="onb-dot" data-i="2" style="width:8px;height:8px;border-radius:50%;background:#ddd;transition:all .2s"></div>
+      <div class="onb-dot" data-i="3" style="width:8px;height:8px;border-radius:50%;background:#ddd;transition:all .2s"></div>
+    </div>
   </div>
 
   <!-- ── AUTH SCREENS ──────────────────────────────────────── -->
@@ -1272,7 +1372,7 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
           <span onclick="showAuth('register')" style="color:var(--teal);font-weight:600;cursor:pointer;margin-left:4px">Sign up</span>
         </div>
       </div>
-      <div style="text-align:center;font-size:11px;color:var(--g3);margin-top:16px">Demo: any email + password works</div>
+      <!-- Demo hint removed: now wired to real AWS Cognito -->
     </div>
 
     <!-- Register screen -->
@@ -1368,14 +1468,148 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
           <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><rect x="5" y="11" width="14" height="10" rx="2" stroke="var(--teal)" stroke-width="1.5"/><path d="M8 11V7a4 4 0 018 0v4" stroke="var(--teal)" stroke-width="1.5" stroke-linecap="round"/><circle cx="12" cy="16" r="1.5" fill="var(--teal)"/></svg>
         </div>
         <div style="font-size:18px;font-weight:600;color:var(--ink);margin-bottom:8px">Forgot password?</div>
-        <div style="font-size:13px;color:var(--g3);line-height:1.6">Enter the email address associated with your account. We'll send a reset link.</div>
+        <div style="font-size:13px;color:var(--g3);line-height:1.6">Enter the email associated with your account. We'll send a 6-digit reset code to that inbox.</div>
       </div>
       <div style="margin-bottom:24px">
         <label style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Email</label>
         <input id="forgot-email" type="email" placeholder="you@example.com" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:14px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box" onkeydown="if(event.key==='Enter')doForgot()">
       </div>
       <div id="forgot-msg" style="display:none;border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:14px;text-align:center"></div>
-      <button onclick="doForgot()" style="width:100%;background:var(--teal);color:#fff;border:none;border-radius:24px;padding:15px;font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font-b)">Send reset link</button>
+      <button onclick="doForgot()" style="width:100%;background:var(--teal);color:#fff;border:none;border-radius:24px;padding:15px;font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font-b)">Send reset code</button>
+    </div>
+
+    <!-- Forgot Password — Confirm screen (enter code + new password) -->
+    <div id="auth-forgot-confirm" style="flex:1;display:none;flex-direction:column;padding:40px 28px 28px;overflow-y:auto">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <button onclick="showAuth('forgot')" style="width:32px;height:32px;border-radius:50%;border:none;background:var(--gray);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="var(--i2)" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+        <span style="font-size:16px;font-weight:600;color:var(--ink)">Reset password</span>
+      </div>
+      <div style="margin-bottom:18px">
+        <div style="font-size:18px;font-weight:600;color:var(--ink);margin-bottom:6px">Enter your reset code</div>
+        <div style="font-size:13px;color:var(--g3);line-height:1.55">We sent a 6-digit code to <span id="fc-email-display" style="font-weight:600;color:var(--ink)"></span>. Enter it below along with your new password.</div>
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Verification Code</label>
+        <input id="fc-code" type="text" inputmode="numeric" maxlength="6" placeholder="123456" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:18px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box;letter-spacing:.3em;text-align:center">
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">New Password</label>
+        <input id="fc-pw" type="password" placeholder="At least 8 characters" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:14px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:18px">
+        <label style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Confirm New Password</label>
+        <input id="fc-pw2" type="password" placeholder="Repeat new password" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:14px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box" onkeydown="if(event.key==='Enter')doForgotConfirm()">
+      </div>
+      <div id="fc-err" style="display:none;border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:14px;text-align:center"></div>
+      <button onclick="doForgotConfirm()" style="width:100%;background:var(--brand);color:#fff;border:none;border-radius:24px;padding:15px;font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font-b)">Reset password</button>
+      <div style="text-align:center;font-size:12px;color:var(--g3);margin-top:14px">
+        Didn't get the code? <span onclick="doForgot()" style="color:var(--teal);font-weight:600;cursor:pointer">Resend</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── PROFILE SUB-SCREENS (Edit / Change Email / Change Password / Delete) ── -->
+  <div id="prof-wrap" style="position:absolute;inset:0;z-index:201;background:#fff;display:none;flex-direction:column;overflow:hidden">
+
+    <!-- Edit Profile -->
+    <div id="prof-edit" style="flex:1;display:none;flex-direction:column;padding:16px 28px 28px;overflow-y:auto">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <button onclick="closeProfile()" style="width:32px;height:32px;border-radius:50%;border:none;background:var(--gray);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <span style="font-size:16px;font-weight:600;color:var(--ink)">Edit Profile</span>
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Display Name</label>
+        <input id="prof-edit-name" type="text" placeholder="Your name" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:14px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box">
+      </div>
+      <div id="prof-edit-err" style="display:none;border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:14px;text-align:center"></div>
+      <button onclick="saveProfileName()" style="width:100%;background:var(--brand);color:#fff;border:none;border-radius:24px;padding:15px;font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font-b)">Save</button>
+    </div>
+
+    <!-- Change Email -->
+    <div id="prof-email" style="flex:1;display:none;flex-direction:column;padding:16px 28px 28px;overflow-y:auto">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <button onclick="closeProfile()" style="width:32px;height:32px;border-radius:50%;border:none;background:var(--gray);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <span style="font-size:16px;font-weight:600;color:var(--ink)">Change Email</span>
+      </div>
+      <div style="background:var(--gray);border-radius:10px;padding:10px 14px;margin-bottom:14px;font-size:12px;color:var(--i2)">
+        Current: <span id="prof-email-current" style="font-weight:600;color:var(--ink)">—</span>
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">New Email</label>
+        <input id="prof-email-new" type="email" placeholder="you@example.com" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:14px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box">
+      </div>
+      <div id="prof-email-err" style="display:none;border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:14px;text-align:center"></div>
+      <button onclick="sendEmailChangeCode()" style="width:100%;background:var(--brand);color:#fff;border:none;border-radius:24px;padding:15px;font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font-b)">Send verification code</button>
+      <div style="text-align:center;font-size:11px;color:var(--g3);margin-top:16px;line-height:1.5">A 6-digit code will be sent to your new email address.</div>
+    </div>
+
+    <!-- Change Email — Verify -->
+    <div id="prof-email-verify" style="flex:1;display:none;flex-direction:column;padding:16px 28px 28px;overflow-y:auto">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <button onclick="openProfile('email')" style="width:32px;height:32px;border-radius:50%;border:none;background:var(--gray);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <span style="font-size:16px;font-weight:600;color:var(--ink)">Verify New Email</span>
+      </div>
+      <div style="font-size:13px;color:var(--i2);margin-bottom:18px;line-height:1.55">Enter the 6-digit code sent to <span id="prof-email-target" style="font-weight:600;color:var(--ink)"></span>.</div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Verification Code</label>
+        <input id="prof-email-code" type="text" inputmode="numeric" maxlength="6" placeholder="123456" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:18px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box;letter-spacing:.3em;text-align:center">
+      </div>
+      <div id="prof-email-verify-err" style="display:none;border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:14px;text-align:center"></div>
+      <button onclick="confirmEmailChange()" style="width:100%;background:var(--brand);color:#fff;border:none;border-radius:24px;padding:15px;font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font-b)">Confirm</button>
+    </div>
+
+    <!-- Change Password -->
+    <div id="prof-pw" style="flex:1;display:none;flex-direction:column;padding:16px 28px 28px;overflow-y:auto">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <button onclick="closeProfile()" style="width:32px;height:32px;border-radius:50%;border:none;background:var(--gray);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <span style="font-size:16px;font-weight:600;color:var(--ink)">Change Password</span>
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Current Password</label>
+        <input id="prof-pw-old" type="password" placeholder="••••••••" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:14px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:14px">
+        <label style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">New Password</label>
+        <input id="prof-pw-new" type="password" placeholder="••••••••" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:14px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box">
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Confirm New Password</label>
+        <input id="prof-pw-new2" type="password" placeholder="Repeat new password" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:14px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box">
+      </div>
+      <div id="prof-pw-err" style="display:none;border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:14px;text-align:center"></div>
+      <button onclick="savePassword()" style="width:100%;background:var(--brand);color:#fff;border:none;border-radius:24px;padding:15px;font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font-b)">Update password</button>
+    </div>
+
+    <!-- Delete Account -->
+    <div id="prof-delete" style="flex:1;display:none;flex-direction:column;padding:16px 28px 28px;overflow-y:auto">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:24px">
+        <button onclick="closeProfile()" style="width:32px;height:32px;border-radius:50%;border:none;background:var(--gray);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="var(--ink)" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+        <span style="font-size:16px;font-weight:600;color:#e24b4a">Delete Account</span>
+      </div>
+      <div style="background:#fff0f0;border:1px solid rgba(226,75,74,.25);border-radius:12px;padding:16px;margin-bottom:18px">
+        <div style="font-size:14px;font-weight:600;color:#e24b4a;margin-bottom:8px">This cannot be undone</div>
+        <div style="font-size:12px;color:#7c2d12;line-height:1.55">Deleting your account permanently removes all your data, including health records, test history, and reports. You will not be able to recover this account.</div>
+      </div>
+      <div style="margin-bottom:16px">
+        <label style="font-size:11px;font-weight:600;color:var(--i2);text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Type DELETE to confirm</label>
+        <input id="prof-delete-confirm" type="text" placeholder="DELETE" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:14px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box;letter-spacing:.1em">
+      </div>
+      <div id="prof-delete-err" style="display:none;border-radius:10px;padding:10px 12px;font-size:12px;margin-bottom:14px;text-align:center"></div>
+      <button onclick="confirmDeleteAccount()" style="width:100%;background:#e24b4a;color:#fff;border:none;border-radius:24px;padding:15px;font-size:15px;font-weight:500;cursor:pointer;font-family:var(--font-b);margin-bottom:8px">Delete my account forever</button>
+      <button onclick="closeProfile()" style="width:100%;background:transparent;color:var(--g3);border:none;padding:12px;font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-b)">Cancel</button>
     </div>
 
   </div>
@@ -1388,8 +1622,8 @@ html.native .phone { border-radius: 0; border: none; box-shadow: none; }
         <div style="font-size:15px;font-weight:700">Health Report</div>
         <div style="font-size:11px;opacity:.7;margin-top:2px">Preview before sharing</div>
       </div>
-      <button onclick="closeReport()" style="background:rgba(255,255,255,.2);border:none;color:#fff;padding:6px 12px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:600;display:flex;align-items:center;gap:5px;flex-shrink:0;font-family:var(--font-b)">
-        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>Back
+      <button onclick="closeReport()" style="background:#fff;border:none;color:#0a3d2e;padding:8px 14px;border-radius:20px;cursor:pointer;font-size:13px;font-weight:700;display:flex;align-items:center;gap:6px;flex-shrink:0;font-family:var(--font-b);box-shadow:0 2px 6px rgba(0,0,0,.15)" aria-label="Close report and go back">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M12 4L4 12M4 4l8 8" stroke="#0a3d2e" stroke-width="2.2" stroke-linecap="round"/></svg>Close
       </button>
     </div>
     <!-- Canvas preview -->
@@ -1727,11 +1961,11 @@ let _resendInterval = null;
 let _verifyCode = '';
 
 function showAuth(screen){
-  ['login','register','verify','forgot'].forEach(s=>{
+  ['login','register','verify','forgot','forgot-confirm'].forEach(s=>{
     const el=document.getElementById('auth-'+s);
     if(el)el.style.display=(s===screen)?'flex':'none';
   });
-  ['login-err','reg-err','verify-err','forgot-msg'].forEach(id=>{
+  ['login-err','reg-err','verify-err','forgot-msg','fc-err'].forEach(id=>{
     const el=document.getElementById(id);if(el)el.style.display='none';
   });
 }
@@ -1750,7 +1984,7 @@ function checkPwStrength(pw){
   if(lbl){lbl.textContent=pw.length>0?labels[Math.max(0,score-1)]:'';lbl.style.color=score>0?colors[score-1]:'var(--g3)';}
 }
 
-function doLogin(){
+async function doLogin(){
   const email=document.getElementById('login-email').value.trim();
   const pw=document.getElementById('login-pw').value;
   const err=document.getElementById('login-err');
@@ -1759,17 +1993,51 @@ function doLogin(){
   if(!pw){err.textContent='Please enter your password.';err.style.display='block';return;}
   if(!agreed){err.textContent='Please agree to the Privacy Policy and Terms of Service.';err.style.display='block';return;}
   err.style.display='none';
-  const users=JSON.parse(localStorage.getItem('wl_users')||'{}');
-  if(users[email]&&users[email].pw!==pw){err.textContent='Incorrect password.';err.style.display='block';return;}
-  if(!users[email])users[email]={pw,name:email.split('@')[0]||email};
-  localStorage.setItem('wl_users',JSON.stringify(users));
+  if(!window.WelllifeAmplify){err.textContent='Sign-in service is still loading. Try again in a moment.';err.style.display='block';return;}
+  // Configure token storage based on Remember-me BEFORE signIn.
   const remember=document.getElementById('remember-me')?.checked;
-  if(remember) localStorage.setItem('wl_session',JSON.stringify({email,name:users[email].name}));
-  else sessionStorage.setItem('wl_session',JSON.stringify({email,name:users[email].name}));
-  enterApp(users[email].name);
+  window.WelllifeAmplify.setRememberMe(!!remember);
+  // Defensive: if a stale session lingers from a previous app launch, signIn
+  // throws "there is already a signed in user". Clear it before retrying.
+  try{ await window.WelllifeAmplify.auth.signOut(); }catch(_){}
+  try{
+    const result=await window.WelllifeAmplify.auth.signIn({username:email,password:pw});
+    if(!result.isSignedIn){
+      // Most common follow-up: user signed up but never entered the email code.
+      if(result.nextStep?.signInStep==='CONFIRM_SIGN_UP'){
+        localStorage.setItem('wl_pending',JSON.stringify({email,name:email.split('@')[0],pw}));
+        document.getElementById('verify-email-display').textContent=email;
+        ['vc1','vc2','vc3','vc4','vc5','vc6'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+        showAuth('verify');
+        startResendTimer();
+        return;
+      }
+      err.textContent='Sign-in needs another step: '+(result.nextStep?.signInStep||'unknown');
+      err.style.display='block';return;
+    }
+    // Successful sign-in — fetch display name (fall back to email local-part).
+    let displayName=email.split('@')[0]||email;
+    try{
+      const attrs=await window.WelllifeAmplify.auth.fetchUserAttributes();
+      if(attrs?.name) displayName=attrs.name;
+    }catch(_){/* attribute fetch is optional */}
+    enterApp(displayName);
+  }catch(e){
+    let msg='Login failed.';
+    if(e.name==='UserNotConfirmedException'){
+      localStorage.setItem('wl_pending',JSON.stringify({email,name:email.split('@')[0],pw}));
+      document.getElementById('verify-email-display').textContent=email;
+      showAuth('verify');startResendTimer();return;
+    }
+    if(e.name==='NotAuthorizedException') msg='Incorrect email or password.';
+    else if(e.name==='UserNotFoundException') msg='No account found with this email.';
+    else if(e.name==='PasswordResetRequiredException') msg='Password reset required. Use "Forgot password?".';
+    else if(e.message) msg=e.message;
+    err.textContent=msg;err.style.display='block';
+  }
 }
 
-function doRegister(){
+async function doRegister(){
   const name=document.getElementById('reg-name').value.trim();
   const email=document.getElementById('reg-email').value.trim();
   const pw=document.getElementById('reg-pw').value;
@@ -1779,14 +2047,28 @@ function doRegister(){
   if(!email||!email.includes('@')){err.textContent='Please enter a valid email.';err.style.display='block';return;}
   if(pw.length<8){err.textContent='Password must be at least 8 characters.';err.style.display='block';return;}
   if(pw!==pw2){err.textContent='Passwords do not match.';err.style.display='block';return;}
-  const users=JSON.parse(localStorage.getItem('wl_users')||'{}');
-  if(users[email]){err.textContent='An account with this email already exists.';err.style.display='block';return;}
-  localStorage.setItem('wl_pending',JSON.stringify({name,email,pw}));
-  document.getElementById('verify-email-display').textContent=email;
-  ['vc1','vc2','vc3','vc4','vc5','vc6'].forEach(id=>{document.getElementById(id).value='';});
-  showAuth('verify');
-  startResendTimer();
-  setTimeout(()=>document.getElementById('vc1').focus(),100);
+  if(!window.WelllifeAmplify){err.textContent='Sign-up service is still loading. Try again in a moment.';err.style.display='block';return;}
+  err.style.display='none';
+  try{
+    await window.WelllifeAmplify.auth.signUp({
+      username:email,
+      password:pw,
+      options:{userAttributes:{email,name}}
+    });
+    // Stash pending creds locally so doVerify can auto-sign in after confirmation.
+    localStorage.setItem('wl_pending',JSON.stringify({name,email,pw}));
+    document.getElementById('verify-email-display').textContent=email;
+    ['vc1','vc2','vc3','vc4','vc5','vc6'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    showAuth('verify');
+    startResendTimer();
+    setTimeout(()=>document.getElementById('vc1').focus(),100);
+  }catch(e){
+    let msg='Registration failed.';
+    if(e.name==='UsernameExistsException') msg='An account with this email already exists.';
+    else if(e.name==='InvalidPasswordException') msg='Password must be at least 8 characters.';
+    else if(e.name==='InvalidParameterException'||e.message) msg=e.message||msg;
+    err.textContent=msg;err.style.display='block';
+  }
 }
 
 function vcNext(el,nextId){if(el.value&&nextId)document.getElementById(nextId).focus();}
@@ -1811,42 +2093,143 @@ function startResendTimer(){
   },1000);
 }
 
-function doResend(){
-  startResendTimer();
+async function doResend(){
+  const pending=JSON.parse(localStorage.getItem('wl_pending')||'null');
   const err=document.getElementById('verify-err');
-  if(err){err.textContent='A new code has been sent.';err.style.background='#f0fdf4';err.style.color='#16a34a';err.style.display='block';}
-  setTimeout(()=>{if(err)err.style.display='none';},2000);
+  if(!pending||!pending.email){showAuth('register');return;}
+  try{
+    if(window.WelllifeAmplify){
+      await window.WelllifeAmplify.auth.resendSignUpCode({username:pending.email});
+    }
+    startResendTimer();
+    if(err){err.textContent='A new code has been sent to your email.';err.style.background='#f0fdf4';err.style.color='#16a34a';err.style.display='block';}
+    setTimeout(()=>{if(err)err.style.display='none';},2500);
+  }catch(e){
+    if(err){err.textContent=e.message||'Could not resend code.';err.style.background='#fff0f0';err.style.color='#e24b4a';err.style.display='block';}
+  }
 }
 
-function doVerify(){
+async function doVerify(){
   const code=['vc1','vc2','vc3','vc4','vc5','vc6'].map(id=>document.getElementById(id).value).join('');
   const err=document.getElementById('verify-err');
   if(code.length<6){err.textContent='Please enter the 6-digit code.';err.style.background='#fff0f0';err.style.color='#e24b4a';err.style.display='block';return;}
-  if(code!==_verifyCode&&code!=='123456'){err.textContent='Incorrect code. Try again.';err.style.background='#fff0f0';err.style.color='#e24b4a';err.style.display='block';return;}
-  clearInterval(_resendInterval);
   const pending=JSON.parse(localStorage.getItem('wl_pending')||'null');
-  if(!pending){showAuth('login');return;}
-  const users=JSON.parse(localStorage.getItem('wl_users')||'{}');
-  users[pending.email]={pw:pending.pw,name:pending.name};
-  localStorage.setItem('wl_users',JSON.stringify(users));
-  localStorage.setItem('wl_session',JSON.stringify({email:pending.email,name:pending.name}));
-  localStorage.removeItem('wl_pending');
-  enterApp(pending.name);
+  if(!pending||!pending.email){showAuth('login');return;}
+  if(!window.WelllifeAmplify){err.textContent='Service is still loading. Try again in a moment.';err.style.display='block';return;}
+  err.style.display='none';
+  try{
+    await window.WelllifeAmplify.auth.confirmSignUp({
+      username:pending.email,
+      confirmationCode:code
+    });
+    clearInterval(_resendInterval);
+    // After successful verification, auto-sign-in if we still have the password.
+    if(pending.pw){
+      // Default to "remember me" after a fresh signup.
+      window.WelllifeAmplify.setRememberMe(true);
+      // Clear any stale session before signing in (defensive).
+      try{ await window.WelllifeAmplify.auth.signOut(); }catch(_){}
+      try{
+        await window.WelllifeAmplify.auth.signIn({username:pending.email,password:pending.pw});
+      }catch(_){ /* if auto-login fails, fall through to login screen */ }
+    }
+    localStorage.removeItem('wl_pending');
+    enterApp(pending.name||pending.email.split('@')[0]);
+  }catch(e){
+    let msg='Incorrect code. Try again.';
+    if(e.name==='CodeMismatchException') msg='The code you entered is incorrect.';
+    else if(e.name==='ExpiredCodeException') msg='The code has expired. Tap Resend.';
+    else if(e.name==='LimitExceededException') msg='Too many attempts. Wait a few minutes.';
+    else if(e.message) msg=e.message;
+    err.textContent=msg;err.style.background='#fff0f0';err.style.color='#e24b4a';err.style.display='block';
+  }
 }
 
-function doForgot(){
-  const email=document.getElementById('forgot-email').value.trim();
+async function doForgot(){
+  // Email comes from forgot screen OR (if we're already on the confirm screen and clicked "Resend") localStorage stash.
+  const inputEmail=document.getElementById('forgot-email')?.value.trim();
+  const email=inputEmail||localStorage.getItem('wl_reset_email')||'';
   const msg=document.getElementById('forgot-msg');
-  if(!email){msg.textContent='Please enter your email.';msg.style.background='#fff0f0';msg.style.color='#e24b4a';msg.style.display='block';return;}
-  msg.textContent='Reset link sent to '+email+' (demo mode)';
-  msg.style.background='#f0fdf4';msg.style.color='#16a34a';msg.style.display='block';
-  setTimeout(()=>showAuth('login'),2500);
+  if(!email){if(msg){msg.textContent='Please enter your email.';msg.style.background='#fff0f0';msg.style.color='#e24b4a';msg.style.display='block';}return;}
+  if(!window.WelllifeAmplify){if(msg){msg.textContent='Service is still loading. Try again in a moment.';msg.style.background='#fff0f0';msg.style.color='#e24b4a';msg.style.display='block';}return;}
+  try{
+    await window.WelllifeAmplify.auth.resetPassword({username:email});
+    localStorage.setItem('wl_reset_email',email);
+    // Move to the Confirm screen so the user can paste the code from email + set a new password.
+    document.getElementById('fc-email-display').textContent=email;
+    ['fc-code','fc-pw','fc-pw2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    showAuth('forgot-confirm');
+    setTimeout(()=>document.getElementById('fc-code').focus(),100);
+  }catch(e){
+    let m='Could not send reset code.';
+    if(e.name==='UserNotFoundException') m='No account found with this email.';
+    else if(e.name==='LimitExceededException') m='Too many attempts. Wait a few minutes.';
+    else if(e.message) m=e.message;
+    if(msg){msg.textContent=m;msg.style.background='#fff0f0';msg.style.color='#e24b4a';msg.style.display='block';}
+  }
+}
+
+async function doForgotConfirm(){
+  const code=document.getElementById('fc-code').value.trim();
+  const pw=document.getElementById('fc-pw').value;
+  const pw2=document.getElementById('fc-pw2').value;
+  const err=document.getElementById('fc-err');
+  const email=localStorage.getItem('wl_reset_email')||'';
+  function show(text,kind){err.textContent=text;err.style.background=kind==='ok'?'#f0fdf4':'#fff0f0';err.style.color=kind==='ok'?'#16a34a':'#e24b4a';err.style.display='block';}
+  if(!email){show('Session expired. Start over.','err');setTimeout(()=>showAuth('forgot'),1500);return;}
+  if(code.length<6){show('Enter the 6-digit code from your email.','err');return;}
+  if(pw.length<8){show('New password must be at least 8 characters.','err');return;}
+  if(pw!==pw2){show('Passwords do not match.','err');return;}
+  if(!window.WelllifeAmplify){show('Service is still loading. Try again in a moment.','err');return;}
+  try{
+    await window.WelllifeAmplify.auth.confirmResetPassword({username:email,confirmationCode:code,newPassword:pw});
+    localStorage.removeItem('wl_reset_email');
+    show('Password reset. Logging you in…','ok');
+    // Auto sign-in with the new password.
+    try{
+      window.WelllifeAmplify.setRememberMe(true);
+      try{ await window.WelllifeAmplify.auth.signOut(); }catch(_){}
+      await window.WelllifeAmplify.auth.signIn({username:email,password:pw});
+      enterApp(email.split('@')[0]);
+    }catch(_){
+      // Auto-login failed — return to login and let the user type credentials.
+      setTimeout(()=>{showAuth('login');document.getElementById('login-email').value=email;document.getElementById('login-pw').value='';},1200);
+    }
+  }catch(e){
+    let m='Could not reset password.';
+    if(e.name==='CodeMismatchException') m='The code is incorrect.';
+    else if(e.name==='ExpiredCodeException') m='The code has expired. Tap "Resend" below.';
+    else if(e.name==='InvalidPasswordException') m='New password must be at least 8 characters.';
+    else if(e.name==='LimitExceededException') m='Too many attempts. Wait a few minutes.';
+    else if(e.message) m=e.message;
+    show(m,'err');
+  }
+}
+
+// ── Auto-generated avatar (deterministic color + initial from a seed string) ─
+// Privacy-friendly alternative to photo uploads. Same seed → same look every time.
+const AUTO_AVATAR_PALETTE=['#0d9e7a','#5b2c91','#2d7dd2','#e09517','#e24b4a','#5fa074','#7c3aed','#db2777','#10b981','#0891b2','#4f46e5','#0a7a5c'];
+function getAutoAvatar(seed){
+  const s=(seed||'?').toString();
+  let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}
+  const color=AUTO_AVATAR_PALETTE[Math.abs(h)%AUTO_AVATAR_PALETTE.length];
+  // Take the first letter of the first non-empty word, fall back to email local part, then '?'
+  const cleaned=s.replace(/[^a-z0-9一-鿿\s]/gi,'').trim();
+  const initial=((cleaned.split(/\s+/)[0]||'?')[0]||'?').toUpperCase();
+  return {color,initial};
+}
+function applyOwnerAvatar(seed){
+  const pav=document.getElementById('owner-pav');if(!pav) return;
+  const {color,initial}=getAutoAvatar(seed);
+  pav.textContent=initial;
+  pav.style.background=color;
+  pav.style.color='#fff';
+  pav.style.border='2px solid rgba(255,255,255,.6)';
 }
 
 function enterApp(name){
   document.getElementById('auth-wrap').style.display='none';
-  const initial=((name||'U').split(' ')[0][0]).toUpperCase();
-  const pav=document.querySelector('.pav');if(pav)pav.textContent=initial;
+  applyOwnerAvatar(name);
   const nameEls=document.querySelectorAll('.phdr [style*="font-s"]');
   if(nameEls[0])nameEls[0].textContent=name;
   // Init member system after login
@@ -1866,18 +2249,244 @@ function openPolicy(which){
   if(body)body.scrollTop=0;
 }
 function closePolicy(){document.getElementById('policy-modal').classList.remove('show');}
-function doLogout(){
+async function doLogout(){
+  try{
+    if(window.WelllifeAmplify){
+      await window.WelllifeAmplify.auth.signOut();
+    }
+  }catch(_){/* even if signOut fails, fall through to clearing local UI */}
   localStorage.removeItem('wl_session');
+  sessionStorage.removeItem('wl_session');
   document.getElementById('auth-wrap').style.display='flex';
   showAuth('login');
   document.getElementById('login-email').value='';
   document.getElementById('login-pw').value='';
 }
 
+// ── Onboarding (first-launch only) ────────────────────────────────────
+function showOnboarding(){
+  const wrap=document.getElementById('onboard-wrap');
+  if(!wrap) return;
+  wrap.style.display='flex';
+  // Hide auth-wrap while onboarding is on top
+  const auth=document.getElementById('auth-wrap');
+  if(auth) auth.style.display='none';
+  // Wire up scroll-snap → dots, and let dots be tappable to jump
+  const slides=document.getElementById('onb-slides');
+  if(slides){
+    slides.scrollLeft=0;
+    slides.addEventListener('scroll',updateOnboardingDots);
+  }
+  document.querySelectorAll('.onb-dot').forEach(d=>{
+    d.style.cursor='pointer';
+    d.onclick=()=>gotoOnboarding(parseInt(d.dataset.i,10));
+  });
+  updateOnboardingDots();
+}
+function gotoOnboarding(i){
+  const slides=document.getElementById('onb-slides');
+  if(!slides) return;
+  slides.scrollTo({left:i*slides.clientWidth,behavior:'smooth'});
+}
+function nextOnboarding(){
+  const slides=document.getElementById('onb-slides');
+  if(!slides) return;
+  const w=slides.clientWidth||1;
+  const idx=Math.round(slides.scrollLeft/w);
+  gotoOnboarding(Math.min(idx+1,3));
+}
+function updateOnboardingDots(){
+  const slides=document.getElementById('onb-slides');
+  const dots=document.querySelectorAll('.onb-dot');
+  if(!slides||!dots.length) return;
+  const w=slides.clientWidth||1;
+  const idx=Math.round(slides.scrollLeft/w);
+  dots.forEach((d,i)=>{
+    d.style.background=i===idx?'var(--brand)':'#ddd';
+    d.style.width=i===idx?'24px':'8px';
+    d.style.borderRadius=i===idx?'4px':'50%';
+  });
+}
+function finishOnboarding(){
+  try{localStorage.setItem('wl_onboarded','1');}catch(_){}
+  const wrap=document.getElementById('onboard-wrap');
+  if(wrap) wrap.style.display='none';
+  // Show auth-wrap unless user is already signed in
+  const auth=document.getElementById('auth-wrap');
+  if(auth) auth.style.display='flex';
+}
+// First-launch check — runs once when the script loads.
 (function(){
-  const session=JSON.parse(localStorage.getItem('wl_session')||sessionStorage.getItem('wl_session')||'null');
-  if(session&&session.email){enterApp(session.name||session.email);}
+  let seen=false;
+  try{seen=localStorage.getItem('wl_onboarded')==='1';}catch(_){}
+  if(!seen){
+    // Defer one tick so all elements exist
+    setTimeout(showOnboarding,50);
+  }
 })();
+
+// ── Auto-login on launch ──────────────────────────────────────────────
+// The Amplify bundle loads with `defer`, so it may finish AFTER this inline
+// script. Wait for the `amplify-ready` signal before asking Cognito who's
+// signed in. If there's a valid session (refresh token still good), skip
+// straight to the home screen.
+(function(){
+  function tryAutoLogin(){
+    if(!window.WelllifeAmplify){return;}
+    window.WelllifeAmplify.auth.getCurrentUser().then(async (user)=>{
+      let displayName=(user.signInDetails?.loginId||user.username||'').split('@')[0]||'User';
+      try{
+        const attrs=await window.WelllifeAmplify.auth.fetchUserAttributes();
+        if(attrs?.name) displayName=attrs.name;
+      }catch(_){}
+      enterApp(displayName);
+    }).catch(()=>{
+      // Not signed in — stay on login screen, which is the default.
+    });
+  }
+  if(document.documentElement.classList.contains('amplify-ready')){
+    tryAutoLogin();
+  }else{
+    document.addEventListener('amplify-ready',tryAutoLogin,{once:true});
+  }
+})();
+
+// ── PROFILE SUB-SCREENS (Edit / Change Email / Change Password / Delete) ─────
+async function openProfile(which){
+  const wrap=document.getElementById('prof-wrap');
+  if(!wrap) return;
+  // Hide all sub-screens first.
+  ['edit','email','email-verify','pw','delete'].forEach(id=>{
+    const el=document.getElementById('prof-'+id);if(el){el.style.display='none';}
+  });
+  ['prof-edit-err','prof-email-err','prof-email-verify-err','prof-pw-err','prof-delete-err'].forEach(id=>{
+    const el=document.getElementById(id);if(el)el.style.display='none';
+  });
+  // Show wrap + selected sub-screen.
+  wrap.style.display='flex';
+  const target=document.getElementById('prof-'+which);
+  if(target) target.style.display='flex';
+  // Pre-fill values per screen.
+  if(!window.WelllifeAmplify) return;
+  try{
+    const attrs=await window.WelllifeAmplify.auth.fetchUserAttributes();
+    if(which==='edit'){
+      document.getElementById('prof-edit-name').value=attrs?.name||'';
+    }else if(which==='email'){
+      document.getElementById('prof-email-current').textContent=attrs?.email||'—';
+      document.getElementById('prof-email-new').value='';
+    }else if(which==='pw'){
+      ['prof-pw-old','prof-pw-new','prof-pw-new2'].forEach(id=>{document.getElementById(id).value='';});
+    }else if(which==='delete'){
+      document.getElementById('prof-delete-confirm').value='';
+    }
+  }catch(_){/* not critical */}
+}
+
+function closeProfile(){
+  const wrap=document.getElementById('prof-wrap');
+  if(wrap) wrap.style.display='none';
+}
+
+async function saveProfileName(){
+  const newName=document.getElementById('prof-edit-name').value.trim();
+  const err=document.getElementById('prof-edit-err');
+  if(!newName){err.textContent='Please enter a name.';err.style.background='#fff0f0';err.style.color='#e24b4a';err.style.display='block';return;}
+  if(!window.WelllifeAmplify) return;
+  try{
+    await window.WelllifeAmplify.auth.updateUserAttributes({userAttributes:{name:newName}});
+    err.textContent='Saved.';err.style.background='#f0fdf4';err.style.color='#16a34a';err.style.display='block';
+    // Update header display name + auto avatar.
+    applyOwnerAvatar(newName);
+    const nameEls=document.querySelectorAll('.phdr [style*="font-s"]');
+    if(nameEls[0]) nameEls[0].textContent=newName;
+    setTimeout(closeProfile,1200);
+  }catch(e){
+    err.textContent=e.message||'Could not save.';err.style.background='#fff0f0';err.style.color='#e24b4a';err.style.display='block';
+  }
+}
+
+async function sendEmailChangeCode(){
+  const newEmail=document.getElementById('prof-email-new').value.trim();
+  const err=document.getElementById('prof-email-err');
+  if(!newEmail||!newEmail.includes('@')){err.textContent='Please enter a valid email.';err.style.background='#fff0f0';err.style.color='#e24b4a';err.style.display='block';return;}
+  if(!window.WelllifeAmplify) return;
+  try{
+    const result=await window.WelllifeAmplify.auth.updateUserAttributes({userAttributes:{email:newEmail}});
+    // Cognito sends a code to the NEW email. Switch to the verify screen.
+    document.getElementById('prof-email-target').textContent=newEmail;
+    document.getElementById('prof-email-code').value='';
+    openProfile('email-verify');
+  }catch(e){
+    let msg='Could not update email.';
+    if(e.name==='AliasExistsException') msg='That email is already in use.';
+    else if(e.message) msg=e.message;
+    err.textContent=msg;err.style.background='#fff0f0';err.style.color='#e24b4a';err.style.display='block';
+  }
+}
+
+async function confirmEmailChange(){
+  const code=document.getElementById('prof-email-code').value.trim();
+  const err=document.getElementById('prof-email-verify-err');
+  if(code.length<6){err.textContent='Enter the 6-digit code.';err.style.background='#fff0f0';err.style.color='#e24b4a';err.style.display='block';return;}
+  if(!window.WelllifeAmplify) return;
+  try{
+    await window.WelllifeAmplify.auth.confirmUserAttribute({userAttributeKey:'email',confirmationCode:code});
+    err.textContent='Email updated.';err.style.background='#f0fdf4';err.style.color='#16a34a';err.style.display='block';
+    setTimeout(closeProfile,1500);
+  }catch(e){
+    let msg='Incorrect code.';
+    if(e.name==='CodeMismatchException') msg='The code is incorrect.';
+    else if(e.name==='ExpiredCodeException') msg='The code expired. Go back and request a new one.';
+    else if(e.message) msg=e.message;
+    err.textContent=msg;err.style.background='#fff0f0';err.style.color='#e24b4a';err.style.display='block';
+  }
+}
+
+async function savePassword(){
+  const oldPw=document.getElementById('prof-pw-old').value;
+  const newPw=document.getElementById('prof-pw-new').value;
+  const newPw2=document.getElementById('prof-pw-new2').value;
+  const err=document.getElementById('prof-pw-err');
+  if(!oldPw){err.textContent='Enter your current password.';err.style.background='#fff0f0';err.style.color='#e24b4a';err.style.display='block';return;}
+  if(newPw.length<8){err.textContent='New password must be at least 8 characters.';err.style.background='#fff0f0';err.style.color='#e24b4a';err.style.display='block';return;}
+  if(newPw!==newPw2){err.textContent='Passwords do not match.';err.style.background='#fff0f0';err.style.color='#e24b4a';err.style.display='block';return;}
+  if(!window.WelllifeAmplify) return;
+  try{
+    await window.WelllifeAmplify.auth.updatePassword({oldPassword:oldPw,newPassword:newPw});
+    err.textContent='Password updated.';err.style.background='#f0fdf4';err.style.color='#16a34a';err.style.display='block';
+    setTimeout(closeProfile,1200);
+  }catch(e){
+    let msg='Could not change password.';
+    if(e.name==='NotAuthorizedException') msg='Current password is incorrect.';
+    else if(e.name==='InvalidPasswordException') msg='New password must be at least 8 characters.';
+    else if(e.name==='LimitExceededException') msg='Too many attempts. Wait a few minutes.';
+    else if(e.message) msg=e.message;
+    err.textContent=msg;err.style.background='#fff0f0';err.style.color='#e24b4a';err.style.display='block';
+  }
+}
+
+async function confirmDeleteAccount(){
+  const typed=document.getElementById('prof-delete-confirm').value.trim();
+  const err=document.getElementById('prof-delete-err');
+  if(typed!=='DELETE'){err.textContent='Type DELETE in capital letters to confirm.';err.style.background='#fff0f0';err.style.color='#e24b4a';err.style.display='block';return;}
+  if(!window.WelllifeAmplify) return;
+  try{
+    await window.WelllifeAmplify.auth.deleteUser();
+    // After deleteUser the user is signed out automatically.
+    closeProfile();
+    // Clean any cached UI state and return to login.
+    localStorage.removeItem('wl_session');
+    sessionStorage.removeItem('wl_session');
+    document.getElementById('auth-wrap').style.display='flex';
+    showAuth('login');
+    document.getElementById('login-email').value='';
+    document.getElementById('login-pw').value='';
+  }catch(e){
+    err.textContent=e.message||'Could not delete account. Try logging out and back in, then retry.';
+    err.style.background='#fff0f0';err.style.color='#e24b4a';err.style.display='block';
+  }
+}
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── REPORT GENERATOR ─────────────────────────────────────────────────────────
@@ -2042,8 +2651,12 @@ function drawReportCanvas(cardId){
 
   // Timeline bar — get entries for this card
   const _rawEntries = HOME_REC.cardId===cardId ? HOME_REC.entries : {};
-  const allEntries = Object.keys(_rawEntries).length > 0 ? _rawEntries :
+  const _candidate = Object.keys(_rawEntries||{}).length > 0 ? _rawEntries :
     (c.days ? c.days.reduce((acc,d,i)=>{ if(d&&typeof d==='object') acc[i]=d; return acc; },{}) : {});
+  // Guarantee every value is a non-null object — downstream Object.values(...).map(e=>e.tone) etc. fails on null.
+  const allEntries = Object.fromEntries(
+    Object.entries(_candidate||{}).filter(([_,v])=>v && typeof v==='object')
+  );
   const SEV_COL={strong:'#e53935',mild:'#f57c00',faint:'#f9a825',none:'#43a047'};
   const SEV_LBL={strong:'Strong',mild:'Mild',faint:'Improving',none:'None'};
   const bY=230, bH=24, bW=W-36, tot=c.dur;
