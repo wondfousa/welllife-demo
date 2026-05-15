@@ -445,7 +445,11 @@ html.native .sb { display: none; }
     var qs=new URLSearchParams(location.search);
     var isGithubPages=/\.github\.io$/i.test(location.hostname);
     var isExplicitDemo=/^demo$/i.test(qs.get('mode')||'');
-    if(isGithubPages||isExplicitDemo){
+    // file:// = opened by double-click in the file browser (preview context, no backend).
+    // Capacitor uses capacitor:// or https://localhost, so this catches "I opened the
+    // HTML directly" without affecting the real app.
+    var isFileProtocol=location.protocol==='file:';
+    if(isGithubPages||isExplicitDemo||isFileProtocol){
       window.__forceDemoMode=true;
       document.documentElement.classList.add('demo-mode');
     }
@@ -453,11 +457,10 @@ html.native .sb { display: none; }
 })();
 </script>
 <style>
-/* Hide auth + onboarding overlays whenever the page is in demo mode.
-   Using !important + CSS class so this wins over any inline display:flex
-   set later by JS or by the initial render. */
-html.demo-mode #auth-wrap,
-html.demo-mode #onboard-wrap{display:none !important}
+/* Demo-mode hiding — only hide the login/signup overlay.
+   Profile menu items (Edit Profile, Change Email, etc.) stay VISIBLE so the
+   demo shows the full UI; their click handlers are no-ops in demo mode. */
+html.demo-mode #auth-wrap{display:none !important}
 </style>
 <!-- Amplify SDK bundle — built by `npm run build:amplify` from src/amplify-init.js.
      If this fails to load (e.g. on a public GitHub Pages demo where we never publish the bundle),
@@ -2340,10 +2343,13 @@ function finishOnboarding(){
   if(auth) auth.style.display='flex';
 }
 // First-launch check — runs once when the script loads.
+// Real users see onboarding only on their first launch.
+// Demo-mode visitors see it on every page load (it's the marketing intro).
 (function(){
   let seen=false;
   try{seen=localStorage.getItem('wl_onboarded')==='1';}catch(_){}
-  if(!seen){
+  const isDemo=window.__forceDemoMode===true;
+  if(!seen||isDemo){
     // Defer one tick so all elements exist
     setTimeout(showOnboarding,50);
   }
@@ -2360,15 +2366,15 @@ window.__isDemoMode = function(){
   return !!(window.__forceDemoMode)
       || !!(window.__bundleFailed)
       || /\.github\.io$/i.test(location.hostname)
+      || location.protocol==='file:'
       || /^demo$/i.test(new URLSearchParams(location.search).get('mode')||'');
 };
 function enterDemoMode(){
   if(window.__demoEntered) return; window.__demoEntered=true;
   document.documentElement.classList.add('demo-mode');
-  // Hide auth and onboarding overlays so the main app shows immediately.
-  ['auth-wrap','onboard-wrap'].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display='none';});
-  try{ localStorage.setItem('wl_onboarded','1'); }catch(_){}
-  // Drop into the home screen as a generic demo user.
+  // Hide auth-wrap only — leave onboarding visible (it's the marketing intro).
+  const auth=document.getElementById('auth-wrap'); if(auth) auth.style.display='none';
+  // Drop into the home screen as a generic demo user (behind any onboarding overlay).
   try{ enterApp('Demo User'); }catch(_){}
   // Small floating badge so visitors know this isn't a real session.
   if(!document.getElementById('demo-badge')){
@@ -2378,12 +2384,12 @@ function enterDemoMode(){
     b.style.cssText='position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#f59e0b;color:#fff;padding:4px 12px;border-radius:14px;font-size:10px;font-weight:700;letter-spacing:.12em;z-index:9999;font-family:var(--font-b);box-shadow:0 4px 12px rgba(245,158,11,.4);pointer-events:none';
     document.body.appendChild(b);
   }
-  // Override auth-dependent functions so clicks do something sensible instead of erroring.
-  const demoNotice=()=>alert('This is a demo preview. Download the app to sign up and save your data.');
-  window.doLogin=demoNotice; window.doRegister=demoNotice; window.doForgot=demoNotice;
-  window.doVerify=demoNotice; window.doForgotConfirm=demoNotice; window.doLogout=demoNotice;
-  window.saveProfileName=demoNotice; window.sendEmailChangeCode=demoNotice;
-  window.confirmEmailChange=demoNotice; window.savePassword=demoNotice; window.confirmDeleteAccount=demoNotice;
+  // Silently no-op all auth-dependent buttons in demo mode (no alerts).
+  const demoNoOp=()=>{};
+  window.doLogin=demoNoOp; window.doRegister=demoNoOp; window.doForgot=demoNoOp;
+  window.doVerify=demoNoOp; window.doForgotConfirm=demoNoOp; window.doLogout=demoNoOp;
+  window.saveProfileName=demoNoOp; window.sendEmailChangeCode=demoNoOp;
+  window.confirmEmailChange=demoNoOp; window.savePassword=demoNoOp; window.confirmDeleteAccount=demoNoOp;
 }
 
 // ── Auto-login on launch ──────────────────────────────────────────────
