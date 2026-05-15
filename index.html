@@ -457,10 +457,9 @@ html.native .sb { display: none; }
 })();
 </script>
 <style>
-/* Demo-mode hiding — only hide the login/signup overlay.
-   Profile menu items (Edit Profile, Change Email, etc.) stay VISIBLE so the
-   demo shows the full UI; their click handlers are no-ops in demo mode. */
-html.demo-mode #auth-wrap{display:none !important}
+/* Demo-mode hiding — NOTHING is hidden. Login screen, profile screens, all of it
+   stays visible. Auth-button handlers are overridden in JS to advance through
+   the flow without calling Cognito. */
 </style>
 <!-- Amplify SDK bundle — built by `npm run build:amplify` from src/amplify-init.js.
      If this fails to load (e.g. on a public GitHub Pages demo where we never publish the bundle),
@@ -2372,11 +2371,7 @@ window.__isDemoMode = function(){
 function enterDemoMode(){
   if(window.__demoEntered) return; window.__demoEntered=true;
   document.documentElement.classList.add('demo-mode');
-  // Hide auth-wrap only — leave onboarding visible (it's the marketing intro).
-  const auth=document.getElementById('auth-wrap'); if(auth) auth.style.display='none';
-  // Drop into the home screen as a generic demo user (behind any onboarding overlay).
-  try{ enterApp('Demo User'); }catch(_){}
-  // Small floating badge so visitors know this isn't a real session.
+  // Floating badge so visitors know this isn't a real session.
   if(!document.getElementById('demo-badge')){
     const b=document.createElement('div');
     b.id='demo-badge';
@@ -2384,12 +2379,56 @@ function enterDemoMode(){
     b.style.cssText='position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#f59e0b;color:#fff;padding:4px 12px;border-radius:14px;font-size:10px;font-weight:700;letter-spacing:.12em;z-index:9999;font-family:var(--font-b);box-shadow:0 4px 12px rgba(245,158,11,.4);pointer-events:none';
     document.body.appendChild(b);
   }
-  // Silently no-op all auth-dependent buttons in demo mode (no alerts).
-  const demoNoOp=()=>{};
-  window.doLogin=demoNoOp; window.doRegister=demoNoOp; window.doForgot=demoNoOp;
-  window.doVerify=demoNoOp; window.doForgotConfirm=demoNoOp; window.doLogout=demoNoOp;
-  window.saveProfileName=demoNoOp; window.sendEmailChangeCode=demoNoOp;
-  window.confirmEmailChange=demoNoOp; window.savePassword=demoNoOp; window.confirmDeleteAccount=demoNoOp;
+  // Override auth buttons so visitors can navigate the whole flow without a backend.
+  // Each handler advances to the NEXT logical screen instead of calling Cognito.
+  window.doLogin=function(){ enterApp('Demo User'); };
+  window.doRegister=function(){
+    const email=(document.getElementById('reg-email')?.value||'demo@welllife.app').trim();
+    const name=(document.getElementById('reg-name')?.value||'Demo User').trim();
+    try{ localStorage.setItem('wl_pending',JSON.stringify({email,name})); }catch(_){}
+    const ed=document.getElementById('verify-email-display'); if(ed) ed.textContent=email;
+    ['vc1','vc2','vc3','vc4','vc5','vc6'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    if(typeof showAuth==='function') showAuth('verify');
+    if(typeof startResendTimer==='function') startResendTimer();
+  };
+  window.doVerify=function(){
+    const pending=JSON.parse(localStorage.getItem('wl_pending')||'null');
+    enterApp(pending?.name||'Demo User');
+    try{ localStorage.removeItem('wl_pending'); }catch(_){}
+  };
+  window.doForgot=function(){
+    const email=(document.getElementById('forgot-email')?.value||'demo@welllife.app').trim();
+    try{ localStorage.setItem('wl_reset_email',email); }catch(_){}
+    const ed=document.getElementById('fc-email-display'); if(ed) ed.textContent=email;
+    ['fc-code','fc-pw','fc-pw2'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+    if(typeof showAuth==='function') showAuth('forgot-confirm');
+  };
+  window.doForgotConfirm=function(){ enterApp('Demo User'); };
+  window.doLogout=function(){
+    // Restart the demo from the top — show the login screen again.
+    const auth=document.getElementById('auth-wrap'); if(auth) auth.style.display='flex';
+    if(typeof showAuth==='function') showAuth('login');
+    const e=document.getElementById('login-email'); if(e) e.value='';
+    const p=document.getElementById('login-pw'); if(p) p.value='';
+  };
+  // Profile sub-actions — fake "success" by just closing the modal.
+  window.saveProfileName=function(){
+    const newName=(document.getElementById('prof-edit-name')?.value||'').trim();
+    if(newName){
+      try{ applyOwnerAvatar(newName); }catch(_){}
+      const nameEls=document.querySelectorAll('.phdr [style*="font-s"]');
+      if(nameEls[0]) nameEls[0].textContent=newName;
+    }
+    if(typeof closeProfile==='function') closeProfile();
+  };
+  window.sendEmailChangeCode=function(){
+    const newEmail=(document.getElementById('prof-email-new')?.value||'').trim();
+    const t=document.getElementById('prof-email-target'); if(t) t.textContent=newEmail;
+    if(typeof openProfile==='function') openProfile('email-verify');
+  };
+  window.confirmEmailChange=function(){ if(typeof closeProfile==='function') closeProfile(); };
+  window.savePassword=function(){ if(typeof closeProfile==='function') closeProfile(); };
+  window.confirmDeleteAccount=function(){ if(typeof closeProfile==='function') closeProfile(); };
 }
 
 // ── Auto-login on launch ──────────────────────────────────────────────
