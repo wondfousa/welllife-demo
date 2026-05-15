@@ -437,6 +437,28 @@ html.native .sb { display: none; }
   } catch(e) {}
 })();
 </script>
+<!-- Demo-mode early-flag: run BEFORE the body parses so CSS can hide
+     auth/onboarding overlays from the very first paint on the public preview. -->
+<script>
+(function(){
+  try{
+    var qs=new URLSearchParams(location.search);
+    var isGithubPages=/\.github\.io$/i.test(location.hostname);
+    var isExplicitDemo=/^demo$/i.test(qs.get('mode')||'');
+    if(isGithubPages||isExplicitDemo){
+      window.__forceDemoMode=true;
+      document.documentElement.classList.add('demo-mode');
+    }
+  }catch(e){}
+})();
+</script>
+<style>
+/* Hide auth + onboarding overlays whenever the page is in demo mode.
+   Using !important + CSS class so this wins over any inline display:flex
+   set later by JS or by the initial render. */
+html.demo-mode #auth-wrap,
+html.demo-mode #onboard-wrap{display:none !important}
+</style>
 <!-- Amplify SDK bundle — built by `npm run build:amplify` from src/amplify-init.js.
      If this fails to load (e.g. on a public GitHub Pages demo where we never publish the bundle),
      we'll flip the page into a self-contained "demo mode" — no real auth, all data local. -->
@@ -1681,7 +1703,7 @@ html.native .sb { display: none; }
     <div class="pol-body" id="policy-body">
       <!-- ───── PRIVACY POLICY ───── -->
       <div id="pol-privacy" style="display:none">
-        <div class="pol-meta"><strong>Effective date:</strong> May 12, 2026 &nbsp;·&nbsp; <strong>Last updated:</strong> May 12, 2026</div>
+        <div class="pol-meta"><strong>Effective date:</strong> May 12, 2026 &nbsp;·&nbsp; <strong>Last updated:</strong> May 14, 2026</div>
         <h2>1. Who we are</h2>
         <p>WELLlife Care ("<strong>WELLlife Care</strong>", "<strong>we</strong>", "<strong>us</strong>", "<strong>our</strong>") is a consumer health-tracking mobile application operated by <strong>Wondfo USA, Inc.</strong> We can be reached at <strong>appadmin@wondfousa.com</strong> for any question relating to this policy or your data. Our mailing address is available on request.</p>
         <p>For purposes of GDPR and similar regimes, Wondfo USA, Inc. is the <strong>data controller</strong>. The Service is offered for use in the United States; we have not designated an EU representative and do not target users in the European Economic Area.</p>
@@ -1701,7 +1723,7 @@ html.native .sb { display: none; }
         <h3>3.1 Information you give us</h3>
         <table>
           <tr><th>Category</th><th>Examples</th><th>When collected</th></tr>
-          <tr><td><strong>Account information</strong></td><td>Email, password (hashed via Firebase Authentication), display name</td><td>Registration / profile update</td></tr>
+          <tr><td><strong>Account information</strong></td><td>Email, password (hashed via Amazon Cognito), display name</td><td>Registration / profile update</td></tr>
           <tr><td><strong>Profile &amp; family members</strong></td><td>Names, initials, color tags, optional avatar photos</td><td>When you add a family member</td></tr>
           <tr><td><strong>Self-reported health data</strong></td><td>Symptoms, severity self-rating, temperature, SpO₂, blood pressure, notes, dates</td><td>Each daily log save</td></tr>
           <tr><td><strong>Rapid-test entries</strong></td><td>Test type, result you entered (positive / negative / invalid), line appearance, date</td><td>When you log a test</td></tr>
@@ -1744,7 +1766,7 @@ html.native .sb { display: none; }
         <h2>6. Sharing and disclosure</h2>
         <table>
           <tr><th>Recipient</th><th>Purpose</th><th>Safeguard</th></tr>
-          <tr><td><strong>Google / Firebase</strong> (Authentication, Cloud Firestore, Cloud Storage)</td><td>Hosting, authentication, sync</td><td>Google DPA &amp; Security Terms; data stored in <strong>us-central1</strong></td></tr>
+          <tr><td><strong>Amazon Web Services</strong> (Amazon Cognito, DynamoDB, AppSync, S3)</td><td>Authentication, data storage, sync</td><td>AWS Customer Agreement &amp; Data Processing Addendum; data stored in <strong>us-west-2 (Oregon, USA)</strong></td></tr>
           <tr><td><strong>CDC public APIs</strong></td><td>Read-only public data</td><td>No personal data sent; outbound only</td></tr>
           <tr><td><strong>Law-enforcement / regulators</strong></td><td>Valid legal demand only</td><td>Minimum disclosure; notify you unless prohibited</td></tr>
           <tr><td><strong>Successor entities</strong></td><td>Merger / acquisition / restructuring</td><td>Same protections required</td></tr>
@@ -1753,10 +1775,10 @@ html.native .sb { display: none; }
 
         <h2>7. Where data is stored and how it is protected</h2>
         <ul>
-          <li>Account and synced data: Google Cloud / Firebase in <strong>us-central1</strong>.</li>
+          <li>Account and synced data: Amazon Web Services in <strong>us-west-2 (Oregon, USA)</strong>, encrypted at rest using AWS-managed keys.</li>
           <li>Strip photos and locally cached logs: stored on your device's encrypted application storage (the app's WebView <code>localStorage</code>).</li>
           <li>Transport: all network traffic encrypted with TLS 1.2+.</li>
-          <li>Authentication: passwords hashed and salted by Firebase; we never see your plaintext password.</li>
+          <li>Authentication: passwords hashed and salted by Amazon Cognito using SRP (Secure Remote Password); we never see your plaintext password.</li>
           <li>Access controls: only a small number of authorized engineers can access production data.</li>
         </ul>
         <p>No system is perfectly secure. If a breach occurs, we will notify affected users and the U.S. Federal Trade Commission as required by the <strong>FTC Health Breach Notification Rule</strong> (16 CFR Part 318), and any applicable state authorities, within the timeframes those rules require (typically within 60 days of discovery).</p>
@@ -1795,14 +1817,14 @@ html.native .sb { display: none; }
         <ul>
           <li><strong>Account data</strong> — retained until you delete your account.</li>
           <li><strong>Health logs and test entries</strong> — retained until you delete the relevant card or your account.</li>
-          <li><strong>Strip photos</strong> — stored on-device only by default; if synced to Firebase in a future version, the same deletion rules apply.</li>
+          <li><strong>Strip photos</strong> — stored on-device only by default; if synced to AWS S3 in a future version, the same deletion rules apply.</li>
           <li><strong>AI chat history</strong> — retained for 12 months, then deleted.</li>
           <li><strong>Backups</strong> — encrypted backups may persist up to 35 days beyond deletion.</li>
           <li><strong>Logs</strong> — security and access logs retained up to 12 months.</li>
         </ul>
 
         <h2>12. International transfers</h2>
-        <p>If you access WELLlife Care from outside the United States, your information will be transferred to and processed in the United States and in any other country where Google operates Firebase infrastructure. We rely on Standard Contractual Clauses (Module 2) and supplementary measures for transfers from the EEA, UK, and Switzerland.</p>
+        <p>If you access WELLlife Care from outside the United States, your information will be transferred to and processed in the United States, where Amazon Web Services operates the infrastructure that supports the Service. We rely on Standard Contractual Clauses (Module 2) and supplementary measures for transfers from the EEA, UK, and Switzerland; AWS has executed those clauses as a sub-processor.</p>
 
         <h2>13. Changes to this policy</h2>
         <p>We will update the "Last updated" date if anything changes. If the change is material, we will notify you in-app and by email before it takes effect, and where required we will obtain your renewed consent.</p>
@@ -1816,7 +1838,7 @@ html.native .sb { display: none; }
 
       <!-- ───── TERMS OF SERVICE ───── -->
       <div id="pol-terms" style="display:none">
-        <div class="pol-meta"><strong>Effective date:</strong> May 12, 2026 &nbsp;·&nbsp; <strong>Last updated:</strong> May 12, 2026</div>
+        <div class="pol-meta"><strong>Effective date:</strong> May 12, 2026 &nbsp;·&nbsp; <strong>Last updated:</strong> May 14, 2026</div>
         <h2>1. Agreement</h2>
         <p>These Terms of Service ("<strong>Terms</strong>") form a binding agreement between you and <strong>Wondfo USA, Inc.</strong> ("<strong>we</strong>", "<strong>us</strong>", "<strong>our</strong>") governing your access to and use of the WELLlife Care mobile application and any related websites or services (collectively, the "<strong>Service</strong>").</p>
         <p>By creating an account, signing in, or otherwise using the Service, you acknowledge that you have read, understood, and agree to these Terms and to our Privacy Policy. If you do not agree, do not use the Service.</p>
@@ -1868,7 +1890,7 @@ html.native .sb { display: none; }
         <ul>
           <li><strong>Rapid-test manufacturers</strong> — your rapid test is a separate product from the Service. Always follow the manufacturer's IFU. We make no representation about the performance of any specific test.</li>
           <li><strong>CDC information</strong> — public-health content presented in the Service is drawn from publicly available CDC resources. CDC does not endorse or sponsor WELLlife Care.</li>
-          <li><strong>Firebase / Google Cloud</strong> — we use Firebase for authentication, data storage, and synchronization. Your use of the Service is also subject to Google's applicable terms; we remain accountable to you for the way we configure those services on your behalf.</li>
+          <li><strong>Amazon Web Services</strong> — we use AWS (Cognito for authentication, DynamoDB for data, AppSync for the GraphQL API, and S3 for any synced file storage). Your use of the Service is also subject to AWS's applicable terms; we remain accountable to you for the way we configure those services on your behalf.</li>
         </ul>
 
         <h2>9. Changes to the Service</h2>
@@ -2335,7 +2357,8 @@ function finishOnboarding(){
 // Demo mode skips auth/onboarding, drops the user into the app as "Demo User",
 // shows a small banner, and silences buttons that would call Cognito.
 window.__isDemoMode = function(){
-  return !!(window.__bundleFailed)
+  return !!(window.__forceDemoMode)
+      || !!(window.__bundleFailed)
       || /\.github\.io$/i.test(location.hostname)
       || /^demo$/i.test(new URLSearchParams(location.search).get('mode')||'');
 };
