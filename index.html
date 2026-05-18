@@ -1357,8 +1357,8 @@ html.native .sb { display: none; }
             <path d="M43 48l3 3 7-7" stroke="#5b2c91" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
           </svg>
         </div>
-        <div style="font-family:var(--font-s);font-size:24px;color:var(--brand);margin-bottom:12px;line-height:1.2">Share with family or doctor</div>
-        <div style="font-size:14px;color:var(--i2);line-height:1.55;max-width:280px;margin-bottom:32px">Generate a clean health report — share with friends, request sick leave, or bring to your doctor.</div>
+        <div style="font-family:var(--font-s);font-size:24px;color:var(--brand);margin-bottom:12px;line-height:1.2">Share when you need to</div>
+        <div style="font-size:14px;color:var(--i2);line-height:1.55;max-width:280px;margin-bottom:32px">Generate a clean recovery summary — useful for family check-ins, time-off requests, or any appointment where it helps to have your story handy.</div>
         <button onclick="finishOnboarding()" style="width:100%;max-width:280px;background:var(--brand);color:#fff;border:none;border-radius:24px;padding:15px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font-b);box-shadow:0 6px 16px -6px rgba(91,44,145,.45)">Get started</button>
       </div>
     </div>
@@ -1680,7 +1680,7 @@ html.native .sb { display: none; }
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button onclick="setReportPurpose('family')" id="rp-family" class="rp-btn">👥 Friends</button>
         <button onclick="setReportPurpose('sick_leave')" id="rp-sick_leave" class="rp-btn">🏢 Sick Leave</button>
-        <button onclick="setReportPurpose('doctor')" id="rp-doctor" class="rp-btn">🩺 Doctor</button>
+        <button onclick="setReportPurpose('doctor')" id="rp-doctor" class="rp-btn">🩺 Appointment</button>
         <button onclick="setReportPurpose('insurance')" id="rp-insurance" class="rp-btn">📋 Insurance</button>
       </div>
     </div>
@@ -2632,7 +2632,7 @@ const REPORT_PURPOSES = {
   sick_leave: { label: 'Sick Leave Request',    note: 'For official sick leave & HR records' },
   family:     { label: 'Health Update',          note: 'For friends & family' },
   insurance:  { label: 'Insurance Claim Record', note: 'For insurance & reimbursement' },
-  doctor:     { label: 'Clinical Summary',       note: 'For physician consultation' }
+  doctor:     { label: 'Clinical Summary',       note: 'For your next appointment' }
 };
 
 function setReportPurpose(p){
