@@ -699,20 +699,26 @@ html.native .sb { display: none; }
 
     <!-- ── Page content ────────────────────────────────────── -->
 
-    <!-- YouTube video (uses youtube-nocookie.com for broader embed compatibility — works
-         even when the parent document is about:srcdoc, file://, or has a restrictive CSP.
-         A fallback link is always shown so users can open YouTube directly if the embed is
-         blocked — e.g. Error 153 from nested-iframe / corporate-network restrictions.) -->
+    <!-- Test Instructions — IFU-first framing for FDA compliance.
+         The app does NOT provide medical instructions; it links to the manufacturer's
+         official IFU and embeds Wondfo's official YouTube video.
+         Uses youtube-nocookie.com for broader embed compatibility (works even when the
+         parent document is about:srcdoc / file:// or has a restrictive CSP).
+         A fallback "Open on YouTube" link is always shown in case the embed is blocked. -->
     <div style="background:#0a2820;padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
-        <div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.6)">How to use WELLlife Care</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.6)">Test Instructions</div>
         <a href="https://www.youtube.com/watch?v=AjLwNfod2iI" target="_blank" rel="noopener"
            style="font-size:11px;color:#7fd0b2;text-decoration:none;font-weight:500">Open on YouTube ↗</a>
       </div>
+      <p style="font-size:12.5px;line-height:1.55;color:rgba(255,255,255,.78);margin:0 0 12px;font-family:var(--font-b)">
+        Always follow the printed <strong style="color:#fff">Instructions for Use</strong> included in your test kit. The full IFU is also available at
+        <a href="https://wondfousa.com" target="_blank" rel="noopener" style="color:#7fd0b2;text-decoration:none;font-weight:500">wondfousa.com</a>.
+      </p>
       <div style="border-radius:12px;overflow:hidden;aspect-ratio:16/9;background:#000;position:relative">
         <iframe width="100%" height="100%"
                 src="https://www.youtube-nocookie.com/embed/AjLwNfod2iI?rel=0"
-                title="WELLlife Care — Getting Started"
+                title="Official Wondfo Instruction Video"
                 frameborder="0"
                 loading="lazy"
                 referrerpolicy="strict-origin-when-cross-origin"
@@ -720,9 +726,20 @@ html.native .sb { display: none; }
                 allowfullscreen
                 style="display:block;position:absolute;inset:0"></iframe>
       </div>
+      <p style="font-size:10.5px;line-height:1.5;color:rgba(255,255,255,.55);margin:10px 0 0;text-align:center;font-family:var(--font-b)">
+        📺 Official Wondfo Instruction Video
+      </p>
+      <p style="font-size:11px;line-height:1.55;color:rgba(255,255,255,.62);margin:14px 0 0;font-style:italic;font-family:var(--font-b)">
+        WELLlife Care is optional and is not required to perform or read the test. The app does not read, scan, analyze, verify, or interpret test results.
+      </p>
     </div>
 
-    <!-- Step-by-step guide -->
+    <!-- Step-by-step guide REMOVED for FDA compliance — the app must not provide
+         medical instructions. The official Wondfo video and printed IFU above are the
+         authoritative sources. Inline markup below is wrapped in an HTML comment so it
+         is not rendered or sent to the DOM; remove the wrapped block entirely in a
+         follow-up commit once we have confirmed nothing else references these IDs. -->
+    <!--
     <div style="padding:16px 16px 8px">
       <button onclick="toggleSteps(this)" style="width:100%;display:flex;align-items:center;justify-content:space-between;background:#fff;border:.5px solid rgba(0,0,0,.08);border-radius:14px;padding:12px 16px;cursor:pointer;font-family:var(--font-b)">
         <span style="font-size:13px;font-weight:600;color:var(--ink)">📋 Step-by-step guide</span>
@@ -840,6 +857,7 @@ html.native .sb { display: none; }
         </div>
       </div>
     </div>
+    -->
 
     <!-- Buy Strip Tests -->
     <div style="padding:12px 16px">
@@ -4191,13 +4209,8 @@ function updateTestReminder(){
   if(msg){el.style.display='flex';el.style.background=bg;el.innerHTML='<span style="font-size:15px;flex-shrink:0">'+icon+'</span><span style="font-size:12px;font-weight:500;color:'+color+';line-height:1.45">'+msg+'</span>';}
   else{el.style.display='none';}
 }
-function toggleSteps(btn){
-  const content=document.getElementById('steps-content');
-  const label=document.getElementById('steps-toggle-label');
-  const open=content.style.display==='block';
-  content.style.display=open?'none':'block';
-  label.textContent=open?'Show ▾':'Hide ▴';
-}
+// toggleSteps() removed — the step-by-step guide UI was removed for FDA compliance.
+// See the Test Instructions section (links to IFU + official Wondfo video) above.
 
 function nearestRecoveryDay(clientX){
   const track=document.getElementById('recovery-track');
