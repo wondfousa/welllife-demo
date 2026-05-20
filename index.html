@@ -1148,7 +1148,7 @@ html.native .sb { display: none; }
   <div class="screen" id="s-profile">
     <div class="phdr">
       <div style="display:flex;align-items:center;gap:16px">
-        <div style="position:relative;flex-shrink:0;cursor:pointer" onclick="openProfile('edit')">
+        <div style="position:relative;flex-shrink:0">
           <div class="pav" id="owner-pav">?</div>
         </div>
         <div style="flex:1">
@@ -1186,13 +1186,8 @@ html.native .sb { display: none; }
     <div style="padding:0 16px 8px">
       <div style="background:#fff;border-radius:16px;border:.5px solid rgba(0,0,0,.08);overflow:hidden">
 
-        <div onclick="openProfile('edit')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:.5px solid rgba(0,0,0,.06);cursor:pointer">
-          <div style="width:34px;height:34px;border-radius:10px;background:#f0f0f8;display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="16" height="16" viewBox="0 0 20 20" fill="none"><path d="M14.5 2.5l3 3L6 17H3v-3L14.5 2.5z" stroke="#6c5ce7" stroke-width="1.5" stroke-linecap="round"/></svg>
-          </div>
-          <span style="flex:1;font-size:14px;font-weight:500;color:var(--ink)">Edit Profile</span>
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="var(--g3)" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </div>
+        <!-- Edit Profile menu item removed: owner is always "Me" with a fixed emoji avatar, so there is nothing to edit here. -->
+
 
         <!-- Change Email -->
         <div onclick="openProfile('email')" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border-bottom:.5px solid rgba(0,0,0,.06);cursor:pointer">
@@ -1954,14 +1949,15 @@ html.native .sb { display: none; }
       <div style="font-size:13px;color:var(--g3);margin-bottom:24px">Track health records for a child, student, or family member</div>
       <label style="font-size:11px;font-weight:700;color:var(--i2);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:6px">Member Name</label>
       <input id="new-member-name" type="text" placeholder="e.g. Emma, Tommy, Student A…" style="width:100%;background:var(--gray);border:.5px solid rgba(0,0,0,.1);border-radius:12px;padding:13px 14px;font-size:15px;font-family:var(--font-b);color:var(--ink);outline:none;box-sizing:border-box;margin-bottom:12px" onkeydown="if(event.key==='Enter')confirmAddMember()">
-      <label style="font-size:11px;font-weight:700;color:var(--i2);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:8px">Avatar Color</label>
-      <div style="display:flex;gap:8px;margin-bottom:24px" id="member-color-picker">
-        <div class="mcolor" data-c="#0d9e7a" style="background:#0d9e7a;border:3px solid #0d9e7a" onclick="pickMemberColor(this)"></div>
-        <div class="mcolor" data-c="#e53935" style="background:#e53935" onclick="pickMemberColor(this)"></div>
-        <div class="mcolor" data-c="#f57c00" style="background:#f57c00" onclick="pickMemberColor(this)"></div>
-        <div class="mcolor" data-c="#7b1fa2" style="background:#7b1fa2" onclick="pickMemberColor(this)"></div>
-        <div class="mcolor" data-c="#1565c0" style="background:#1565c0" onclick="pickMemberColor(this)"></div>
-        <div class="mcolor" data-c="#00838f" style="background:#00838f" onclick="pickMemberColor(this)"></div>
+      <label style="font-size:11px;font-weight:700;color:var(--i2);text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:8px">Choose Avatar</label>
+      <div style="display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin-bottom:10px" id="member-emoji-picker"></div>
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px">
+        <div id="member-photo-preview" style="display:none;width:44px;height:44px;border-radius:50%;overflow:hidden;border:2px solid var(--teal);flex-shrink:0"></div>
+        <button type="button" onclick="triggerMemberPhotoUpload()" style="flex:1;background:var(--gray);border:1px dashed rgba(0,0,0,.15);color:var(--i2);border-radius:12px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px">
+          <svg width="14" height="14" viewBox="0 0 20 20" fill="none"><path d="M5 7l3-3h4l3 3h2v9H3V7h2z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="10" cy="11" r="3" stroke="currentColor" stroke-width="1.5"/></svg>
+          <span id="member-photo-btn-label">Or upload your own photo</span>
+        </button>
+        <input type="file" id="member-photo-input" accept="image/*" style="display:none" onchange="handleMemberPhotoChange(event)">
       </div>
       <div id="add-member-err" style="display:none;color:var(--red);font-size:12px;margin-bottom:10px"></div>
       <button onclick="confirmAddMember()" style="width:100%;background:var(--teal);color:#fff;border:none;border-radius:14px;padding:14px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:10px">Add Member</button>
@@ -2224,22 +2220,38 @@ async function doForgotConfirm(){
 // ── Auto-generated avatar (deterministic color + initial from a seed string) ─
 // Privacy-friendly alternative to photo uploads. Same seed → same look every time.
 const AUTO_AVATAR_PALETTE=['#0d9e7a','#5b2c91','#2d7dd2','#e09517','#e24b4a','#5fa074','#7c3aed','#db2777','#10b981','#0891b2','#4f46e5','#0a7a5c'];
+// 12 preset emoji avatars — same seed → same emoji+color every time.
+// Privacy-friendly: avatar reveals nothing about the user's real name or photo.
+const AUTO_AVATAR_EMOJI=['🌿','🦄','🐬','🦊','🐞','🐢','🦉','🌸','🐸','🐳','🐧','🌱'];
 function getAutoAvatar(seed){
   const s=(seed||'?').toString();
   let h=0;for(let i=0;i<s.length;i++){h=((h<<5)-h)+s.charCodeAt(i);h|=0;}
-  const color=AUTO_AVATAR_PALETTE[Math.abs(h)%AUTO_AVATAR_PALETTE.length];
-  // Take the first letter of the first non-empty word, fall back to email local part, then '?'
+  const idx=Math.abs(h)%AUTO_AVATAR_PALETTE.length;
+  const color=AUTO_AVATAR_PALETTE[idx];
+  const emoji=AUTO_AVATAR_EMOJI[idx];
+  // Keep the initial as a fallback in case the emoji font fails to render
   const cleaned=s.replace(/[^a-z0-9一-鿿\s]/gi,'').trim();
   const initial=((cleaned.split(/\s+/)[0]||'?')[0]||'?').toUpperCase();
-  return {color,initial};
+  return {color,emoji,initial};
 }
-function applyOwnerAvatar(seed){
+// Owner is always shown as "Me" with a single fixed emoji avatar — no name-derived hash,
+// no photo upload. Keeps the profile page consistent with everywhere else and removes
+// the privacy/edit complexity (the user is "you", you don't need to identify yourself).
+const OWNER_EMOJI = '🌿';
+const OWNER_COLOR = '#0d9e7a';
+function applyOwnerAvatar(_seed){
   const pav=document.getElementById('owner-pav');if(!pav) return;
-  const {color,initial}=getAutoAvatar(seed);
-  pav.textContent=initial;
-  pav.style.background=color;
+  pav.textContent=OWNER_EMOJI;
+  pav.style.background=OWNER_COLOR;
   pav.style.color='#fff';
   pav.style.border='2px solid rgba(255,255,255,.6)';
+  pav.style.fontFamily="'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji','Twemoji Mozilla',sans-serif";
+  pav.style.fontSize='32px';
+  pav.style.lineHeight='1';
+  pav.style.display='flex';
+  pav.style.alignItems='center';
+  pav.style.justifyContent='center';
+  pav.style.textAlign='center';
 }
 
 function enterApp(name){
@@ -3193,13 +3205,13 @@ function switchMember(memberId) {
   go(document.querySelector('.tab.on')?.id?.replace('t-','') || 'home');
 }
 
-// Get display info for the active member
+// Get display info for the active member.
+// Owner is always shown as "Me" + the fixed OWNER_EMOJI — never derived from session.name —
+// so the avatar matches everywhere (profile header, home page chip, member switcher).
 function getActiveMemberInfo() {
   const id = _activeMemberId;
   if (id === 'owner') {
-    const session = JSON.parse(localStorage.getItem('wl_session')||sessionStorage.getItem('wl_session')||'{}');
-    const name = session.name || 'Me';
-    return { id:'owner', name, initial: name[0]?.toUpperCase()||'M', color:'#0d9e7a' };
+    return { id:'owner', name:'Me', initial:'M', color:OWNER_COLOR, emoji:OWNER_EMOJI };
   }
   const members = getMembers();
   const m = members.find(m=>m.id===id);
@@ -3215,10 +3227,8 @@ function updateMemberBar() {
 
   if (members.length === 0) { bar.style.display = 'none'; return; }
   bar.style.display = 'block';
-  const session = JSON.parse(localStorage.getItem('wl_session')||sessionStorage.getItem('wl_session')||'{}');
-  const ownerName = session.name || 'Me';
   const allMembers = [
-    { id:'owner', name: ownerName, initial: ownerName[0]?.toUpperCase()||'M', color:'#0d9e7a' },
+    { id:'owner', name:'Me', initial:'M', color:OWNER_COLOR, emoji:OWNER_EMOJI },
     ...members
   ];
 
@@ -3229,9 +3239,8 @@ function updateMemberBar() {
     const txtCol = isActive ? '#fff' : 'var(--i2)';
     const border = isActive ? 'none' : '1.5px solid #ccc';
     const shadow = isActive ? 'none' : '0 1px 3px rgba(0,0,0,.08)';
-    const avBg   = isActive ? 'rgba(255,255,255,.28)' : m.color;
     return `<button onclick="switchMember('${m.id}')" style="display:inline-flex;align-items:center;gap:5px;padding:5px 10px 5px 5px;border-radius:20px;border:${border};background:${bg};box-shadow:${shadow};cursor:pointer;flex-shrink:0;transition:.15s">
-      ${renderAvatarCircle(m.id, m.initial, m.color, 22, 11)}
+      ${renderAvatarCircle(m.id, m.initial, m.color, 22, 11, m.emoji)}
       <span style="font-size:12px;font-weight:${isActive?'700':'500'};color:${txtCol}">${m.name.split(' ')[0]}</span>
     </button>`;
   }).join('');
@@ -3264,7 +3273,7 @@ function updateMembersSection() {
     const av = document.createElement('div');
     av.style.cssText = 'position:relative;flex-shrink:0;cursor:pointer';
     av.onclick = (e) => { e.stopPropagation(); triggerAvatarUpload(m.id); };
-    av.innerHTML = renderAvatarCircle(m.id, m.initial, m.color, 40, 17)
+    av.innerHTML = renderAvatarCircle(m.id, m.initial, m.color, 40, 17, m.emoji)
       + `<div style="position:absolute;bottom:0;right:0;width:16px;height:16px;border-radius:50%;background:#fff;border:1px solid #ddd;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 3px rgba(0,0,0,.15)">
            <svg width="8" height="8" viewBox="0 0 14 14" fill="none"><path d="M1 10V12h2l5-5-2-2-5 5z" fill="#666"/><path d="M11.5 2.5a1 1 0 00-1.4 0l-.8.8 2 2 .8-.8a1 1 0 000-1.4l-.6-.6z" fill="#666"/></svg>
          </div>`;
@@ -3297,43 +3306,61 @@ function updateMembersSection() {
 // Update greeting name + avatar everywhere
 function updateMemberUI() {
   const info = getActiveMemberInfo();
-  // Top greeting line
+  // Top greeting line — for the owner this uses the *registered* name from session (personal,
+  // private to the user), even though the profile page shows the simplified "Me" label.
+  // For family members it uses their member name.
   const greeting = document.getElementById('home-greeting');
-  if (greeting) greeting.textContent = info.name.split(' ')[0] + ' 👋';
-  // Profile avatar — use photo if available, else initial
+  if (greeting) {
+    let greetName;
+    if (info.id === 'owner') {
+      const session = JSON.parse(localStorage.getItem('wl_session')||sessionStorage.getItem('wl_session')||'{}');
+      greetName = (session.name || 'Friend').split(' ')[0];
+    } else {
+      greetName = info.name.split(' ')[0];
+    }
+    greeting.textContent = greetName + ' 👋';
+  }
+  // Profile avatar — owner is always the fixed Me emoji, no photo, no name derivation.
   const pav = document.getElementById('owner-pav');
   if (pav) {
-    const photo = getAvatar('owner');
-    if (photo) {
-      pav.innerHTML = `<img src="${photo}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
-    } else {
-      pav.textContent = info.initial;
-      pav.style.background = info.color + '50';
-      pav.style.borderColor = info.color + '80';
-    }
+    pav.innerHTML = '';
+    applyOwnerAvatar();  // ignores seed, paints the fixed OWNER_EMOJI
   }
-  // Profile header always shows account owner (never changes when switching members)
-  const session = JSON.parse(localStorage.getItem('wl_session')||sessionStorage.getItem('wl_session')||'{}');
-  const ownerName = session.name || 'Me';
+  // Profile header always shows the account owner as a fixed "Me" — no name display,
+  // no rename. Keeps things simple and avoids name-overflow / privacy issues.
   const pname = document.querySelector('.phdr [style*="font-s"]');
-  if (pname) pname.textContent = ownerName;
+  if (pname) pname.textContent = 'Me';
   // Update bar + list
   updateMemberBar();
   updateMembersSection();
 }
 
 // Add member modal
+// In-progress add-member state
+let _memberEmojiIdx = 0;          // 0-11, indexes into AUTO_AVATAR_EMOJI / AUTO_AVATAR_PALETTE
+let _memberPhotoDataUrl = null;   // Set when the user uploads a photo; takes precedence over emoji
+
+function _renderMemberEmojiPicker() {
+  const grid = document.getElementById('member-emoji-picker');
+  if (!grid) return;
+  grid.innerHTML = AUTO_AVATAR_EMOJI.map((em, i) => {
+    const color = AUTO_AVATAR_PALETTE[i];
+    const selected = i === _memberEmojiIdx && !_memberPhotoDataUrl;
+    return `<button type="button" onclick="pickMemberEmoji(${i})" data-idx="${i}" style="aspect-ratio:1/1;border-radius:50%;background:${color};border:${selected?'3px solid #fff':'3px solid transparent'};box-shadow:${selected?'0 0 0 2px '+color:'none'};cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;font-size:20px;padding:0;line-height:1">${em}</button>`;
+  }).join('');
+}
+
 function openAddMember() {
-  _memberColor = '#0d9e7a';
+  _memberEmojiIdx = 0;
+  _memberColor = AUTO_AVATAR_PALETTE[0];
+  _memberPhotoDataUrl = null;
   document.getElementById('new-member-name').value = '';
   document.getElementById('add-member-err').style.display = 'none';
-  // Reset color selection
-  document.querySelectorAll('.mcolor').forEach(el => {
-    el.style.border = '3px solid transparent';
-    el.classList.remove('selected');
-  });
-  const first = document.querySelector('.mcolor');
-  if (first) { first.style.border = '3px solid white'; first.style.boxShadow = '0 0 0 2px #0d9e7a'; first.classList.add('selected'); }
+  const preview = document.getElementById('member-photo-preview');
+  if (preview) { preview.style.display = 'none'; preview.innerHTML = ''; }
+  const label = document.getElementById('member-photo-btn-label');
+  if (label) label.textContent = 'Or upload your own photo';
+  _renderMemberEmojiPicker();
   document.getElementById('add-member-modal').style.display = 'flex';
   setTimeout(() => document.getElementById('new-member-name').focus(), 100);
 }
@@ -3342,16 +3369,55 @@ function closeAddMember() {
   document.getElementById('add-member-modal').style.display = 'none';
 }
 
+function pickMemberEmoji(idx) {
+  _memberEmojiIdx = idx;
+  _memberColor = AUTO_AVATAR_PALETTE[idx];
+  _memberPhotoDataUrl = null;  // selecting an emoji clears any uploaded photo
+  const preview = document.getElementById('member-photo-preview');
+  if (preview) { preview.style.display = 'none'; preview.innerHTML = ''; }
+  const label = document.getElementById('member-photo-btn-label');
+  if (label) label.textContent = 'Or upload your own photo';
+  _renderMemberEmojiPicker();
+}
+
+// Kept for backwards compatibility (any old caller); maps a colour to the matching emoji slot
 function pickMemberColor(el) {
-  _memberColor = el.dataset.c;
-  document.querySelectorAll('.mcolor').forEach(e => {
-    e.style.border = '3px solid transparent';
-    e.style.boxShadow = '';
-    e.classList.remove('selected');
-  });
-  el.style.border = '3px solid white';
-  el.style.boxShadow = '0 0 0 2px ' + _memberColor;
-  el.classList.add('selected');
+  const c = el?.dataset?.c;
+  const idx = Math.max(0, AUTO_AVATAR_PALETTE.indexOf(c));
+  pickMemberEmoji(idx);
+}
+
+function triggerMemberPhotoUpload() {
+  document.getElementById('member-photo-input').click();
+}
+
+function handleMemberPhotoChange(ev) {
+  const file = ev.target.files && ev.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      // Downscale to 200px max to keep localStorage usage reasonable
+      const canvas = document.createElement('canvas');
+      const MAX = 200, r = Math.min(MAX/img.width, MAX/img.height, 1);
+      canvas.width = Math.round(img.width*r); canvas.height = Math.round(img.height*r);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      _memberPhotoDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+      // Show preview + clear emoji selection visual
+      const preview = document.getElementById('member-photo-preview');
+      if (preview) {
+        preview.style.display = 'block';
+        preview.innerHTML = `<img src="${_memberPhotoDataUrl}" style="width:100%;height:100%;object-fit:cover;display:block">`;
+      }
+      const label = document.getElementById('member-photo-btn-label');
+      if (label) label.textContent = 'Change photo';
+      _renderMemberEmojiPicker();  // re-render so no emoji shows as selected
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  ev.target.value = '';  // allow re-uploading the same file
 }
 
 function confirmAddMember() {
@@ -3365,8 +3431,15 @@ function confirmAddMember() {
   }
   const id = 'member_' + Date.now();
   const initial = name[0].toUpperCase();
-  members.push({ id, name, initial, color: _memberColor });
+  const emoji = AUTO_AVATAR_EMOJI[_memberEmojiIdx];
+  const color = AUTO_AVATAR_PALETTE[_memberEmojiIdx];
+  members.push({ id, name, initial, color, emoji, emojiIdx: _memberEmojiIdx });
   saveMembers(members);
+  // If the user uploaded a photo, persist it so the same getAvatar(id) flow we use for owner
+  // automatically picks it up; emoji becomes the fallback.
+  if (_memberPhotoDataUrl) {
+    try { saveAvatar(id, _memberPhotoDataUrl); } catch(_){}
+  }
   closeAddMember();
   // Initialize empty data for new member
   localStorage.setItem(getMemberStorageKey(id, 'cards'), JSON.stringify({}));
@@ -5100,11 +5173,14 @@ function _avatarAccountKey() {
 }
 const DEFAULT_AVATAR = 'data:image/jpeg;base64,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';
 function getAvatar(id) {
+  // Returns the uploaded photo data URL if the user has actually uploaded one,
+  // otherwise null — letting the caller fall back to the preset emoji avatar
+  // (applyOwnerAvatar) instead of a hard-coded placeholder JPEG.
   try {
     const stored = localStorage.getItem(_avatarAccountKey()+id);
-    if (stored) return stored;
-    return id === 'owner' ? DEFAULT_AVATAR : null;
-  } catch(e) { return id === 'owner' ? DEFAULT_AVATAR : null; }
+    if (stored && stored !== DEFAULT_AVATAR) return stored;
+    return null;
+  } catch(e) { return null; }
 }
 function saveAvatar(id, dataUrl) { try { localStorage.setItem(_avatarAccountKey()+id, dataUrl); } catch(e){} }
 
@@ -5140,17 +5216,28 @@ function handleAvatarFile(input) {
   reader.readAsDataURL(file);
 }
 
-// Returns avatar HTML: photo img if uploaded, else colored initial circle
-function renderAvatarCircle(id, initial, color, size, fontSize) {
+// Returns avatar HTML: uploaded photo if present, else preset emoji on coloured circle,
+// else legacy initial-on-coloured-circle fallback (for members added before the emoji system).
+function renderAvatarCircle(id, initial, color, size, fontSize, emoji) {
   const photo = getAvatar(id);
   if (photo) return `<img src="${photo}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;display:block">`;
+  if (emoji) {
+    // Emoji sizing: scale by ~0.6 of the circle, since emoji glyphs are tighter than letters
+    const emojiSize = Math.round(size * 0.55);
+    return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};display:flex;align-items:center;justify-content:center;font-family:'Apple Color Emoji','Segoe UI Emoji','Noto Color Emoji',sans-serif;font-size:${emojiSize}px;line-height:1;flex-shrink:0">${emoji}</div>`;
+  }
   return `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};color:#fff;display:flex;align-items:center;justify-content:center;font-size:${fontSize}px;font-weight:700;font-family:var(--font-s);flex-shrink:0">${initial}</div>`;
 }
 
-// Load owner avatar on app start
+// Load owner avatar on app start — only inject <img> if there's an actual uploaded photo,
+// otherwise leave the preset emoji avatar (set by applyOwnerAvatar) untouched.
 document.addEventListener('DOMContentLoaded', () => {
   const pav = document.getElementById('owner-pav');
-  if (pav) pav.innerHTML = `<img src="${getAvatar('owner')}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
+  if (!pav) return;
+  const photo = getAvatar('owner');
+  if (photo) {
+    pav.innerHTML = `<img src="${photo}" style="width:100%;height:100%;border-radius:50%;object-fit:cover">`;
+  }
 });
 // ─────────────────────────────────────────────────────────────────────────────
 
