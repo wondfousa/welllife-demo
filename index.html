@@ -437,17 +437,21 @@ html.native .sb { display: none; }
   } catch(e) {}
 })();
 </script>
-<!-- Demo-mode early-flag: run BEFORE the body parses so CSS can hide
-     auth/onboarding overlays from the very first paint on the public preview. -->
+<!-- ── Demo-mode early flag (must run BEFORE body parses) ─────────────────
+     Triggers demo mode when:
+       • hostname ends in .github.io (public preview)
+       • protocol is file://  (opened by double-click locally)
+       • URL has ?mode=demo
+     In demo mode #auth-wrap is CSS-hidden from the first paint, and the
+     enterDemoMode() helper later rewires auth buttons to advance the flow
+     without calling Cognito.  Login/Register/Forgot screens stay VISIBLE so
+     visitors can click through every screen of the design. -->
 <script>
 (function(){
   try{
     var qs=new URLSearchParams(location.search);
     var isGithubPages=/\.github\.io$/i.test(location.hostname);
     var isExplicitDemo=/^demo$/i.test(qs.get('mode')||'');
-    // file:// = opened by double-click in the file browser (preview context, no backend).
-    // Capacitor uses capacitor:// or https://localhost, so this catches "I opened the
-    // HTML directly" without affecting the real app.
     var isFileProtocol=location.protocol==='file:';
     if(isGithubPages||isExplicitDemo||isFileProtocol){
       window.__forceDemoMode=true;
@@ -457,13 +461,13 @@ html.native .sb { display: none; }
 })();
 </script>
 <style>
-/* Demo-mode hiding — NOTHING is hidden. Login screen, profile screens, all of it
-   stays visible. Auth-button handlers are overridden in JS to advance through
-   the flow without calling Cognito. */
+/* Demo mode HIDES NOTHING.  Visitors see every screen — onboarding, login,
+   register, verify, forgot, profile sub-screens.  Auth-button handlers are
+   rewired (see enterDemoMode) to advance the flow without calling Cognito. */
 </style>
 <!-- Amplify SDK bundle — built by `npm run build:amplify` from src/amplify-init.js.
-     If this fails to load (e.g. on a public GitHub Pages demo where we never publish the bundle),
-     we'll flip the page into a self-contained "demo mode" — no real auth, all data local. -->
+     If this fails to load (e.g. on the public GitHub Pages demo where the bundle
+     isn't published), the onerror handler flips the page into demo mode. -->
 <script defer src="amplify-bundle.js" onerror="window.__bundleFailed=true;document.documentElement.classList.add('demo-mode');"></script>
 </head>
 <body>
@@ -547,10 +551,10 @@ html.native .sb { display: none; }
           <div onclick="toggleSeverityColors(event)" title="Your daily symptom severity. Tap to see what each level means." style="display:flex;align-items:center;gap:5px;font-size:10px;color:#3d1a6b;cursor:pointer;user-select:none;background:rgba(91,44,145,.07);border:.5px solid rgba(91,44,145,.22);border-radius:12px;padding:3px 9px 3px 6px;font-weight:600">
             <span style="width:11px;height:11px;border-radius:50%;border:2px solid #ef4d4c;background:transparent;flex-shrink:0;display:inline-block;box-sizing:border-box"></span>How you felt <svg class="sev-chev" width="12" height="12" viewBox="0 0 12 12" style="margin-left:2px;transition:transform .2s ease;flex-shrink:0;display:inline-block;vertical-align:middle"><path d="M2 4.5 L6 8.5 L10 4.5" stroke="#5b2c91" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
-          <div style="display:flex;align-items:center;gap:5px;flex-shrink:0">
-            <button onclick="adjustHomeDays(-1)" style="width:24px;height:24px;border-radius:7px;border:1px solid #ccc;background:#f0eeea;cursor:pointer;font-size:15px;color:#333;line-height:22px;text-align:center;padding:0;box-sizing:border-box">-</button>
-            <span id="home-days-count" style="font-size:12px;font-weight:700;color:var(--ink);min-width:18px;text-align:center">7</span>
-            <button onclick="adjustHomeDays(1)"  style="width:24px;height:24px;border-radius:7px;border:1px solid #ccc;background:#f0eeea;cursor:pointer;font-size:15px;color:#333;line-height:22px;text-align:center;padding:0;box-sizing:border-box">+</button>
+          <div style="display:inline-flex;align-items:center;border:.5px solid rgba(91,44,145,.22);border-radius:13px;background:rgba(91,44,145,.07);overflow:hidden;flex-shrink:0;height:24px">
+            <button onclick="adjustHomeDays(-1)" aria-label="Show fewer days" style="width:22px;height:24px;border:0;background:transparent;cursor:pointer;font-size:15px;color:#3d1a6b;line-height:22px;text-align:center;padding:0;font-weight:700">−</button>
+            <span id="home-days-count" style="font-size:11px;font-weight:700;color:#3d1a6b;min-width:14px;text-align:center;line-height:24px;padding:0 3px">7</span>
+            <button onclick="adjustHomeDays(1)" aria-label="Show more days" style="width:22px;height:24px;border:0;background:transparent;cursor:pointer;font-size:15px;color:#3d1a6b;line-height:22px;text-align:center;padding:0;font-weight:700">+</button>
           </div>
         </div>
         <div id="strip-colors-row" style="display:none;gap:8px;flex-wrap:wrap;margin-top:6px;padding-top:6px;border-top:.5px dashed rgba(0,0,0,.06)">
@@ -640,12 +644,9 @@ html.native .sb { display: none; }
 
     <!-- ── Floating AI Chat Button ─────────────────────────── -->
     <div id="ai-fab" onclick="openAIChat()"
-      style="position:absolute;bottom:80px;right:16px;width:52px;height:52px;border-radius:50%;background:var(--teal);box-shadow:0 4px 16px rgba(13,158,122,.4);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:50">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-        <path d="M12 3C7 3 3 6.5 3 11c0 2 .8 3.8 2.1 5.1L4 21l5.2-1.6C10.4 19.8 11.2 20 12 20c5 0 9-3.5 9-9s-4-8-9-8z" fill="white"/>
-        <circle cx="9" cy="11" r="1" fill="rgba(0,0,0,.3)"/><circle cx="12" cy="11" r="1" fill="rgba(0,0,0,.3)"/><circle cx="15" cy="11" r="1" fill="rgba(0,0,0,.3)"/>
-      </svg>
-      <div style="position:absolute;top:2px;right:2px;width:10px;height:10px;border-radius:50%;background:#e24b4a;border:2px solid #fff"></div>
+      style="position:absolute;bottom:80px;right:16px;width:56px;height:56px;border-radius:50%;background:#fff;box-shadow:0 6px 18px rgba(91,44,145,.35);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:50;overflow:hidden;border:2px solid var(--brand)">
+      <img src="nurse.png" alt="WELLlife AI" width="56" height="56" style="display:block;width:100%;height:100%;object-fit:cover">
+      <div style="position:absolute;top:0;right:0;width:12px;height:12px;border-radius:50%;background:#e24b4a;border:2px solid #fff"></div>
     </div>
 
     <!-- ── AI Chat Overlay ──────────────────────────────────── -->
@@ -655,8 +656,8 @@ html.native .sb { display: none; }
       <div id="ai-chat-panel"
         style="position:absolute;bottom:0;left:0;right:0;height:90%;background:#fff;border-radius:20px 20px 0 0;display:flex;flex-direction:column;transform:translateY(100%);transition:transform .3s cubic-bezier(.32,0,.67,0)">
         <div style="padding:14px 18px 12px;border-bottom:.5px solid rgba(0,0,0,.08);display:flex;align-items:center;gap:12px;flex-shrink:0">
-          <div style="width:36px;height:36px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 3C7 3 3 6.5 3 11c0 2 .8 3.8 2.1 5.1L4 21l5.2-1.6C10.4 19.8 11.2 20 12 20c5 0 9-3.5 9-9s-4-8-9-8z" fill="white"/></svg>
+          <div style="width:40px;height:40px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;border:1.5px solid rgba(91,44,145,.2)">
+            <img src="nurse.png" alt="WELLlife AI" width="40" height="40" style="display:block;width:100%;height:100%;object-fit:cover">
           </div>
           <div style="flex:1">
             <div style="font-size:14px;font-weight:600;color:var(--brand)">WELLlife AI</div>
@@ -668,8 +669,8 @@ html.native .sb { display: none; }
         </div>
         <div id="ai-messages" style="flex:1;overflow-y:auto;padding:14px 14px 8px;display:flex;flex-direction:column;gap:10px">
           <div style="display:flex;gap:8px;align-items:flex-end">
-            <div style="width:28px;height:28px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3C7 3 3 6.5 3 11c0 2 .8 3.8 2.1 5.1L4 21l5.2-1.6C10.4 19.8 11.2 20 12 20c5 0 9-3.5 9-9s-4-8-9-8z" fill="white"/></svg>
+            <div style="width:32px;height:32px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;border:1px solid rgba(91,44,145,.18)">
+              <img src="nurse.png" alt="" width="32" height="32" style="display:block;width:100%;height:100%;object-fit:cover">
             </div>
             <div style="background:var(--gray);border-radius:18px 18px 18px 4px;padding:10px 14px;max-width:78%;font-size:13px;line-height:1.6;color:var(--ink)">
               Hi! I'm your WELLlife Care AI assistant. Ask me anything about your symptoms, recovery, or how to use the app. 👋
@@ -699,26 +700,20 @@ html.native .sb { display: none; }
 
     <!-- ── Page content ────────────────────────────────────── -->
 
-    <!-- Test Instructions — IFU-first framing for FDA compliance.
-         The app does NOT provide medical instructions; it links to the manufacturer's
-         official IFU and embeds Wondfo's official YouTube video.
-         Uses youtube-nocookie.com for broader embed compatibility (works even when the
-         parent document is about:srcdoc / file:// or has a restrictive CSP).
-         A fallback "Open on YouTube" link is always shown in case the embed is blocked. -->
+    <!-- YouTube video (uses youtube-nocookie.com for broader embed compatibility — works
+         even when the parent document is about:srcdoc, file://, or has a restrictive CSP.
+         A fallback link is always shown so users can open YouTube directly if the embed is
+         blocked — e.g. Error 153 from nested-iframe / corporate-network restrictions.) -->
     <div style="background:#0a2820;padding:16px">
-      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.6)">Test Instructions</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:rgba(255,255,255,.6)">How to use WELLlife Care</div>
         <a href="https://www.youtube.com/watch?v=AjLwNfod2iI" target="_blank" rel="noopener"
            style="font-size:11px;color:#7fd0b2;text-decoration:none;font-weight:500">Open on YouTube ↗</a>
       </div>
-      <p style="font-size:12.5px;line-height:1.55;color:rgba(255,255,255,.78);margin:0 0 12px;font-family:var(--font-b)">
-        Always follow the printed <strong style="color:#fff">Instructions for Use</strong> included in your test kit. The full IFU is also available at
-        <a href="https://wondfousa.com" target="_blank" rel="noopener" style="color:#7fd0b2;text-decoration:none;font-weight:500">wondfousa.com</a>.
-      </p>
       <div style="border-radius:12px;overflow:hidden;aspect-ratio:16/9;background:#000;position:relative">
         <iframe width="100%" height="100%"
                 src="https://www.youtube-nocookie.com/embed/AjLwNfod2iI?rel=0"
-                title="Official Wondfo Instruction Video"
+                title="WELLlife Care — Getting Started"
                 frameborder="0"
                 loading="lazy"
                 referrerpolicy="strict-origin-when-cross-origin"
@@ -726,20 +721,9 @@ html.native .sb { display: none; }
                 allowfullscreen
                 style="display:block;position:absolute;inset:0"></iframe>
       </div>
-      <p style="font-size:10.5px;line-height:1.5;color:rgba(255,255,255,.55);margin:10px 0 0;text-align:center;font-family:var(--font-b)">
-        📺 Official Wondfo Instruction Video
-      </p>
-      <p style="font-size:11px;line-height:1.55;color:rgba(255,255,255,.62);margin:14px 0 0;font-style:italic;font-family:var(--font-b)">
-        WELLlife Care is optional and is not required to perform or read the test. The app does not read, scan, analyze, verify, or interpret test results.
-      </p>
     </div>
 
-    <!-- Step-by-step guide REMOVED for FDA compliance — the app must not provide
-         medical instructions. The official Wondfo video and printed IFU above are the
-         authoritative sources. Inline markup below is wrapped in an HTML comment so it
-         is not rendered or sent to the DOM; remove the wrapped block entirely in a
-         follow-up commit once we have confirmed nothing else references these IDs. -->
-    <!--
+    <!-- Step-by-step guide -->
     <div style="padding:16px 16px 8px">
       <button onclick="toggleSteps(this)" style="width:100%;display:flex;align-items:center;justify-content:space-between;background:#fff;border:.5px solid rgba(0,0,0,.08);border-radius:14px;padding:12px 16px;cursor:pointer;font-family:var(--font-b)">
         <span style="font-size:13px;font-weight:600;color:var(--ink)">📋 Step-by-step guide</span>
@@ -857,7 +841,6 @@ html.native .sb { display: none; }
         </div>
       </div>
     </div>
-    -->
 
     <!-- Buy Strip Tests -->
     <div style="padding:12px 16px">
@@ -1296,15 +1279,9 @@ html.native .sb { display: none; }
       <button onclick="finishOnboarding()" style="background:transparent;border:none;color:var(--g3);font-size:13px;font-weight:500;cursor:pointer;font-family:var(--font-b);padding:6px 10px">Skip</button>
     </div>
     <div id="onb-slides" style="flex:1;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch;touch-action:pan-x;scrollbar-width:none">
-      <!-- Slide 1 — Welcome (purple brand) -->
+      <!-- Slide 1 — Welcome (uses real app logo for brand consistency) -->
       <div class="onb-slide" style="min-width:100%;flex-shrink:0;scroll-snap-align:start;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:48px 32px;text-align:center">
-        <div style="width:120px;height:120px;border-radius:30px;background:linear-gradient(145deg,#f3e8ff 0%,#dec5fa 100%);display:flex;align-items:center;justify-content:center;margin-bottom:28px;box-shadow:0 10px 30px -8px rgba(91,44,145,.35)">
-          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-            <path d="M32 56s-22-13-22-30a14 14 0 0125-9 14 14 0 0125 9c0 17-22 30-22 30" fill="#5b2c91" opacity=".15"/>
-            <path d="M32 56s-22-13-22-30a14 14 0 0125-9 14 14 0 0125 9c0 17-22 30-22 30" stroke="#3d1a6b" stroke-width="2.2" stroke-linejoin="round"/>
-            <path d="M14 32h6l3-8 4 16 3-12 4 8h16" stroke="#3d1a6b" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-          </svg>
-        </div>
+        <img src="logo.png" alt="WELLlife Care" width="140" height="140" style="display:block;border-radius:30px;margin-bottom:28px;box-shadow:0 10px 30px -8px rgba(91,44,145,.35)"/>
         <div style="font-family:var(--font-s);font-size:28px;color:var(--brand);margin-bottom:12px;line-height:1.2">Welcome to<br>WELLlife Care</div>
         <div style="font-size:14px;color:var(--i2);line-height:1.55;max-width:280px;margin-bottom:28px">Your personal health companion for tracking symptoms, tests, and recovery.</div>
         <button onclick="nextOnboarding()" style="background:var(--brand);color:#fff;border:none;border-radius:24px;padding:12px 32px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font-b);box-shadow:0 6px 16px -6px rgba(91,44,145,.45);display:flex;align-items:center;gap:6px">
@@ -1357,8 +1334,8 @@ html.native .sb { display: none; }
             <path d="M43 48l3 3 7-7" stroke="#5b2c91" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
           </svg>
         </div>
-        <div style="font-family:var(--font-s);font-size:24px;color:var(--brand);margin-bottom:12px;line-height:1.2">Share when you need to</div>
-        <div style="font-size:14px;color:var(--i2);line-height:1.55;max-width:280px;margin-bottom:32px">Generate a clean recovery summary — useful for family check-ins, time-off requests, or any appointment where it helps to have your story handy.</div>
+        <div style="font-family:var(--font-s);font-size:24px;color:var(--brand);margin-bottom:12px;line-height:1.2">Share with family or doctor</div>
+        <div style="font-size:14px;color:var(--i2);line-height:1.55;max-width:280px;margin-bottom:32px">Generate a clean health report — share with friends, request sick leave, or bring to your doctor.</div>
         <button onclick="finishOnboarding()" style="width:100%;max-width:280px;background:var(--brand);color:#fff;border:none;border-radius:24px;padding:15px;font-size:15px;font-weight:600;cursor:pointer;font-family:var(--font-b);box-shadow:0 6px 16px -6px rgba(91,44,145,.45)">Get started</button>
       </div>
     </div>
@@ -1379,7 +1356,7 @@ html.native .sb { display: none; }
       <div style="display:flex;flex-direction:column;">
         <!-- Logo + brand -->
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:28px;padding-top:0">
-          <img src="data:image/png;base64,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" style="width:100px;height:100px;object-fit:contain">
+          <img src="logo.png" alt="WELLlife Care" width="68" height="68" style="border-radius:14px;flex-shrink:0">
           <div>
             <div style="font-family:var(--font-s);font-size:26px;color:var(--brand);line-height:1.1">WELLlife Care</div>
             <div style="font-size:12px;color:var(--g3);margin-top:2px">Your health companion</div>
@@ -1680,7 +1657,7 @@ html.native .sb { display: none; }
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button onclick="setReportPurpose('family')" id="rp-family" class="rp-btn">👥 Friends</button>
         <button onclick="setReportPurpose('sick_leave')" id="rp-sick_leave" class="rp-btn">🏢 Sick Leave</button>
-        <button onclick="setReportPurpose('doctor')" id="rp-doctor" class="rp-btn">🩺 Appointment</button>
+        <button onclick="setReportPurpose('doctor')" id="rp-doctor" class="rp-btn">🩺 Doctor</button>
         <button onclick="setReportPurpose('insurance')" id="rp-insurance" class="rp-btn">📋 Insurance</button>
       </div>
     </div>
@@ -1723,7 +1700,7 @@ html.native .sb { display: none; }
     <div class="pol-body" id="policy-body">
       <!-- ───── PRIVACY POLICY ───── -->
       <div id="pol-privacy" style="display:none">
-        <div class="pol-meta"><strong>Effective date:</strong> May 12, 2026 &nbsp;·&nbsp; <strong>Last updated:</strong> May 14, 2026</div>
+        <div class="pol-meta"><strong>Effective date:</strong> May 12, 2026 &nbsp;·&nbsp; <strong>Last updated:</strong> May 12, 2026</div>
         <h2>1. Who we are</h2>
         <p>WELLlife Care ("<strong>WELLlife Care</strong>", "<strong>we</strong>", "<strong>us</strong>", "<strong>our</strong>") is a consumer health-tracking mobile application operated by <strong>Wondfo USA, Inc.</strong> We can be reached at <strong>appadmin@wondfousa.com</strong> for any question relating to this policy or your data. Our mailing address is available on request.</p>
         <p>For purposes of GDPR and similar regimes, Wondfo USA, Inc. is the <strong>data controller</strong>. The Service is offered for use in the United States; we have not designated an EU representative and do not target users in the European Economic Area.</p>
@@ -1743,7 +1720,7 @@ html.native .sb { display: none; }
         <h3>3.1 Information you give us</h3>
         <table>
           <tr><th>Category</th><th>Examples</th><th>When collected</th></tr>
-          <tr><td><strong>Account information</strong></td><td>Email, password (hashed via Amazon Cognito), display name</td><td>Registration / profile update</td></tr>
+          <tr><td><strong>Account information</strong></td><td>Email, password (hashed via Firebase Authentication), display name</td><td>Registration / profile update</td></tr>
           <tr><td><strong>Profile &amp; family members</strong></td><td>Names, initials, color tags, optional avatar photos</td><td>When you add a family member</td></tr>
           <tr><td><strong>Self-reported health data</strong></td><td>Symptoms, severity self-rating, temperature, SpO₂, blood pressure, notes, dates</td><td>Each daily log save</td></tr>
           <tr><td><strong>Rapid-test entries</strong></td><td>Test type, result you entered (positive / negative / invalid), line appearance, date</td><td>When you log a test</td></tr>
@@ -1786,7 +1763,7 @@ html.native .sb { display: none; }
         <h2>6. Sharing and disclosure</h2>
         <table>
           <tr><th>Recipient</th><th>Purpose</th><th>Safeguard</th></tr>
-          <tr><td><strong>Amazon Web Services</strong> (Amazon Cognito, DynamoDB, AppSync, S3)</td><td>Authentication, data storage, sync</td><td>AWS Customer Agreement &amp; Data Processing Addendum; data stored in <strong>us-west-2 (Oregon, USA)</strong></td></tr>
+          <tr><td><strong>Google / Firebase</strong> (Authentication, Cloud Firestore, Cloud Storage)</td><td>Hosting, authentication, sync</td><td>Google DPA &amp; Security Terms; data stored in <strong>us-central1</strong></td></tr>
           <tr><td><strong>CDC public APIs</strong></td><td>Read-only public data</td><td>No personal data sent; outbound only</td></tr>
           <tr><td><strong>Law-enforcement / regulators</strong></td><td>Valid legal demand only</td><td>Minimum disclosure; notify you unless prohibited</td></tr>
           <tr><td><strong>Successor entities</strong></td><td>Merger / acquisition / restructuring</td><td>Same protections required</td></tr>
@@ -1795,10 +1772,10 @@ html.native .sb { display: none; }
 
         <h2>7. Where data is stored and how it is protected</h2>
         <ul>
-          <li>Account and synced data: Amazon Web Services in <strong>us-west-2 (Oregon, USA)</strong>, encrypted at rest using AWS-managed keys.</li>
+          <li>Account and synced data: Google Cloud / Firebase in <strong>us-central1</strong>.</li>
           <li>Strip photos and locally cached logs: stored on your device's encrypted application storage (the app's WebView <code>localStorage</code>).</li>
           <li>Transport: all network traffic encrypted with TLS 1.2+.</li>
-          <li>Authentication: passwords hashed and salted by Amazon Cognito using SRP (Secure Remote Password); we never see your plaintext password.</li>
+          <li>Authentication: passwords hashed and salted by Firebase; we never see your plaintext password.</li>
           <li>Access controls: only a small number of authorized engineers can access production data.</li>
         </ul>
         <p>No system is perfectly secure. If a breach occurs, we will notify affected users and the U.S. Federal Trade Commission as required by the <strong>FTC Health Breach Notification Rule</strong> (16 CFR Part 318), and any applicable state authorities, within the timeframes those rules require (typically within 60 days of discovery).</p>
@@ -1837,14 +1814,14 @@ html.native .sb { display: none; }
         <ul>
           <li><strong>Account data</strong> — retained until you delete your account.</li>
           <li><strong>Health logs and test entries</strong> — retained until you delete the relevant card or your account.</li>
-          <li><strong>Strip photos</strong> — stored on-device only by default; if synced to AWS S3 in a future version, the same deletion rules apply.</li>
+          <li><strong>Strip photos</strong> — stored on-device only by default; if synced to Firebase in a future version, the same deletion rules apply.</li>
           <li><strong>AI chat history</strong> — retained for 12 months, then deleted.</li>
           <li><strong>Backups</strong> — encrypted backups may persist up to 35 days beyond deletion.</li>
           <li><strong>Logs</strong> — security and access logs retained up to 12 months.</li>
         </ul>
 
         <h2>12. International transfers</h2>
-        <p>If you access WELLlife Care from outside the United States, your information will be transferred to and processed in the United States, where Amazon Web Services operates the infrastructure that supports the Service. We rely on Standard Contractual Clauses (Module 2) and supplementary measures for transfers from the EEA, UK, and Switzerland; AWS has executed those clauses as a sub-processor.</p>
+        <p>If you access WELLlife Care from outside the United States, your information will be transferred to and processed in the United States and in any other country where Google operates Firebase infrastructure. We rely on Standard Contractual Clauses (Module 2) and supplementary measures for transfers from the EEA, UK, and Switzerland.</p>
 
         <h2>13. Changes to this policy</h2>
         <p>We will update the "Last updated" date if anything changes. If the change is material, we will notify you in-app and by email before it takes effect, and where required we will obtain your renewed consent.</p>
@@ -1858,7 +1835,7 @@ html.native .sb { display: none; }
 
       <!-- ───── TERMS OF SERVICE ───── -->
       <div id="pol-terms" style="display:none">
-        <div class="pol-meta"><strong>Effective date:</strong> May 12, 2026 &nbsp;·&nbsp; <strong>Last updated:</strong> May 14, 2026</div>
+        <div class="pol-meta"><strong>Effective date:</strong> May 12, 2026 &nbsp;·&nbsp; <strong>Last updated:</strong> May 12, 2026</div>
         <h2>1. Agreement</h2>
         <p>These Terms of Service ("<strong>Terms</strong>") form a binding agreement between you and <strong>Wondfo USA, Inc.</strong> ("<strong>we</strong>", "<strong>us</strong>", "<strong>our</strong>") governing your access to and use of the WELLlife Care mobile application and any related websites or services (collectively, the "<strong>Service</strong>").</p>
         <p>By creating an account, signing in, or otherwise using the Service, you acknowledge that you have read, understood, and agree to these Terms and to our Privacy Policy. If you do not agree, do not use the Service.</p>
@@ -1910,7 +1887,7 @@ html.native .sb { display: none; }
         <ul>
           <li><strong>Rapid-test manufacturers</strong> — your rapid test is a separate product from the Service. Always follow the manufacturer's IFU. We make no representation about the performance of any specific test.</li>
           <li><strong>CDC information</strong> — public-health content presented in the Service is drawn from publicly available CDC resources. CDC does not endorse or sponsor WELLlife Care.</li>
-          <li><strong>Amazon Web Services</strong> — we use AWS (Cognito for authentication, DynamoDB for data, AppSync for the GraphQL API, and S3 for any synced file storage). Your use of the Service is also subject to AWS's applicable terms; we remain accountable to you for the way we configure those services on your behalf.</li>
+          <li><strong>Firebase / Google Cloud</strong> — we use Firebase for authentication, data storage, and synchronization. Your use of the Service is also subject to Google's applicable terms; we remain accountable to you for the way we configure those services on your behalf.</li>
         </ul>
 
         <h2>9. Changes to the Service</h2>
@@ -2041,9 +2018,6 @@ async function doLogin(){
   // Configure token storage based on Remember-me BEFORE signIn.
   const remember=document.getElementById('remember-me')?.checked;
   window.WelllifeAmplify.setRememberMe(!!remember);
-  // Defensive: if a stale session lingers from a previous app launch, signIn
-  // throws "there is already a signed in user". Clear it before retrying.
-  try{ await window.WelllifeAmplify.auth.signOut(); }catch(_){}
   try{
     const result=await window.WelllifeAmplify.auth.signIn({username:email,password:pw});
     if(!result.isSignedIn){
@@ -2171,8 +2145,6 @@ async function doVerify(){
     if(pending.pw){
       // Default to "remember me" after a fresh signup.
       window.WelllifeAmplify.setRememberMe(true);
-      // Clear any stale session before signing in (defensive).
-      try{ await window.WelllifeAmplify.auth.signOut(); }catch(_){}
       try{
         await window.WelllifeAmplify.auth.signIn({username:pending.email,password:pending.pw});
       }catch(_){ /* if auto-login fails, fall through to login screen */ }
@@ -2232,7 +2204,6 @@ async function doForgotConfirm(){
     // Auto sign-in with the new password.
     try{
       window.WelllifeAmplify.setRememberMe(true);
-      try{ await window.WelllifeAmplify.auth.signOut(); }catch(_){}
       await window.WelllifeAmplify.auth.signIn({username:email,password:pw});
       enterApp(email.split('@')[0]);
     }catch(_){
@@ -2360,28 +2331,25 @@ function finishOnboarding(){
   if(auth) auth.style.display='flex';
 }
 // First-launch check — runs once when the script loads.
-// Real users see onboarding only on their first launch.
-// Demo-mode visitors see it on every page load (it's the marketing intro).
+// Real users (Capacitor app) see onboarding only on their first launch.
+// Demo-mode visitors see it on EVERY page load — it's the marketing intro
+// and "既然是 demo, 就要展现所有" applies.
 (function(){
   let seen=false;
   try{seen=localStorage.getItem('wl_onboarded')==='1';}catch(_){}
-  const isDemo=window.__forceDemoMode===true;
+  const isDemo=window.__forceDemoMode===true||(typeof window.__isDemoMode==='function'&&window.__isDemoMode());
   if(!seen||isDemo){
     // Defer one tick so all elements exist
     setTimeout(showOnboarding,50);
   }
 })();
 
-// ── Demo mode (no real backend — used on public GitHub Pages preview) ────
-// We enter demo mode when:
-//   - amplify-bundle.js failed to load (the <script onerror> sets __bundleFailed), OR
-//   - we're on a github.io hostname, OR
-//   - 2.5s after page load amplify-ready never fired.
-// Demo mode skips auth/onboarding, drops the user into the app as "Demo User",
-// shows a small banner, and silences buttons that would call Cognito.
-window.__isDemoMode = function(){
-  return !!(window.__forceDemoMode)
-      || !!(window.__bundleFailed)
+// ── Demo mode (file://, github.io, ?mode=demo, or amplify bundle failure) ─
+// Visitors see EVERY screen including the login form, but clicking auth buttons
+// advances the flow without calling Cognito.  "既然是 demo, 就要展现所有"
+window.__isDemoMode=function(){
+  return !!window.__forceDemoMode
+      || !!window.__bundleFailed
       || /\.github\.io$/i.test(location.hostname)
       || location.protocol==='file:'
       || /^demo$/i.test(new URLSearchParams(location.search).get('mode')||'');
@@ -2389,7 +2357,7 @@ window.__isDemoMode = function(){
 function enterDemoMode(){
   if(window.__demoEntered) return; window.__demoEntered=true;
   document.documentElement.classList.add('demo-mode');
-  // Floating badge so visitors know this isn't a real session.
+  // Floating "DEMO PREVIEW" badge (only UI cue visitors see)
   if(!document.getElementById('demo-badge')){
     const b=document.createElement('div');
     b.id='demo-badge';
@@ -2397,8 +2365,8 @@ function enterDemoMode(){
     b.style.cssText='position:fixed;top:10px;left:50%;transform:translateX(-50%);background:#f59e0b;color:#fff;padding:4px 12px;border-radius:14px;font-size:10px;font-weight:700;letter-spacing:.12em;z-index:9999;font-family:var(--font-b);box-shadow:0 4px 12px rgba(245,158,11,.4);pointer-events:none';
     document.body.appendChild(b);
   }
-  // Override auth buttons so visitors can navigate the whole flow without a backend.
-  // Each handler advances to the NEXT logical screen instead of calling Cognito.
+  // Override auth handlers so visitors can navigate without a backend.
+  // Each button advances to the NEXT logical screen instead of calling Cognito.
   window.doLogin=function(){ enterApp('Demo User'); };
   window.doRegister=function(){
     const email=(document.getElementById('reg-email')?.value||'demo@welllife.app').trim();
@@ -2423,7 +2391,6 @@ function enterDemoMode(){
   };
   window.doForgotConfirm=function(){ enterApp('Demo User'); };
   window.doLogout=function(){
-    // Restart the demo from the top — show the login screen again.
     const auth=document.getElementById('auth-wrap'); if(auth) auth.style.display='flex';
     if(typeof showAuth==='function') showAuth('login');
     const e=document.getElementById('login-email'); if(e) e.value='';
@@ -2450,10 +2417,9 @@ function enterDemoMode(){
 }
 
 // ── Auto-login on launch ──────────────────────────────────────────────
-// In normal mode: wait for amplify-ready, then ask Cognito who's signed in.
-// In demo mode: skip Cognito entirely.
+// Demo mode → skip Cognito entirely.  Otherwise wait for amplify-ready and
+// auto-enter if a refresh token is still valid.
 (function(){
-  // Fast-path: github.io or explicit ?mode=demo — go straight into demo.
   if(window.__isDemoMode()){
     document.addEventListener('DOMContentLoaded',enterDemoMode,{once:true});
     if(document.readyState!=='loading') enterDemoMode();
@@ -2477,7 +2443,7 @@ function enterDemoMode(){
   }else{
     document.addEventListener('amplify-ready',tryAutoLogin,{once:true});
   }
-  // Safety net: if the bundle never loads (slow/blocked), drop into demo after 2.5s.
+  // Safety net: if bundle never loads in 2.5s, fall back to demo mode.
   setTimeout(()=>{
     if(!window.WelllifeAmplify && !window.__demoEntered){
       console.warn('[WELLlife] Amplify bundle never loaded — entering demo mode.');
@@ -2632,7 +2598,7 @@ const REPORT_PURPOSES = {
   sick_leave: { label: 'Sick Leave Request',    note: 'For official sick leave & HR records' },
   family:     { label: 'Health Update',          note: 'For friends & family' },
   insurance:  { label: 'Insurance Claim Record', note: 'For insurance & reimbursement' },
-  doctor:     { label: 'Clinical Summary',       note: 'For your next appointment' }
+  doctor:     { label: 'Clinical Summary',       note: 'For physician consultation' }
 };
 
 function setReportPurpose(p){
@@ -4209,8 +4175,13 @@ function updateTestReminder(){
   if(msg){el.style.display='flex';el.style.background=bg;el.innerHTML='<span style="font-size:15px;flex-shrink:0">'+icon+'</span><span style="font-size:12px;font-weight:500;color:'+color+';line-height:1.45">'+msg+'</span>';}
   else{el.style.display='none';}
 }
-// toggleSteps() removed — the step-by-step guide UI was removed for FDA compliance.
-// See the Test Instructions section (links to IFU + official Wondfo video) above.
+function toggleSteps(btn){
+  const content=document.getElementById('steps-content');
+  const label=document.getElementById('steps-toggle-label');
+  const open=content.style.display==='block';
+  content.style.display=open?'none':'block';
+  label.textContent=open?'Show ▾':'Hide ▴';
+}
 
 function nearestRecoveryDay(clientX){
   const track=document.getElementById('recovery-track');
@@ -4742,7 +4713,125 @@ function markRecovered(e){
       btn.setAttribute('aria-pressed','true');
       btn.title='Tap to undo';
     }
+    // Show the nurse celebration popup
+    showRecoveryCelebration();
   }
+}
+
+function showRecoveryCelebration(){
+  // Inject the celebration keyframes once per page life.
+  if(!document.getElementById('celebrate-keyframes')){
+    const s=document.createElement('style');
+    s.id='celebrate-keyframes';
+    s.textContent=`
+      @keyframes clapL {
+        0%,100% { transform: translate(0,0) rotate(-10deg); }
+        50% { transform: translate(8px,-4px) rotate(20deg); }
+      }
+      @keyframes clapR {
+        0%,100% { transform: translate(0,0) rotate(10deg); }
+        50% { transform: translate(-8px,-4px) rotate(-20deg); }
+      }
+      @keyframes starTwinkle {
+        0%,100% { transform: scale(.5) rotate(0deg); opacity: .25; }
+        50% { transform: scale(1.15) rotate(180deg); opacity: 1; }
+      }
+      @keyframes confettiFall {
+        0% { transform: translateY(-30px) rotate(0deg); opacity: 1; }
+        100% { transform: translateY(260px) rotate(540deg); opacity: 0; }
+      }
+      @keyframes titleSlideIn {
+        0% { opacity: 0; transform: translateY(12px); }
+        100% { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes textShimmer {
+        0%,100% { color: var(--brand); }
+        50% { color: #9a5fdc; }
+      }
+      @keyframes glowPulse {
+        0%,100% { box-shadow: 0 8px 24px rgba(13,158,122,.3), 0 0 0 0 rgba(124,58,237,0); }
+        50% { box-shadow: 0 8px 24px rgba(13,158,122,.3), 0 0 0 18px rgba(124,58,237,0); }
+      }
+    `;
+    document.head.appendChild(s);
+  }
+  // Build the celebration modal dynamically so it doesn't clutter HTML.
+  const stage = document.querySelector('.phone') || document.body;
+  // Remove an existing one if any (prevent stacking on rapid taps)
+  const old = document.getElementById('recov-celebrate'); if(old) old.remove();
+  const wrap = document.createElement('div');
+  wrap.id = 'recov-celebrate';
+  wrap.style.cssText = 'position:absolute;inset:0;background:rgba(20,15,40,.55);z-index:9998;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;transition:opacity .25s ease;overflow:hidden';
+  wrap.onclick = (e)=>{ if(e.target===wrap) closeCelebration(); };
+
+  // Build 22 randomly-positioned twinkling stars (4 emoji shapes, varied sizes)
+  const starGlyphs=['✨','⭐','🌟','✦'];
+  let starHtml='';
+  for(let i=0;i<22;i++){
+    const g=starGlyphs[i%starGlyphs.length];
+    const left=Math.random()*94+3;
+    const top=Math.random()*88+4;
+    const size=10+Math.random()*16;
+    const delay=Math.random()*1.6;
+    const dur=1.2+Math.random()*1.6;
+    starHtml+=`<span style="position:absolute;left:${left}%;top:${top}%;font-size:${size}px;animation:starTwinkle ${dur}s ${delay}s ease-in-out infinite;pointer-events:none;z-index:1">${g}</span>`;
+  }
+
+  // Build floating confetti pieces (purple + teal + amber)
+  const confettiColors=['#7c3aed','#0d9e7a','#e09517','#e24b4a','#2d7dd2','#f59e0b'];
+  let confettiHtml='';
+  for(let i=0;i<18;i++){
+    const c=confettiColors[i%confettiColors.length];
+    const left=Math.random()*90+5;
+    const delay=Math.random()*1.4;
+    const size=5+Math.random()*7;
+    confettiHtml+=`<span style="position:absolute;left:${left}%;top:-20px;width:${size}px;height:${size}px;background:${c};border-radius:2px;animation:confettiFall 2s ${delay}s ease-out forwards;pointer-events:none;z-index:1"></span>`;
+  }
+
+  // Nurse pinned to upper portion, card pinned below — they cannot overlap
+  // regardless of viewport height because both use absolute positioning with
+  // distinct top/bottom anchors.
+  wrap.style.cssText = 'position:absolute;inset:0;background:rgba(20,15,40,.55);z-index:9998;padding:24px;opacity:0;transition:opacity .25s ease;overflow:hidden';
+  wrap.innerHTML = `
+    ${starHtml}
+    ${confettiHtml}
+    <!-- ── Message card pinned to UPPER portion ── -->
+    <div id="celebrate-card-wrap" style="position:absolute;left:24px;right:24px;top:22%;display:flex;justify-content:center;z-index:2">
+      <div id="celebrate-card" style="background:#fff;border-radius:24px;padding:24px 24px 22px;width:100%;max-width:300px;text-align:center;box-shadow:0 20px 60px rgba(91,44,145,.35);transform:scale(.85);transition:transform .4s .15s cubic-bezier(.34,1.56,.64,1);position:relative">
+        <button onclick="closeCelebration()" aria-label="Close" style="position:absolute;top:10px;right:10px;width:28px;height:28px;border-radius:50%;border:none;background:var(--gray);cursor:pointer;display:flex;align-items:center;justify-content:center;z-index:3">
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 8M10 2l-8 8" stroke="var(--i2)" stroke-width="1.8" stroke-linecap="round"/></svg>
+        </button>
+        <div style="font-family:var(--font-s);font-size:26px;line-height:1.1;margin-bottom:6px;animation:titleSlideIn .5s .35s ease both, textShimmer 2.4s 1.2s ease-in-out infinite">Wonderful! 🎉</div>
+        <div style="font-size:13.5px;color:var(--i2);line-height:1.55;margin-bottom:18px;animation:titleSlideIn .5s .5s ease both">Great to hear you're feeling better. Your recovery has been noted in this card.</div>
+        <button onclick="closeCelebration()" style="background:var(--teal);color:#fff;border:none;border-radius:24px;padding:11px 36px;font-size:14px;font-weight:600;cursor:pointer;font-family:var(--font-b);box-shadow:0 4px 14px rgba(13,158,122,.35);animation:titleSlideIn .5s .65s ease both">Thanks!</button>
+      </div>
+    </div>
+    <!-- ── Nurse pinned to LOWER portion, transparent GIF on the dark overlay (no circle, no purple background) ── -->
+    <div id="celebrate-nurse-wrap" style="position:absolute;bottom:3%;left:50%;width:440px;height:440px;margin-left:-220px;max-width:95vw;transform:scale(0) rotate(-20deg);transform-origin:center bottom;transition:transform .55s cubic-bezier(.34,1.7,.64,1);z-index:3;filter:drop-shadow(0 12px 28px rgba(0,0,0,.45))">
+      <img src="nurse.gif" alt="" aria-hidden="true"
+        style="width:100%;height:100%;object-fit:contain;display:block;transform:scale(1.15)">
+    </div>
+  `;
+  stage.appendChild(wrap);
+  // Trigger the entrance animation on next frame.
+  // Nurse pops out first (springs from scale 0), then text card slides up after.
+  requestAnimationFrame(()=>{
+    wrap.style.opacity='1';
+    const nurse = wrap.querySelector('#celebrate-nurse-wrap');
+    if(nurse) nurse.style.transform='scale(1) rotate(0deg)';
+    const card = wrap.querySelector('#celebrate-card');
+    if(card) card.style.transform='scale(1)';
+  });
+  // Auto-dismiss after 7s if untouched
+  setTimeout(closeCelebration, 7000);
+}
+function closeCelebration(){
+  const wrap = document.getElementById('recov-celebrate');
+  if(!wrap) return;
+  wrap.style.opacity='0';
+  const card = wrap.firstElementChild;
+  if(card) card.style.transform='scale(.9)';
+  setTimeout(()=>{ if(wrap.parentNode) wrap.remove(); }, 250);
 }
 function adjustCardDays(delta){
   if(!AC||!CARDS[AC])return;
@@ -4908,7 +4997,7 @@ function appendMessage(role, text){
   div.style.cssText = 'display:flex;gap:8px;align-items:flex-end;'+(isUser?'flex-direction:row-reverse':'');
   const avatar = isUser
     ? `<div style="width:28px;height:28px;border-radius:50%;background:var(--g2);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:600;color:var(--i2)">S</div>`
-    : `<div style="width:28px;height:28px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3C7 3 3 6.5 3 11c0 2 .8 3.8 2.1 5.1L4 21l5.2-1.6C10.4 19.8 11.2 20 12 20c5 0 9-3.5 9-9s-4-8-9-8z" fill="white"/></svg></div>`;
+    : `<div style="width:32px;height:32px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;border:1px solid rgba(91,44,145,.18)"><img src="nurse.png" alt="" width="32" height="32" style="display:block;width:100%;height:100%;object-fit:cover"></div>`;
   const bubble = document.createElement('div');
   bubble.style.cssText = `max-width:78%;padding:10px 14px;border-radius:${isUser?'18px 18px 4px 18px':'18px 18px 18px 4px'};font-size:13px;line-height:1.6;color:var(--ink);background:${isUser?'var(--teal)':'var(--gray)'};${isUser?'color:#fff':''}`;
   bubble.textContent = text;
@@ -4924,7 +5013,7 @@ function showTyping(){
   const div = document.createElement('div');
   div.id = 'ai-typing';
   div.style.cssText = 'display:flex;gap:8px;align-items:flex-end';
-  div.innerHTML = `<div style="width:28px;height:28px;border-radius:50%;background:var(--teal);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M12 3C7 3 3 6.5 3 11c0 2 .8 3.8 2.1 5.1L4 21l5.2-1.6C10.4 19.8 11.2 20 12 20c5 0 9-3.5 9-9s-4-8-9-8z" fill="white"/></svg></div>
+  div.innerHTML = `<div style="width:32px;height:32px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0;overflow:hidden;border:1px solid rgba(91,44,145,.18)"><img src="nurse.png" alt="" width="32" height="32" style="display:block;width:100%;height:100%;object-fit:cover"></div>
     <div style="background:var(--gray);border-radius:18px 18px 18px 4px;padding:10px 14px;display:flex;gap:4px;align-items:center">
       <span style="width:6px;height:6px;border-radius:50%;background:var(--g3);animation:typing .8s infinite"></span>
       <span style="width:6px;height:6px;border-radius:50%;background:var(--g3);animation:typing .8s .2s infinite"></span>
