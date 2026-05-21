@@ -344,6 +344,16 @@ html.native .phone {
 /* Hide the simulated iOS status bar inside .phone when running native — the real OS status bar already shows time/signal */
 html.native .sb { display: none; }
 
+/* Android: WebView renders this px-based UI smaller than iOS at the same DPR.
+   Use text-size-adjust on body — does NOT alter layout, so tabs / phone bounds
+   stay correct. Previous attempt at `zoom: 1.12` on .phone overflowed the
+   viewport and pushed the bottom tabs out of view; do not reintroduce zoom
+   on .phone without compensating its width/height calc. */
+html.native.android body {
+  -webkit-text-size-adjust: 175%;
+  text-size-adjust: 175%;
+}
+
 /* ── Policy viewer (Privacy / Terms) ───────────────────────────── */
 .pol-modal{display:none;position:fixed;inset:0;z-index:9997;background:rgba(0,0,0,.45);align-items:flex-end;justify-content:center}
 .pol-modal.show{display:flex}
@@ -433,6 +443,12 @@ html.native .sb { display: none; }
     var nativeScheme = /^(capacitor|ionic):/.test(location.protocol);
     if (forced || inCapacitor || nativeScheme) {
       document.documentElement.classList.add('native');
+    }
+    // Android-specific class — Android WebView renders this dense UI smaller
+    // than iOS/Safari at the same device pixel ratio. CSS uses `html.native.android`
+    // to apply additional text-size-adjust + zoom on the .phone container.
+    if (/Android/i.test(navigator.userAgent || '')) {
+      document.documentElement.classList.add('android');
     }
   } catch(e) {}
 })();
