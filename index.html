@@ -344,14 +344,26 @@ html.native .phone {
 /* Hide the simulated iOS status bar inside .phone when running native — the real OS status bar already shows time/signal */
 html.native .sb { display: none; }
 
-/* Android: WebView renders this px-based UI smaller than iOS at the same DPR.
-   Use text-size-adjust on body — does NOT alter layout, so tabs / phone bounds
-   stay correct. Previous attempt at `zoom: 1.12` on .phone overflowed the
-   viewport and pushed the bottom tabs out of view; do not reintroduce zoom
-   on .phone without compensating its width/height calc. */
-html.native.android body {
+/* Android: enlarge .phone content via CSS zoom + LAYOUT COMPENSATION.
+   Layout box is shrunk by the zoom factor so the final visual size matches the
+   original .phone dimensions — this is what keeps the bottom tabs visible.
+   Without compensation, zoom: 1.18 on width:100vw would make .phone visually
+   118% of viewport, pushing position:absolute bottom-aligned tabs off-screen.
+   Applied on .android only (NOT .native.android) so it works even when the
+   Capacitor bridge fails to add the .native class. */
+html.android body {
   -webkit-text-size-adjust: 175%;
   text-size-adjust: 175%;
+}
+html.android .phone {
+  zoom: 1.18;
+  width: calc(390px / 1.18);
+  height: calc(760px / 1.18);
+}
+/* Native mode override: full-viewport dimensions, still compensated for zoom */
+html.native.android .phone {
+  width: calc(100vw / 1.18);
+  height: calc((100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom)) / 1.18);
 }
 
 /* ── Policy viewer (Privacy / Terms) ───────────────────────────── */
@@ -560,7 +572,7 @@ html.native.android body {
         </div>
         <div id="test-reminder" style="display:none;margin-top:2px;border-radius:10px;padding:6px 10px;align-items:center;gap:8px"></div>
         <!-- Data source legend (merged with +/- day-count adjuster on the right) -->
-        <div style="display:flex;gap:10px;margin-top:2px;padding-top:4px;border-top:.5px solid rgba(0,0,0,.07);align-items:center;flex-wrap:wrap">
+        <div style="display:flex;gap:8px;margin-top:2px;padding-top:4px;border-top:.5px solid rgba(0,0,0,.07);align-items:center;flex-wrap:nowrap">
           <div onclick="toggleStripColors(event)" title="Rapid test results from at-home test strips. Tap to see what each color means." style="display:flex;align-items:center;gap:5px;font-size:10px;color:#3d1a6b;cursor:pointer;user-select:none;background:rgba(91,44,145,.07);border:.5px solid rgba(91,44,145,.22);border-radius:12px;padding:3px 9px 3px 4px;font-weight:600">
             <span style="width:13px;height:13px;border-radius:50%;background:#D66DAB;flex-shrink:0;display:inline-block"></span>Strip test <svg class="strip-chev" width="12" height="12" viewBox="0 0 12 12" style="margin-left:2px;transition:transform .2s ease;flex-shrink:0;display:inline-block;vertical-align:middle"><path d="M2 4.5 L6 8.5 L10 4.5" stroke="#5b2c91" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>
